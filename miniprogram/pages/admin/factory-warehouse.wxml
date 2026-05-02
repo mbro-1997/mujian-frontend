@@ -1,0 +1,47 @@
+﻿<view class="container" style="padding-bottom: 40rpx;">
+  <view class="card" style="margin: 16rpx;">
+    <view class="scan-buttons">
+      <view class="scan-button" bindtap="scanBorrow">
+        <image src="/images/icons/goods.png" class="scan-icon" />
+        <text class="scan-text">借出扫码</text>
+      </view>
+      <view class="scan-button" bindtap="scanReturn">
+        <image src="/images/icons/goods-active.png" class="scan-icon" />
+        <text class="scan-text">归还扫码</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card" style="margin: 16rpx;">
+    <view class="card-title">我的仓库</view>
+    <view class="list">
+      <view class="card list-item" wx:for="{{warehouseProps}}" wx:key="id" bindtap="viewPropDetail" data-id="{{item.id}}">
+        <image src="{{item.image}}" class="img warehouse-img" mode="aspectFill" />
+        <view class="prop-info">
+          <view class="prop-name">{{item.name}}</view>
+          <view class="prop-meta"><text>尺寸: {{item.size}}</text><text>材质: {{item.material}}</text></view>
+          <view class="prop-price"><text class="price">¥{{item.price}}/天</text><text class="deposit">押金: ¥{{item.deposit}}</text></view>
+          <view class="prop-status-row">
+            <view class="status-tag {{item.statusClass}}">{{item.statusText}}</view>
+            <view class="prop-action-wrap">
+              <button wx:if="{{item.canToggle}}" class="btn {{item.status === 'offline' ? 'btn-primary' : 'btn-secondary'}} prop-action-btn" size="mini" bindtap="toggleStatus" data-id="{{item.id}}">{{item.actionText}}</button>
+              <button wx:else class="btn btn-disabled prop-action-btn" size="mini" disabled>{{item.actionDisabledText}}</button>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="empty-panel" wx:if="{{!warehouseProps.length}}">暂无道具</view>
+    </view>
+  </view>
+
+  <view class="modal" wx:if="{{showScanModal}}" bindtap="closeScanModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">{{scanType === 'borrow' ? '借出扫码' : '归还扫码'}}</view>
+      <view style="text-align: center; margin: 24rpx 0; color: #cbd5e1;">模拟扫码演示</view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeScanModal">取消</view>
+        <view class="modal-button primary" bindtap="simulateScan">确认</view>
+      </view>
+    </view>
+  </view>
+</view>

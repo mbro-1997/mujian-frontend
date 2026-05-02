@@ -1,0 +1,18 @@
+<view class="page">
+  <view class="card" wx:for="{{list}}" wx:key="id">
+    <view class="title">
+      {{item.user}} · 综合{{item.score}}分{{item.auto ? ' · 系统默认好评' : ''}}
+    </view>
+    <view class="line">订单号：{{item.orderId}}</view>
+    <view class="line">评价角色：{{item.reviewerRole === 'supplier' ? '工厂方' : '租赁方'}}</view>
+    <view class="line">道具评分：{{item.propScore || item.score}}分</view>
+    <view class="line">合作体验评分：{{item.counterpartyScore || item.score}}分</view>
+    <view class="line">评价内容：{{item.content || '无文字评价'}}</view>
+    <view class="line">展示状态：{{item.visible ? '显示中' : '已隐藏'}}</view>
+    <view class="row">
+      <button class="btn hide" data-id="{{item.id}}" bindtap="hide">隐藏</button>
+      <button class="btn del" data-id="{{item.id}}" bindtap="remove">删除</button>
+    </view>
+  </view>
+  <view class="empty-list" wx:if="{{!list.length}}">暂无评价数据</view>
+</view>

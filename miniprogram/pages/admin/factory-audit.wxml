@@ -1,0 +1,17 @@
+<view class="page">
+  <button class="history-btn" bindtap="goHistory">审核历史</button>
+
+  <view class="card audit-card" wx:for="{{list}}" wx:key="id" catchtap="viewDetail" data-id="{{item.id}}">
+    <view class="card-head">
+      <view class="title">{{item.company}}</view>
+      <view class="status {{item.status}}">{{item.statusText}}</view>
+    </view>
+    <view class="line">联系人：{{item.contact || '未填写'}}</view>
+    <view class="line">联系电话：{{item.phone || '未填写'}}</view>
+    <view class="line">申请时间：{{item.createdAt || '未记录'}}</view>
+    <view class="line">申请备注：{{item.remark || '无'}}</view>
+    <view class="detail-tip">点击查看完整资料并审核</view>
+  </view>
+
+  <view class="empty-list" wx:if="{{!list.length}}">暂无入驻审核数据</view>
+</view>

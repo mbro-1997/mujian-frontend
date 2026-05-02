@@ -1,0 +1,26 @@
+<view class="page">
+  <button class="create-btn" loading="{{generating}}" bindtap="generateInvite">生成邀请码</button>
+
+  <view class="filter-actions">
+    <button class="filter-btn {{!showHistory ? 'active' : ''}}" bindtap="showActiveList">未使用邀请码</button>
+    <button class="filter-btn {{showHistory ? 'active' : ''}}" bindtap="showHistoryList">历史邀请码</button>
+  </view>
+
+  <view class="card" wx:for="{{list}}" wx:key="id">
+    <view class="title">邀请码：{{item.inviteCode || ('仅有后缀：' + item.codeSuffix)}}</view>
+    <view class="line">状态：{{item.statusText}}</view>
+    <view class="line">创建时间：{{item.createdAt}}</view>
+    <view class="line">过期时间：{{item.expireAt}}</view>
+    <view class="line">备注：{{item.remark || '无'}}</view>
+    <view class="line" wx:if="{{item.lockedByUserId}}">锁定用户：{{item.lockedByUserId}}</view>
+    <view class="line" wx:if="{{item.usedByUserId}}">使用用户：{{item.usedByUserId}}</view>
+    <view class="card-actions">
+      <button class="copy-btn" data-code="{{item.inviteCode || item.codeSuffix}}" bindtap="copyInvite">复制邀请码</button>
+      <button wx:if="{{item.status === 'unused'}}" class="revoke-btn" data-id="{{item.id}}" bindtap="revokeInvite">作废邀请码</button>
+    </view>
+  </view>
+
+  <view class="empty-list" wx:if="{{!list.length}}">
+    {{showHistory ? '暂无历史邀请码' : '暂无未使用邀请码'}}
+  </view>
+</view>

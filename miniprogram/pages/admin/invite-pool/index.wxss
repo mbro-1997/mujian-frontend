@@ -1,0 +1,18 @@
+.page { min-height: 100vh; background: #0b1220; padding: 16rpx; box-sizing: border-box; }
+.create-btn { height: 82rpx; line-height: 82rpx; border-radius: 999rpx; background: #22d3ee; color: #03111a; font-size: 28rpx; font-weight: 800; }
+.filter-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14rpx; margin-top: 16rpx; }
+.filter-btn { height: 76rpx; line-height: 76rpx; border-radius: 999rpx; background: rgba(21, 32, 48, 0.9); border: 1px solid rgba(148, 163, 184, 0.22); color: #cbd5e1; font-size: 25rpx; font-weight: 700; padding: 0; }
+.filter-btn.active { background: #22d3ee; color: #03111a; border-color: rgba(34, 211, 238, 0.72); }
+.filter-btn::after,
+.create-btn::after,
+.copy-btn::after,
+.revoke-btn::after { border: none; }
+.card { margin-top: 16rpx; background: rgba(16, 26, 44, 0.96); border: 1px solid rgba(125, 211, 192, 0.22); border-radius: 18rpx; padding: 22rpx; color: #dbeafe; box-shadow: 0 16rpx 44rpx rgba(2, 8, 23, 0.24); }
+.title { font-size: 30rpx; font-weight: 800; line-height: 1.45; word-break: break-all; }
+.line { margin-top: 10rpx; font-size: 24rpx; color: #b6c5dd; line-height: 1.5; }
+.card-actions { display: flex; gap: 12rpx; margin-top: 18rpx; }
+.copy-btn,
+.revoke-btn { flex: 1; height: 72rpx; line-height: 72rpx; border-radius: 999rpx; font-size: 25rpx; font-weight: 700; padding: 0; }
+.copy-btn { background: rgba(55, 83, 105, 0.92); color: #e5f7f2; }
+.revoke-btn { background: rgba(251, 113, 133, 0.14); color: #fb7185; border: 1rpx solid rgba(251, 113, 133, 0.22); }
+.empty-list { min-height: 420rpx; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 18rpx; background: rgba(16, 26, 44, 0.72); margin-top: 16rpx; }

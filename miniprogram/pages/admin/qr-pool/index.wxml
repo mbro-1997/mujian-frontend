@@ -1,0 +1,21 @@
+<view class="page">
+  <button class="create-btn" loading="{{generating}}" bindtap="generateQr">生成二维码</button>
+
+  <view class="filter-actions">
+    <button class="filter-btn {{!showHistory ? 'active' : ''}}" bindtap="showActiveList">未登记二维码</button>
+    <button class="filter-btn {{showHistory ? 'active' : ''}}" bindtap="showHistoryList">历史二维码</button>
+  </view>
+
+  <view class="card" wx:for="{{list}}" wx:key="id">
+    <view class="title">{{item.name || '待登记道具'}}</view>
+    <view class="line">道具ID：{{item.id}}</view>
+    <view class="line">二维码标识：{{item.qrCodeId}}</view>
+    <view class="line">登记状态：{{item.fillStatus === 'pending_fill' ? '未登记' : '已登记'}}</view>
+    <view class="line" wx:if="{{item.statusText}}">当前状态：{{item.statusText}}</view>
+    <button class="copy-btn" data-code="{{item.qrCodeId}}" bindtap="copyCode">复制二维码标识</button>
+  </view>
+
+  <view class="empty-list" wx:if="{{!list.length}}">
+    {{showHistory ? '暂无历史二维码' : '暂无未登记二维码'}}
+  </view>
+</view>

@@ -1,0 +1,36 @@
+<view class="container project-list-page" style="padding-bottom: 120rpx;">
+  <view class="card header-card">
+    <view class="page-title">我的方案</view>
+    <button class="btn btn-primary create-btn" size="mini" bindtap="openCreateProjectModal">新建方案</button>
+  </view>
+
+  <view class="card list-item project-card" wx:for="{{projects}}" wx:key="id" bindtap="viewProjectDetail" data-id="{{item.id}}">
+    <view class="project-head">
+      <view class="project-name">{{item.name}}</view>
+      <view class="status-tag {{item.status === 'editing' ? 'status-pending' : 'status-free'}}">{{item.statusText}}</view>
+    </view>
+    <view class="project-desc">{{item.description || '暂无描述'}}</view>
+    <view class="project-tip danger" wx:if="{{item.status === 'editing' && item.unavailableCount > 0}}">存在 {{item.unavailableCount}} 件不可下单道具</view>
+    <view class="project-tip" wx:else>{{item.status === 'editing' ? '可下单道具' : '方案道具'}}：{{item.props.length}} 件</view>
+    <view class="project-actions">
+      <button class="btn btn-secondary" size="mini" catchtap="viewProjectDetail" data-id="{{item.id}}">查看详情</button>
+      <button class="btn btn-primary" size="mini" catchtap="exportPDF" data-id="{{item.id}}">生成方案（导出PDF）</button>
+    </view>
+  </view>
+
+  <view class="card empty-card" wx:if="{{!projects.length}}">暂无方案</view>
+
+  <view class="modal" wx:if="{{showCreateProjectModal}}" bindtap="closeCreateProjectModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">新建方案</view>
+      <view class="form-item">
+        <view class="form-label">方案名称</view>
+        <input class="form-input" placeholder="请输入方案名称" value="{{createProjectName}}" bindinput="updateCreateProjectName" />
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeCreateProjectModal">取消</view>
+        <view class="modal-button primary" bindtap="confirmCreateProject">确认</view>
+      </view>
+    </view>
+  </view>
+</view>

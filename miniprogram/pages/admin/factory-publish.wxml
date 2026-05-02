@@ -1,0 +1,19 @@
+﻿<view class="container" style="padding-bottom: 40rpx;">
+  <view class="action-card" bindtap="scanCode" style="margin: 16rpx 16rpx 14rpx;">
+    <view class="action-title">扫码入库</view>
+    <view class="action-subtitle">快速录入道具资产信息</view>
+  </view>
+
+  <view class="dashboard-grid" style="margin: 0 16rpx 0;">
+    <view class="metric-card metric-main"><view class="metric-label">总资产数</view><view class="metric-value">{{totalProps}}</view><view class="metric-desc">当前库存总量</view></view>
+    <view class="metric-card metric-cyan"><view class="metric-label">空闲资产</view><view class="metric-value">{{idleProps}}</view><view class="metric-desc">可立即租赁</view></view>
+    <view class="metric-card metric-purple"><view class="metric-label">已锁定</view><view class="metric-value">{{lockedProps}}</view><view class="metric-desc">待工厂确认订单</view></view>
+    <view class="metric-card metric-orange"><view class="metric-label">租赁中</view><view class="metric-value">{{rentingProps}}</view><view class="metric-desc">正在执行订单</view></view>
+    <view class="metric-card metric-gray"><view class="metric-label">已下架</view><view class="metric-value">{{offlineProps}}</view><view class="metric-desc">不可租赁</view></view>
+    <view class="metric-card metric-teal"><view class="metric-label">待确认订单</view><view class="metric-value">{{pendingConfirmOrders}}</view><view class="metric-desc">需 1 小时内处理</view></view>
+    <view class="metric-card metric-green"><view class="metric-label">预计日营收</view><view class="metric-value">¥{{dailyRevenue}}</view><view class="metric-desc">租赁中资产日租合计</view></view>
+    <view class="metric-card metric-blue"><view class="metric-label">押金总额</view><view class="metric-value">¥{{totalDeposit}}</view><view class="metric-desc">全资产押金累计</view></view>
+    <view class="metric-card metric-orange"><view class="metric-label">利用率</view><view class="metric-value">{{utilizationRate}}</view><view class="metric-desc">租赁中 / 总资产</view></view>
+    <view class="metric-card metric-cyan"><view class="metric-label">平均日租</view><view class="metric-value">¥{{avgRentPrice}}</view><view class="metric-desc">单件道具均价</view></view>
+  </view>
+</view>

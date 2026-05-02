@@ -1,0 +1,28 @@
+<view class="admin-page">
+  <view class="header-card">
+    <view class="title">管理员控制台</view>
+    <view class="subtitle">工厂审核、道具审核、纠纷仲裁、评价管理、用户统计</view>
+  </view>
+
+  <view class="grid">
+    <view class="metric"><view class="num">{{overview.pendingFactoryCount}}</view><view class="label">待入驻审核</view></view>
+    <view class="metric"><view class="num">{{overview.pendingPropCount}}</view><view class="label">待道具审核</view></view>
+    <view class="metric"><view class="num">{{overview.pendingDisputeCount}}</view><view class="label">待纠纷仲裁</view></view>
+    <view class="metric"><view class="num">{{overview.totalUsers}}</view><view class="label">用户总数</view></view>
+  </view>
+
+  <view class="quick-row">
+    <button class="btn primary" bindtap="goWarehouse">仓库管理</button>
+    <button class="btn primary" bindtap="goPublish">发布管理</button>
+  </view>
+
+  <view class="menu-card">
+    <view class="menu-item" bindtap="goFactoryAudit"><text>用户入驻审核（工厂）</text><text class="arrow">→</text></view>
+    <view class="menu-item" bindtap="goPropAudit"><text>道具上 / 下架审核</text><text class="arrow">→</text></view>
+    <view class="menu-item" bindtap="goDispute"><text>纠纷仲裁入口</text><text class="arrow">→</text></view>
+    <view class="menu-item" bindtap="goReview"><text>评价管理（查看 / 隐藏 / 删除）</text><text class="arrow">→</text></view>
+    <view class="menu-item" bindtap="goUserStats"><text>用户数据统计</text><text class="arrow">→</text></view>
+  </view>
+
+  <button class="btn secondary" bindtap="backRole">返回角色选择</button>
+</view>

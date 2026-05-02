@@ -1,0 +1,87 @@
+<view class="container order-detail-page" wx:if="{{order}}">
+  <view class="card hero-card {{rejected ? 'hero-rejected' : ''}}">
+    <view class="hero-top">
+      <view>
+        <view class="page-title">订单详情</view>
+        <view class="order-no">订单号：{{order.id}}</view>
+      </view>
+      <view class="status-tag {{order.statusClass}}">{{order.statusText}}</view>
+    </view>
+
+    <view wx:if="{{rejected}}" class="reject-panel">
+      <view class="reject-title">订单已被工厂驳回</view>
+      <view class="reject-reason">驳回理由：{{order.cancelReason || '工厂未填写具体理由'}}</view>
+    </view>
+    <view wx:if="{{order.status === 'wait_review'}}" class="review-panel">
+      <view>评价进度：租赁方{{order.demanderReviewed ? '已评' : '待评'}} / 工厂{{order.supplierReviewed ? '已评' : '待评'}}</view>
+    </view>
+  </view>
+
+  <view class="card info-card">
+    <view class="section-title">租赁信息</view>
+    <view class="detail-item"><text class="detail-label">租赁日期</text><text class="detail-value">{{order.rentalStartDate || '-'}} 至 {{order.rentalEndDate || '-'}}</text></view>
+    <view class="detail-item"><text class="detail-label">租赁天数</text><text class="detail-value">{{order.rentalDays || 1}} 天</text></view>
+    <view class="detail-item"><text class="detail-label">地址</text><text class="detail-value">{{order.contactAddress || '未填写'}}</text></view>
+    <view class="detail-item"><text class="detail-label">使用场景</text><text class="detail-value">{{order.useScene || '未填写'}}</text></view>
+    <view class="detail-item"><text class="detail-label">备注</text><text class="detail-value">{{order.specialRemark || '无'}}</text></view>
+    <view class="detail-item"><text class="detail-label">租金</text><text class="detail-value price">¥{{order.price}}</text></view>
+    <view class="detail-item"><text class="detail-label">押金</text><text class="detail-value deposit">¥{{order.deposit}}</text></view>
+  </view>
+
+  <view class="card prop-card">
+    <view class="section-title">订单道具</view>
+    <view class="prop-item" wx:for="{{order.props}}" wx:key="id" data-id="{{item.id}}" bindtap="openPropDetail">
+      <image src="{{item.image}}" class="prop-image" mode="aspectFill" />
+      <view class="prop-main">
+        <view class="prop-top">
+          <view class="prop-name">{{item.name}}</view>
+          <view class="prop-arrow">›</view>
+        </view>
+        <view class="prop-money-row">
+          <text class="prop-price">¥{{item.price}}/天</text>
+          <text class="prop-deposit">押金 ¥{{item.deposit}}</text>
+        </view>
+        <view class="prop-meta-row">
+          <text>{{item.size || item.type || '规格未填写'}}</text>
+          <text>{{item.material || '材质未填写'}}</text>
+        </view>
+        <view class="prop-scan-row">
+          <text class="{{item.outboundScanned ? 'scan-done' : 'scan-wait'}}">出库{{item.outboundScanned ? '已扫' : '未扫'}}</text>
+          <text class="{{item.returnScanned ? 'scan-done' : 'scan-wait'}}">归还{{item.returnScanned ? '已扫' : '未扫'}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="empty-card" wx:if="{{!order.props.length}}">暂无道具</view>
+  </view>
+
+  <view class="bottom-actions">
+    <view wx:if="{{order.canReview}}" class="bottom-btn secondary" bindtap="openReviewModal">评价订单</view>
+    <view class="bottom-btn" bindtap="goBack">关闭</view>
+  </view>
+
+  <view class="modal" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">订单评价</view>
+      <view class="form-item">
+        <view class="form-label">道具本身评分</view>
+        <view class="planet-rate">
+          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewPropScore" class="planet {{reviewPropScore >= item ? 'active' : ''}}">🪐</text>
+        </view>
+      </view>
+      <view class="form-item">
+        <view class="form-label">合作体验评分</view>
+        <view class="planet-rate">
+          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewCounterpartyScore" class="planet {{reviewCounterpartyScore >= item ? 'active' : ''}}">🪐</text>
+        </view>
+      </view>
+      <view class="form-item">
+        <view class="form-label">评价内容</view>
+        <textarea class="form-input review-textarea" placeholder="请输入评价内容" value="{{reviewContent}}" bindinput="updateReviewContent" />
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeReviewModal">取消</view>
+        <view class="modal-button primary" bindtap="submitReview">提交评价</view>
+      </view>
+    </view>
+  </view>
+</view>

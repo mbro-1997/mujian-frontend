@@ -1,0 +1,12 @@
+<view class="page">
+  <view class="card" wx:for="{{list}}" wx:key="id">
+    <view class="title">{{item.title}}</view>
+    <view class="line">纠纷单号：{{item.id}}</view>
+    <view class="line">订单号：{{item.orderId}}</view>
+    <view class="line">申请时间：{{item.createdAt}}</view>
+    <view class="line" wx:if="{{item.resolution}}">裁定结果：{{item.resolution}}</view>
+    <view class="status {{item.status}}">{{item.statusText}}</view>
+    <button wx:if="{{item.status === 'pending'}}" class="btn" data-id="{{item.id}}" bindtap="resolve">确认仲裁</button>
+  </view>
+  <view class="empty-list" wx:if="{{!list.length}}">暂无纠纷数据</view>
+</view>

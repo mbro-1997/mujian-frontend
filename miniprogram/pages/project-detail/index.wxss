@@ -1,0 +1,173 @@
+.project-detail-page {
+  min-height: 100vh;
+}
+
+.detail-card,
+.submit-card {
+  margin: 16rpx;
+}
+
+.page-title,
+.section-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  margin-bottom: 18rpx;
+}
+
+.textarea-input {
+  min-height: 150rpx;
+  padding-top: 18rpx;
+  line-height: 1.5;
+}
+
+.cart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 14rpx;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 16rpx;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.cart-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 12rpx;
+}
+
+.cart-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-name {
+  font-size: 27rpx;
+  font-weight: 800;
+}
+
+.cart-meta {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #94a3b8;
+}
+
+.cart-remove {
+  min-width: 92rpx;
+}
+
+.submit-tip {
+  font-size: 24rpx;
+  color: #cbd5e1;
+}
+
+.submit-btn {
+  margin-top: 14rpx;
+  text-align: center;
+  padding: 18rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.submit-btn.enabled {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+}
+
+.submit-btn.disabled {
+  background: rgba(71, 85, 105, 0.5);
+  color: #94a3b8;
+}
+
+.bottom-actions {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 16rpx;
+  padding: 16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));
+  background: rgba(11, 18, 32, 0.92);
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  box-sizing: border-box;
+}
+
+.bottom-btn {
+  flex: 1;
+  height: 82rpx;
+  line-height: 82rpx;
+  text-align: center;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.bottom-btn.primary {
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  color: #fff;
+}
+
+.bottom-btn.secondary {
+  background: rgba(30, 41, 59, 0.95);
+  color: #cbd5e1;
+}
+
+.pay-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+}
+
+.rental-days-input,
+.date-picker,
+.readonly-days {
+  min-height: 0;
+  height: 72rpx;
+  line-height: 72rpx;
+  padding: 0 20rpx;
+  font-size: 26rpx;
+}
+
+.date-picker.placeholder {
+  color: #64748b;
+}
+
+.date-picker {
+  display: block;
+  box-sizing: border-box;
+}
+
+.readonly-days {
+  color: #e2e8f0;
+  background: rgba(30, 41, 59, 0.65);
+}
+
+.pay-total {
+  margin-top: 16rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.danger {
+  color: #f87171 !important;
+}
+
+.cart-item-danger {
+  padding: 14rpx;
+  border-radius: 16rpx;
+  background: rgba(251, 113, 133, 0.12);
+  border: 1rpx solid rgba(251, 113, 133, 0.3);
+}
+
+.cart-item-danger .cart-meta {
+  color: #fecdd3;
+}

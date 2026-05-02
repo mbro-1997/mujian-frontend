@@ -1,0 +1,153 @@
+.inventory-page {
+  box-sizing: border-box;
+}
+
+.card-header {
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.card-subtitle {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.pending-list {
+  margin-top: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.pending-item {
+  padding: 18rpx 20rpx;
+  border-radius: 14rpx;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.pending-item.active {
+  border-color: rgba(96, 165, 250, 0.5);
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.26), rgba(14, 165, 233, 0.18));
+}
+
+.pending-name {
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.pending-meta {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #cbd5e1;
+}
+
+.size-row,
+.money-row {
+  display: flex;
+  gap: 12rpx;
+}
+
+.size-item,
+.money-item {
+  flex: 1;
+}
+
+.upload-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.upload-item {
+  width: 150rpx;
+  height: 150rpx;
+  border: 1px dashed rgba(148, 163, 184, 0.5);
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: rgba(30, 41, 59, 0.95);
+  color: #e2e8f0;
+  font-size: 38rpx;
+}
+
+.upload-item image {
+  width: 100%;
+  height: 100%;
+  border-radius: 12rpx;
+}
+
+.delete-btn {
+  position: absolute;
+  top: -10rpx;
+  right: -10rpx;
+  width: 34rpx;
+  height: 34rpx;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  font-size: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.form-actions .btn {
+  flex: 1;
+}
+
+.empty-card {
+  text-align: center;
+  color: #94a3b8;
+  padding: 20rpx 0;
+}
+
+.form-select {
+  min-height: 80rpx;
+  padding: 16rpx;
+  border-radius: 12rpx;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  color: #e2e8f0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-select.placeholder {
+  color: #64748b;
+}
+
+.select-arrow {
+  color: #60a5fa;
+  font-size: 20rpx;
+}
+
+.unit-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.unit-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.unit-text {
+  min-width: 44rpx;
+  color: #cbd5e1;
+  font-size: 26rpx;
+  font-weight: 700;
+}

@@ -1,0 +1,13 @@
+<view class="page">
+  <view class="summary">用户总数：{{users.length}}</view>
+  <view class="card" wx:for="{{users}}" wx:key="id">
+    <view class="title">{{item.name}}</view>
+    <view class="line">ID：{{item.id}}</view>
+    <view class="line">手机号：{{item.phone || '未填写'}}</view>
+    <view class="line">主角色：{{item.roleLabel}}</view>
+    <view class="line">已绑定角色：{{item.roleBindingsLabel.length ? item.roleBindingsLabel.join(' / ') : '无'}}</view>
+    <view class="line">认证状态：{{item.verifiedText}}</view>
+    <view class="line">账号状态：{{item.statusText}}</view>
+  </view>
+  <view class="empty-list" wx:if="{{!users.length && !loading}}">暂无用户数据</view>
+</view>

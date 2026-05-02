@@ -1,0 +1,371 @@
+﻿<view class="container" style="padding-bottom: 120rpx;">
+  <block wx:if="{{isAdmin}}">
+    <view class="card admin-header" style="margin: 0 16rpx 16rpx;">
+      <view class="admin-title">纠纷仲裁中心</view>
+      <view class="admin-desc">工厂端和租赁端提交争议后，管理员在此查看并裁定。</view>
+    </view>
+
+    <view class="list">
+      <view class="card list-item dispute-card" wx:for="{{disputes}}" wx:key="id">
+        <view class="dispute-head">
+          <view class="dispute-title">{{item.title}}</view>
+          <view class="status-tag {{item.status === 'pending' ? 'status-pending' : 'status-free'}}">{{item.statusText}}</view>
+        </view>
+        <view class="dispute-line">纠纷编号：{{item.id}}</view>
+        <view class="dispute-line">关联订单：{{item.orderId}}</view>
+        <view class="dispute-line">申请时间：{{item.createdAt}}</view>
+        <view class="dispute-line" wx:if="{{item.resolution}}">裁定结果：{{item.resolution}}</view>
+        <button wx:if="{{item.status === 'pending'}}" class="btn btn-primary dispute-btn" data-id="{{item.id}}" bindtap="resolveAdminDispute">确认裁定</button>
+      </view>
+      <view class="card empty-card" wx:if="{{!disputes.length}}">暂无待处理纠纷</view>
+    </view>
+  </block>
+
+  <block wx:elif="{{isDemander}}">
+    <view class="card demander-half-card" style="margin: 0 16rpx 16rpx;">
+      <view class="section-head">
+        <view class="card-title">我的方案</view>
+        <button class="btn btn-primary" size="mini" bindtap="openCreateProjectModal">新建方案</button>
+      </view>
+      <view class="list demander-half-list">
+        <view class="card list-item project-card-clickable" wx:for="{{previewProjects}}" wx:key="id" bindtap="viewProjectDetail" data-id="{{item.id}}">
+          <view class="project-info">
+            <view class="project-name">{{item.name}}</view>
+            <view class="status-tag {{item.status === 'editing' ? 'status-pending' : 'status-free'}}">{{item.statusText}}</view>
+          </view>
+          <view class="project-desc">{{item.description || '暂无描述'}}</view>
+          <view class="project-tip danger" wx:if="{{item.status === 'editing' && item.unavailableCount > 0}}">存在 {{item.unavailableCount}} 件不可下单道具</view>
+          <view class="project-tip" wx:else>{{item.status === 'editing' ? '可下单道具' : '方案道具'}}：{{item.props.length}} 件</view>
+          <view class="project-actions">
+            <button class="btn btn-secondary" size="mini" catchtap="viewProjectDetail" data-id="{{item.id}}">查看详情</button>
+            <button class="btn btn-primary" size="mini" catchtap="exportPDF" data-id="{{item.id}}">生成方案（导出PDF）</button>
+          </view>
+        </view>
+        <view class="card empty-card" wx:if="{{!projects.length}}">暂无方案</view>
+        <button wx:if="{{projects.length > previewProjects.length}}" class="more-btn" bindtap="showMoreProjects">查看更多</button>
+      </view>
+    </view>
+
+    <view class="card demander-half-card" style="margin: 0 16rpx 16rpx;">
+      <view class="card-title">我的订单</view>
+      <view class="list demander-half-list">
+        <view class="card list-item" wx:for="{{previewOrders}}" wx:key="id" bindtap="viewOrderDetail" data-id="{{item.id}}">
+          <view class="order-info">
+            <view class="order-id">订单号：{{item.id}}</view>
+            <view class="order-date">日期：{{item.date}}</view>
+            <view class="order-date">租赁日期：{{item.rentalStartDate || '-'}} 至 {{item.rentalEndDate || '-'}}</view>
+            <view class="order-date">租赁天数：{{item.rentalDays || 1}} 天</view>
+            <view wx:if="{{item.status === 'wait_review'}}" class="order-date">评价进度：租赁方{{item.demanderReviewed ? '已评' : '待评'}} / 工厂{{item.supplierReviewed ? '已评' : '待评'}}</view>
+          </view>
+          <view wx:if="{{item.status === 'cancelled_manual'}}" class="reject-banner">
+            <view class="reject-title">订单已被工厂驳回</view>
+            <view class="reject-reason">驳回理由：{{item.cancelReason || '工厂未填写具体理由'}}</view>
+          </view>
+          <view class="order-meta">
+            <text class="order-price">租金：¥{{item.price}}</text>
+            <text class="order-deposit">押金：¥{{item.deposit}}</text>
+          </view>
+          <view class="order-status">
+            <view class="status-tag {{item.statusClass}}">{{item.statusText}}</view>
+            <button class="btn btn-primary" size="mini" bindtap="handleOrderAction" data-id="{{item.id}}" catchtap="noop">{{item.canReview ? '去评价' : '查看'}}</button>
+          </view>
+        </view>
+        <view class="card empty-card" wx:if="{{!orders.length}}">暂无订单</view>
+        <button wx:if="{{orders.length > previewOrders.length}}" class="more-btn" bindtap="showMoreOrders">查看更多</button>
+      </view>
+    </view>
+
+    <view class="modal" wx:if="{{showCreateProjectModal}}" bindtap="closeCreateProjectModal">
+      <view class="modal-content" catchtap="true">
+        <view class="modal-title">新建方案</view>
+        <view class="form-item">
+          <view class="form-label">方案名称</view>
+          <input class="form-input" placeholder="请输入方案名称" value="{{createProjectName}}" bindinput="updateCreateProjectName" />
+        </view>
+        <view class="modal-buttons">
+          <view class="modal-button secondary" bindtap="closeCreateProjectModal">取消</view>
+          <view class="modal-button primary" bindtap="confirmCreateProject">确认</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="modal" wx:if="{{showProjectDetail}}" bindtap="closeProjectDetail">
+      <view class="modal-content" catchtap="true">
+        <view class="modal-title">方案详情</view>
+        <view class="form-item">
+          <view class="form-label">方案名称</view>
+          <input class="form-input" value="{{currentProject.name}}" bindinput="updateProjectName" />
+        </view>
+        <view class="form-item">
+          <view class="form-label">方案说明</view>
+          <textarea class="form-input" value="{{currentProject.description}}" bindinput="updateProjectDescription" />
+        </view>
+
+        <view class="form-item">
+          <view class="form-label">道具清单（本次修改保存后生效）</view>
+          <view class="cart-list">
+            <view class="cart-item {{!item.orderable ? 'cart-item-danger' : ''}}" wx:for="{{currentProject.props}}" wx:key="id">
+              <view class="cart-main">
+                <view class="cart-name {{!item.orderable ? 'danger' : ''}}">{{item.name}}</view>
+                <view class="cart-meta">状态：{{item.statusText}}</view>
+              </view>
+              <view class="cart-money">
+                <view class="cart-price">¥{{item.price}}/天</view>
+                <view class="cart-deposit">押金 ¥{{item.deposit}}</view>
+              </view>
+              <button wx:if="{{currentProject.status === 'editing'}}" class="btn btn-secondary cart-remove" size="mini" bindtap="removeProjectProp" data-prop-id="{{item.id}}">移除</button>
+            </view>
+            <view class="empty-card" wx:if="{{!currentProject.props.length}}">清单为空，请先添加道具</view>
+          </view>
+        </view>
+
+        <view class="submit-bar">
+          <view class="submit-tip" wx:if="{{currentProject.status !== 'editing'}}">该方案已下单，当前仅支持查看</view>
+          <view class="submit-tip danger" wx:elif="{{currentProject.unavailableCount > 0}}">存在不可下单道具，请先移除红色项</view>
+          <view class="submit-tip" wx:elif="{{!currentProject.props.length}}">暂无可提交道具</view>
+          <view class="submit-tip" wx:else>提交订单会先自动保存当前方案，再进入支付流程</view>
+          <view wx:if="{{currentProject.status === 'editing'}}" class="submit-btn {{currentProject.canSubmit ? 'enabled' : 'disabled'}}" bindtap="submitProjectOrder" data-id="{{currentProject.id}}">提交订单</view>
+        </view>
+
+        <view class="modal-buttons">
+          <view class="modal-button secondary" bindtap="closeProjectDetail">{{currentProject.status === 'editing' ? '取消' : '关闭'}}</view>
+          <view wx:if="{{currentProject.status === 'editing'}}" class="modal-button primary" bindtap="saveProject">保存方案</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="modal" wx:if="{{showOrderDetail}}" bindtap="closeOrderDetail">
+      <view class="modal-content" catchtap="true">
+        <view class="modal-title">订单详情</view>
+        <view class="order-detail-info">
+          <view class="detail-item"><text class="detail-label">订单号</text><text class="detail-value">{{currentOrder.id}}</text></view>
+          <view class="detail-item"><text class="detail-label">状态</text><text class="detail-value">{{currentOrder.statusText}}</text></view>
+          <view class="detail-item"><text class="detail-label">租赁日期</text><text class="detail-value">{{currentOrder.rentalStartDate || '-'}} 至 {{currentOrder.rentalEndDate || '-'}}</text></view>
+          <view class="detail-item"><text class="detail-label">租赁天数</text><text class="detail-value">{{currentOrder.rentalDays || 1}} 天</text></view>
+          <view class="detail-item"><text class="detail-label">地址</text><text class="detail-value">{{currentOrder.contactAddress || '未填写'}}</text></view>
+          <view class="detail-item"><text class="detail-label">使用场景</text><text class="detail-value">{{currentOrder.useScene || '未填写'}}</text></view>
+          <view class="detail-item"><text class="detail-label">备注</text><text class="detail-value">{{currentOrder.specialRemark || '无'}}</text></view>
+          <view class="detail-item"><text class="detail-label">租金</text><text class="detail-value">¥{{currentOrder.price}}</text></view>
+          <view class="detail-item"><text class="detail-label">押金</text><text class="detail-value">¥{{currentOrder.deposit}}</text></view>
+        </view>
+        <view class="form-item">
+          <view class="form-label">订单道具</view>
+          <view class="prop-list">
+            <view class="prop-item" wx:for="{{currentOrder.props}}" wx:key="id">
+              <image src="{{item.image}}" class="prop-image" mode="aspectFill" />
+              <view class="prop-details">
+                <view class="prop-name">{{item.name}}</view>
+                <view class="prop-meta"><text>状态：{{item.statusText}}</text></view>
+                <view class="prop-price">¥{{item.price}}/天</view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="modal-buttons">
+          <view class="modal-button primary" bindtap="closeOrderDetail">关闭</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="modal" wx:if="{{showPayModal}}" bindtap="closePayModal">
+      <view class="modal-content" catchtap="true">
+        <view class="modal-title">支付订单</view>
+        <view class="form-item">
+          <view class="form-label">租赁开始日期</view>
+          <picker mode="date" value="{{rentalStartDate}}" bindchange="updateRentalStartDate">
+            <view class="form-input date-picker {{rentalStartDate ? '' : 'placeholder'}}">{{rentalStartDate || '请选择开始日期'}}</view>
+          </picker>
+        </view>
+        <view class="form-item">
+          <view class="form-label">租赁结束日期</view>
+          <picker mode="date" value="{{rentalEndDate}}" start="{{rentalStartDate}}" bindchange="updateRentalEndDate">
+            <view class="form-input date-picker {{rentalEndDate ? '' : 'placeholder'}}">{{rentalEndDate || '请选择结束日期'}}</view>
+          </picker>
+        </view>
+        <view class="form-item">
+          <view class="form-label">租赁天数</view>
+          <view class="form-input readonly-days">{{rentalDays || 0}} 天</view>
+        </view>
+        <view class="form-item">
+          <view class="form-label">地址</view>
+          <input class="form-input" placeholder="请输入本次使用或收货地址" value="{{contactAddress}}" bindinput="updateContactAddress" />
+        </view>
+        <view class="form-item">
+          <view class="form-label">使用场景</view>
+          <input class="form-input" placeholder="例如：校园晚会、舞台剧、展演活动" value="{{useScene}}" bindinput="updateUseScene" />
+        </view>
+        <view class="form-item">
+          <view class="form-label">备注（有无特殊用途）</view>
+          <textarea class="form-input textarea-input" placeholder="可填写特殊用途、运输时间、联系人等补充说明" value="{{specialRemark}}" bindinput="updateSpecialRemark" />
+        </view>
+        <view class="pay-row"><text>日租合计</text><text>¥{{payInfo.dailyRent}} × {{payInfo.rentalDays || 0}} 天</text></view>
+        <view class="pay-row"><text>租金</text><text>¥{{payInfo.price}}</text></view>
+        <view class="pay-row"><text>押金</text><text>¥{{payInfo.deposit}}</text></view>
+        <view class="pay-row pay-total"><text>总计</text><text>¥{{payInfo.total}}</text></view>
+        <view class="modal-buttons">
+          <view class="modal-button secondary" bindtap="closePayModal">取消</view>
+          <view class="modal-button primary" bindtap="simulatePay">确认支付</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="modal" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
+      <view class="modal-content" catchtap="true">
+        <view class="modal-title">订单评价</view>
+        <view class="form-item">
+          <view class="form-label">道具本身评分</view>
+          <view class="planet-rate">
+            <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewPropScore" class="planet {{reviewPropScore >= item ? 'active' : ''}}">🪐</text>
+          </view>
+        </view>
+        <view class="form-item">
+          <view class="form-label">合作体验评分</view>
+          <view class="planet-rate">
+            <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewCounterpartyScore" class="planet {{reviewCounterpartyScore >= item ? 'active' : ''}}">🪐</text>
+          </view>
+        </view>
+        <view class="form-item">
+          <view class="form-label">评价内容</view>
+          <textarea class="form-input" placeholder="请输入评价内容" value="{{reviewContent}}" bindinput="updateReviewContent" />
+        </view>
+        <view class="modal-buttons">
+          <view class="modal-button secondary" bindtap="closeReviewModal">取消</view>
+          <view class="modal-button primary" bindtap="submitReview">提交评价</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:elif="{{isSupplier}}">
+    <view class="supplier-order-page">
+      <view class="supplier-order-top">
+        <view class="supplier-page-tip">订单确认时限 1 小时，出库和归还均按道具逐件扫码。</view>
+        <view class="supplier-search-box">
+          <text class="supplier-search-icon">⌕</text>
+          <input class="supplier-search-input" placeholder="搜索订单号 / 租赁方 / 手机号" placeholder-class="supplier-search-placeholder" value="{{supplierKeyword}}" bindinput="handleSupplierKeywordInput" confirm-type="search" bindconfirm="submitSupplierSearch" />
+          <text wx:if="{{supplierKeyword}}" class="supplier-clear-search" bindtap="clearSupplierSearch">×</text>
+        </view>
+        <scroll-view scroll-x class="supplier-status-tabs" show-scrollbar="{{false}}">
+          <view wx:for="{{supplierStatusTabs}}" wx:key="value" class="supplier-status-tab {{supplierActiveStatus === item.value ? 'active' : ''}}" data-status="{{item.value}}" bindtap="changeSupplierStatus">{{item.label}}</view>
+        </scroll-view>
+      </view>
+
+      <view class="supplier-filter-bar">
+        <picker mode="selector" range="{{supplierDateRangeOptions}}" range-key="label" value="{{supplierDateRangeIndex}}" bindchange="changeSupplierDateRange">
+          <view class="supplier-filter-chip">{{supplierDateRangeText}}</view>
+        </picker>
+        <picker mode="selector" range="{{supplierSortOptions}}" range-key="label" value="{{supplierSortIndex}}" bindchange="changeSupplierSortType">
+          <view class="supplier-filter-chip">{{supplierSortText}}</view>
+        </picker>
+        <view class="supplier-filter-chip ghost" bindtap="resetSupplierFilters">重置</view>
+      </view>
+
+      <view class="supplier-list-meta" wx:if="{{supplierOrderTotal}}">共 {{supplierOrderTotal}} 个订单</view>
+      <view class="supplier-order-list">
+        <view class="supplier-order-card" wx:for="{{supplierOrderList}}" wx:key="id" data-id="{{item.id}}" bindtap="viewOrderDetail">
+          <view class="supplier-order-card-header">
+            <view class="supplier-order-no">订单号 {{item.id}}</view>
+            <view class="supplier-order-status {{item.supplierStatusClass}}">{{item.statusText}}</view>
+          </view>
+          <view class="supplier-order-card-body">
+            <view class="supplier-info-row"><text class="supplier-info-label">租赁方</text><text class="supplier-info-value">{{item.demanderName || '未填写'}}</text></view>
+            <view class="supplier-info-row"><text class="supplier-info-label">手机号</text><text class="supplier-info-value">{{item.demanderPhone || '未填写'}}</text></view>
+            <view class="supplier-info-pair">
+              <view><text class="supplier-info-label">日期</text><text class="supplier-info-value">{{item.date || '-'}}</text></view>
+              <view><text class="supplier-info-label">租期</text><text class="supplier-info-value">{{item.rentalDays || 1}} 天</text></view>
+            </view>
+            <view class="supplier-info-row"><text class="supplier-info-label">租赁日期</text><text class="supplier-info-value">{{item.rentalStartDate || '-'}} 至 {{item.rentalEndDate || '-'}}</text></view>
+            <view class="supplier-money-row">
+              <view><text class="supplier-money-label">租金</text><text class="supplier-money-value">¥{{item.price}}</text></view>
+              <view><text class="supplier-money-label">押金</text><text class="supplier-money-value">¥{{item.deposit}}</text></view>
+            </view>
+          </view>
+          <view class="supplier-order-card-progress">
+            <view class="supplier-progress-item">出库扫码 <text>{{item.outboundScannedCount}}/{{item.propCount}}</text></view>
+            <view class="supplier-progress-item">归还扫码 <text>{{item.returnScannedCount}}/{{item.propCount}}</text></view>
+          </view>
+          <view wx:if="{{item.status === 'wait_review'}}" class="review-progress">评价进度：租赁方{{item.demanderReviewed ? '已评' : '待评'}} / 工厂{{item.supplierReviewed ? '已评' : '待评'}}</view>
+          <view class="supplier-order-card-actions" catchtap="noop">
+            <button wx:if="{{item.canFactoryConfirm}}" class="supplier-action-btn primary" data-id="{{item.id}}" bindtap="confirmFactoryOrder">确认接单</button>
+            <button wx:if="{{item.canFactoryReject}}" class="supplier-action-btn secondary danger" data-id="{{item.id}}" bindtap="openRejectOrderModal">驳回订单</button>
+            <button wx:if="{{item.canScanOutbound}}" class="supplier-action-btn primary" data-id="{{item.id}}" data-mode="outbound" bindtap="openSupplierScanModal">出库扫码</button>
+            <button wx:if="{{item.canScanReturn && item.status === 'renting'}}" class="supplier-action-btn secondary" data-id="{{item.id}}" data-mode="return" bindtap="openSupplierScanModal">归还扫码</button>
+            <button wx:if="{{item.canReview}}" class="supplier-action-btn primary" data-id="{{item.id}}" catchtap="openSupplierReviewModal">评价订单</button>
+            <button class="supplier-action-btn ghost" data-id="{{item.id}}" bindtap="viewOrderDetail">查看详情</button>
+          </view>
+        </view>
+        <view class="supplier-empty-state" wx:if="{{!supplierOrderLoading && !supplierOrderList.length}}">
+          <view class="supplier-empty-title">暂无订单</view>
+          <view class="supplier-empty-subtitle">当前筛选条件下没有工厂订单</view>
+        </view>
+        <view class="supplier-load-state" wx:if="{{supplierOrderLoading}}">加载中...</view>
+        <view class="supplier-load-state" wx:if="{{!supplierOrderLoading && supplierOrderList.length && !supplierOrderHasMore}}">没有更多订单了</view>
+        <view class="supplier-load-state error" wx:if="{{supplierOrderLoadError}}" bindtap="loadSupplierOrders">加载失败，点击重试</view>
+      </view>
+    </view>
+
+    <view class="modal" wx:if="{{showSupplierScanModal}}" bindtap="closeSupplierScanModal">
+      <view class="modal-content" catchtap="true">
+        <view class="modal-title">{{supplierScanMode === 'outbound' ? '出库扫码' : '归还扫码'}}</view>
+        <view class="scan-order-id">订单号：{{supplierCurrentOrder.id}}</view>
+        <view class="scan-order-id" wx:if="{{supplierScanMode === 'outbound'}}">进度：{{supplierCurrentOrder.outboundScannedCount}} / {{supplierCurrentOrder.propCount}}</view>
+        <view class="scan-order-id" wx:else>进度：{{supplierCurrentOrder.returnScannedCount}} / {{supplierCurrentOrder.propCount}}</view>
+        <view class="scan-list">
+          <view class="scan-item" wx:for="{{supplierCurrentOrder.props}}" wx:key="id">
+            <view class="scan-main">
+              <view class="scan-name">{{item.name}}</view>
+              <view class="scan-meta">状态：{{item.statusText}}</view>
+            </view>
+            <button class="btn btn-primary mini-scan-btn" size="mini" bindtap="scanSupplierOneProp" data-prop-id="{{item.id}}">
+              {{supplierScanMode === 'outbound' ? (item.outboundScanned ? '已扫' : '扫码') : (item.returnScanned ? '已扫' : '扫码')}}
+            </button>
+          </view>
+        </view>
+        <view class="modal-buttons">
+          <view class="modal-button secondary" bindtap="closeSupplierScanModal">关闭</view>
+          <view class="modal-button primary" bindtap="scanSupplierAllRemaining">全部扫码</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="modal" wx:if="{{showRejectModal}}" bindtap="closeRejectOrderModal">
+      <view class="modal-content" catchtap="true">
+        <view class="modal-title">驳回订单</view>
+        <view class="form-item">
+          <view class="form-label">驳回理由</view>
+          <textarea class="form-input textarea-input" placeholder="请填写驳回理由" value="{{rejectReason}}" bindinput="updateRejectReason" />
+        </view>
+        <view class="modal-buttons">
+          <view class="modal-button secondary" bindtap="closeRejectOrderModal">取消</view>
+          <view class="modal-button primary" bindtap="confirmRejectOrder">确认驳回</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="modal" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
+      <view class="modal-content" catchtap="true">
+        <view class="modal-title">订单评价</view>
+        <view class="form-item">
+          <view class="form-label">道具本身评分</view>
+          <view class="planet-rate">
+            <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewPropScore" class="planet {{reviewPropScore >= item ? 'active' : ''}}">🪐</text>
+          </view>
+        </view>
+        <view class="form-item">
+          <view class="form-label">合作体验评分</view>
+          <view class="planet-rate">
+            <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewCounterpartyScore" class="planet {{reviewCounterpartyScore >= item ? 'active' : ''}}">🪐</text>
+          </view>
+        </view>
+        <view class="form-item">
+          <view class="form-label">评价内容</view>
+          <textarea class="form-input textarea-input" placeholder="请输入评价内容" value="{{reviewContent}}" bindinput="updateReviewContent" />
+        </view>
+        <view class="modal-buttons">
+          <view class="modal-button secondary" bindtap="closeReviewModal">取消</view>
+          <view class="modal-button primary" bindtap="submitReview">提交评价</view>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

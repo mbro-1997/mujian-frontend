@@ -1,0 +1,12 @@
+<view class="page">
+  <view class="card" wx:for="{{list}}" wx:key="id">
+    <view class="title">{{item.company}}</view>
+    <view class="line">联系人：{{item.contact || '未填写'}}</view>
+    <view class="line">联系方式：{{item.phone || '未填写'}}</view>
+    <view class="line">申请时间：{{item.createdAt}}</view>
+    <view class="line">审核时间：{{item.reviewedAt || '未记录'}}</view>
+    <view class="line" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+    <view class="status {{item.status}}">{{item.statusText}}</view>
+  </view>
+  <view class="empty-list" wx:if="{{!list.length}}">暂无入驻审核历史</view>
+</view>

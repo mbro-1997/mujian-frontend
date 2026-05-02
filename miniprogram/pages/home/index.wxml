@@ -1,0 +1,95 @@
+﻿<view class="container" style="padding-bottom: 120rpx;">
+  <view class="search-bar">
+    <input type="text" placeholder="搜索道具名称或材质" class="search-input" bindinput="onSearchInput" value="{{searchKeyword}}" />
+  </view>
+
+  <view class="filter-panel">
+    <view class="status-row">
+      <view
+        wx:for="{{filters}}"
+        wx:key="key"
+        class="status-tab {{activeFilter === item.key ? 'active' : ''}}"
+        bindtap="setFilter"
+        data-filter="{{item.key}}"
+      >
+        {{item.label}}
+      </view>
+    </view>
+
+    <view class="tool-row">
+      <picker mode="selector" range="{{styleOptions}}" value="{{styleIndex}}" bindchange="onStyleChange" class="tool-picker">
+        <view class="tool-select">
+          <text class="tool-label">风格</text>
+          <text class="tool-value">{{selectedStyle}}</text>
+          <text class="tool-arrow">▾</text>
+        </view>
+      </picker>
+
+      <picker mode="selector" range="{{typeOptions}}" value="{{typeIndex}}" bindchange="onTypeChange" class="tool-picker">
+        <view class="tool-select">
+          <text class="tool-label">类型</text>
+          <text class="tool-value">{{selectedType}}</text>
+          <text class="tool-arrow">▾</text>
+        </view>
+      </picker>
+
+      <view class="tool-reset" bindtap="resetQuickFilters">
+        <text class="tool-label">筛选</text>
+        <text class="tool-value">重置</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{filteredProps.length}}" class="list prop-grid">
+    <view class="prop-tile" wx:for="{{filteredProps}}" wx:key="id" bindtap="viewPropDetail" data-id="{{item.id}}">
+      <image src="{{item.image}}" class="img prop-tile-img" mode="aspectFill" />
+      <view class="prop-tile-body">
+        <view class="prop-tile-name">{{item.name}}</view>
+        <view class="prop-tile-foot">
+          <text class="prop-tile-price">¥{{item.price}}/天</text>
+          <button class="tile-add-btn" size="mini" catchtap="addToProject" data-id="{{item.id}}">加入方案</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="list empty-state-section">
+    <view class="card empty-card page-empty-card">暂无符合条件的道具</view>
+  </view>
+
+  <view class="modal" wx:if="{{showProjectPicker}}" bindtap="closeProjectPicker">
+    <view class="modal-content picker-modal" catchtap="true">
+      <view class="modal-title">加入方案</view>
+      <view class="picker-desc">请选择要加入的方案，也可以直接新建方案。</view>
+      <view class="picker-list">
+        <view class="picker-item" wx:for="{{pickerProjects}}" wx:key="id" bindtap="chooseProject" data-id="{{item.id}}">
+          <view>
+            <view class="picker-name">{{item.name}}</view>
+            <view class="picker-meta">{{item.props.length}} 件道具 · {{item.statusText}}</view>
+          </view>
+          <view class="picker-arrow">加入</view>
+        </view>
+        <view class="empty-card" wx:if="{{!pickerProjects.length}}">暂无方案，请先新建一个方案</view>
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeProjectPicker">取消</view>
+        <view class="modal-button primary" bindtap="openCreateProjectModal">新建方案</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="modal" wx:if="{{showCreateProjectModal}}" bindtap="closeCreateProjectModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">新建方案</view>
+      <view class="form-item">
+        <view class="form-label">方案名称</view>
+        <input class="form-input" placeholder="请输入方案名称" value="{{createProjectName}}" bindinput="updateCreateProjectName" />
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeCreateProjectModal">取消</view>
+        <view class="modal-button primary" bindtap="confirmCreateProject">确认</view>
+      </view>
+    </view>
+  </view>
+
+</view>

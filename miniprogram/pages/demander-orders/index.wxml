@@ -1,0 +1,55 @@
+<view class="container order-list-page" style="padding-bottom: 120rpx;">
+  <view class="card header-card">
+    <view class="page-title">我的订单</view>
+  </view>
+
+  <view class="card order-card" wx:for="{{orders}}" wx:key="id" bindtap="viewOrderDetail" data-id="{{item.id}}">
+    <view class="order-info">
+      <view class="order-id">订单号：{{item.id}}</view>
+      <view class="status-tag {{item.statusClass}}">{{item.statusText}}</view>
+    </view>
+    <view wx:if="{{item.status === 'wait_review'}}" class="order-date">评价进度：租赁方{{item.demanderReviewed ? '已评' : '待评'}} / 工厂{{item.supplierReviewed ? '已评' : '待评'}}</view>
+    <view wx:if="{{item.status === 'cancelled_manual'}}" class="reject-banner">
+      <view class="reject-title">订单已被工厂驳回</view>
+      <view class="reject-reason">驳回理由：{{item.cancelReason || '工厂未填写具体理由'}}</view>
+    </view>
+    <view class="order-date">下单日期：{{item.date}}</view>
+    <view class="order-date">租赁日期：{{item.rentalStartDate || '-'}} 至 {{item.rentalEndDate || '-'}}</view>
+    <view class="order-date">租赁天数：{{item.rentalDays || 1}} 天</view>
+    <view class="order-meta">
+      <text class="order-price">租金：¥{{item.price}}</text>
+      <text class="order-deposit">押金：¥{{item.deposit}}</text>
+    </view>
+    <view class="order-actions">
+      <button class="btn btn-primary" size="mini" data-id="{{item.id}}" catchtap="handleOrderAction">{{item.canReview ? '去评价' : '查看详情'}}</button>
+    </view>
+  </view>
+
+  <view class="card empty-card" wx:if="{{!orders.length}}">暂无订单</view>
+
+  <view class="modal" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">订单评价</view>
+      <view class="form-item">
+        <view class="form-label">道具本身评分</view>
+        <view class="planet-rate">
+          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewPropScore" class="planet {{reviewPropScore >= item ? 'active' : ''}}">🪐</text>
+        </view>
+      </view>
+      <view class="form-item">
+        <view class="form-label">合作体验评分</view>
+        <view class="planet-rate">
+          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewCounterpartyScore" class="planet {{reviewCounterpartyScore >= item ? 'active' : ''}}">🪐</text>
+        </view>
+      </view>
+      <view class="form-item">
+        <view class="form-label">评价内容</view>
+        <textarea class="form-input review-textarea" placeholder="请输入评价内容" value="{{reviewContent}}" bindinput="updateReviewContent" />
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeReviewModal">取消</view>
+        <view class="modal-button primary" bindtap="submitReview">提交评价</view>
+      </view>
+    </view>
+  </view>
+</view>

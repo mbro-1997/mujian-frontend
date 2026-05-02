@@ -1,0 +1,69 @@
+﻿<view class="role-page">
+  <view class="bg-glow bg-glow-left"></view>
+  <view class="bg-glow bg-glow-right"></view>
+
+  <view class="hero-box reveal reveal-1">
+    <image class="hero-image" src="/images/role-stage.svg" mode="aspectFill"></image>
+    <view class="hero-overlay">
+      <view class="brand">幕后 MUHOU</view>
+      <view class="subtitle">舞美道具租赁平台</view>
+    </view>
+  </view>
+
+  <view class="panel reveal reveal-3">
+    <view class="title">请选择你的角色</view>
+    <view class="account-card" bindtap="openAccountSheet">
+      <view class="account-label">当前账号</view>
+      <view class="account-main">{{selectedAccount.nickname || '请选择演示账号'}}</view>
+      <view class="account-desc">{{selectedAccount.description || '账号决定可进入的角色范围'}}</view>
+      <view class="account-tags">
+        <text class="account-tag" wx:for="{{selectedAccount.roleBindings}}" wx:key="*this">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="role-btn supplier reveal reveal-4" data-role="supplier" bindtap="selectRole">
+      <view class="role-name">我是工厂</view>
+      <view class="role-desc">管理仓库、发布道具、处理订单</view>
+    </view>
+
+    <view class="role-btn demander reveal reveal-5" data-role="demander" bindtap="selectRole">
+      <view class="role-name">我要租赁</view>
+      <view class="role-desc">筛选道具、组建方案、提交订单</view>
+    </view>
+
+    <view class="role-btn wechat reveal reveal-6" bindtap="loginWithWechat">
+      <view class="role-name">微信真实登录</view>
+      <view class="role-desc">调用 wx.login + code2Session，走正式注册/登录流程</view>
+    </view>
+  </view>
+
+  <view class="footer reveal reveal-7">MUHOU TECH · STAGE ASSET DEMO</view>
+
+  <view class="sheet-mask" wx:if="{{showFactoryChooser}}" bindtap="closeFactoryChooser">
+    <view class="sheet" catchtap="true">
+      <view class="sheet-title">请选择进入模式</view>
+      <view class="sheet-desc">同一入口支持工厂端与管理员端演示</view>
+      <button class="sheet-btn sheet-btn-supplier" wx:if="{{canEnterSupplier}}" data-role="supplier" bindtap="chooseFactoryEntry">进入工厂端</button>
+      <button class="sheet-btn sheet-btn-admin" wx:if="{{canEnterAdmin}}" data-role="admin" bindtap="chooseFactoryEntry">进入管理员端</button>
+      <button class="sheet-btn sheet-btn-ghost" bindtap="closeFactoryChooser">取消</button>
+    </view>
+  </view>
+
+  <view class="sheet-mask" wx:if="{{showAccountSheet}}" bindtap="closeAccountSheet">
+    <view class="sheet" catchtap="true">
+      <view class="sheet-title">请选择演示账号</view>
+      <view class="sheet-desc">先选账号，再按该账号已绑定的角色进入系统。</view>
+      <view
+        class="account-sheet-item {{selectedAccountKey === item.accountKey ? 'active' : ''}}"
+        wx:for="{{demoAccounts}}"
+        wx:key="accountKey"
+        data-account-key="{{item.accountKey}}"
+        bindtap="switchAccount"
+      >
+        <view class="account-sheet-name">{{item.nickname}}</view>
+        <view class="account-sheet-desc">{{item.description}}</view>
+      </view>
+      <button class="sheet-btn sheet-btn-ghost" bindtap="closeAccountSheet">关闭</button>
+    </view>
+  </view>
+</view>

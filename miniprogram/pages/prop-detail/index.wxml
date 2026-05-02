@@ -1,0 +1,77 @@
+<view class="container" style="padding-bottom: 120rpx;" wx:if="{{prop}}">
+  <view class="hero-wrap">
+    <swiper class="hero-swiper" indicator-dots="{{prop.images.length > 1}}" circular="{{prop.images.length > 1}}">
+      <swiper-item wx:for="{{prop.images}}" wx:key="*this">
+        <image src="{{item}}" data-url="{{item}}" class="hero-image" mode="aspectFill" bindtap="previewImage" />
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <view class="card" style="margin: 16rpx;">
+    <view class="prop-name">{{prop.name}}</view>
+    <view class="prop-price">
+      <text class="price">¥{{prop.price}}/天</text>
+      <text class="deposit">押金：¥{{prop.deposit}}</text>
+    </view>
+    <view class="status-tag {{statusClass}}">{{prop.statusText}}</view>
+  </view>
+
+  <view class="card" style="margin: 16rpx;">
+    <view class="card-title">详细信息</view>
+    <view class="prop-details">
+      <view class="detail-item"><view class="detail-label">风格</view><view class="detail-value">{{prop.style || '未设置'}}</view></view>
+      <view class="detail-item"><view class="detail-label">类型</view><view class="detail-value">{{prop.type || '未设置'}}</view></view>
+      <view class="detail-item"><view class="detail-label">尺寸</view><view class="detail-value">{{prop.size || '未设置'}}</view></view>
+      <view class="detail-item"><view class="detail-label">长宽高</view><view class="detail-value">{{prop.lengthCm || '-'}} x {{prop.widthCm || '-'}} x {{prop.heightCm || '-'}} cm</view></view>
+      <view class="detail-item"><view class="detail-label">材质</view><view class="detail-value">{{prop.material || '未设置'}}</view></view>
+      <view class="detail-item"><view class="detail-label">是否阻燃</view><view class="detail-value">{{prop.fireResistantOption || '未设置'}}</view></view>
+      <view class="detail-item"><view class="detail-label">重量</view><view class="detail-value">{{prop.weight ? prop.weight + ' kg' : '未设置'}}</view></view>
+      <view class="detail-item"><view class="detail-label">运输建议</view><view class="detail-value">{{prop.transportSuggestion || '未设置'}}</view></view>
+      <view class="detail-item"><view class="detail-label">状态</view><view class="detail-value">{{prop.statusText || '未设置'}}</view></view>
+    </view>
+  </view>
+
+  <view class="action-buttons" style="margin: 16rpx;">
+    <button wx:if="{{isDemander}}" class="btn btn-primary" style="width: 100%; margin-bottom: 12rpx;" bindtap="addToProject">加入方案</button>
+    <button wx:if="{{isDemander}}" class="btn btn-secondary" style="width: 100%;" bindtap="contactSupplier">联系供应商</button>
+
+    <button wx:if="{{isSupplier}}" class="btn btn-primary" style="width: 100%; margin-bottom: 12rpx;" bindtap="editProp">编辑道具</button>
+    <button wx:if="{{isSupplier && prop.auditStatus !== 'pending'}}" class="btn btn-secondary" style="width: 100%;" bindtap="toggleStatus">{{prop.status === 'offline' ? '上架' : '下架'}}</button>
+    <button wx:if="{{isSupplier && prop.auditStatus === 'pending'}}" class="btn btn-disabled" style="width: 100%;" disabled>审核中</button>
+  </view>
+
+  <view class="modal" wx:if="{{showProjectPicker}}" bindtap="closeProjectPicker">
+    <view class="modal-content picker-modal" catchtap="true">
+      <view class="modal-title">加入方案</view>
+      <view class="picker-desc">请选择要加入的编辑中方案，也可以新建方案后加入。</view>
+      <view class="picker-list">
+        <view class="picker-item" wx:for="{{pickerProjects}}" wx:key="id" bindtap="chooseProject" data-id="{{item.id}}">
+          <view>
+            <view class="picker-name">{{item.name}}</view>
+            <view class="picker-meta">{{item.props.length}} 件道具 · {{item.statusText}}</view>
+          </view>
+          <view class="picker-arrow">加入</view>
+        </view>
+        <view class="empty-card" wx:if="{{!pickerProjects.length}}">暂无编辑中的方案，请先新建一个方案</view>
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeProjectPicker">取消</view>
+        <view class="modal-button primary" bindtap="openCreateProjectModal">新建方案</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="modal" wx:if="{{showCreateProjectModal}}" bindtap="closeCreateProjectModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">新建方案</view>
+      <view class="form-item">
+        <view class="form-label">方案名称</view>
+        <input class="form-input" placeholder="请输入方案名称" value="{{createProjectName}}" bindinput="updateCreateProjectName" />
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeCreateProjectModal">取消</view>
+        <view class="modal-button primary" bindtap="confirmCreateProject">确认</view>
+      </view>
+    </view>
+  </view>
+</view>

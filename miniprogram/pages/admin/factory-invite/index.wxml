@@ -1,0 +1,25 @@
+<view class="page">
+  <button class="create-btn" loading="{{creating}}" bindtap="createInvite">生成邀请码</button>
+
+  <view class="card" wx:for="{{list}}" wx:key="id">
+    <view class="row head">
+      <view class="suffix">后缀：{{item.codeSuffix}}</view>
+      <view class="status {{item.status}}">{{item.statusText}}</view>
+    </view>
+    <view class="line">创建时间：{{item.createdAt}}</view>
+    <view class="line">过期时间：{{item.expireAt}}</view>
+    <view class="line">备注：{{item.remark || '无'}}</view>
+    <view class="line" wx:if="{{item.lockedByUserId}}">锁定用户：{{item.lockedByUserId}}</view>
+    <view class="line" wx:if="{{item.usedByUserId}}">使用用户：{{item.usedByUserId}}</view>
+    <button
+      class="revoke-btn"
+      wx:if="{{item.status === 'unused'}}"
+      data-id="{{item.id}}"
+      bindtap="revokeInvite"
+    >
+      作废邀请码
+    </button>
+  </view>
+
+  <view class="empty-list" wx:if="{{!list.length}}">暂无邀请码数据</view>
+</view>

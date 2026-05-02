@@ -1,0 +1,70 @@
+<view class="page" wx:if="{{detail}}">
+  <view class="card">
+    <view class="card-head">
+      <swiper class="prop-swiper" indicator-dots="{{detail.images.length > 1}}" circular="{{detail.images.length > 1}}">
+        <swiper-item wx:for="{{detail.images}}" wx:key="*this">
+          <image class="prop-image" src="{{item}}" data-url="{{item}}" mode="aspectFill" bindtap="previewImage" />
+        </swiper-item>
+      </swiper>
+      <view class="head-info">
+        <view class="title">{{detail.propName}}</view>
+        <view class="status {{detail.status}}">{{detail.statusText}}</view>
+        <view class="line">申请动作：{{detail.actionText || detail.action}}</view>
+        <view class="line">申请时间：{{detail.createdAt}}</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">提交用户</view>
+      <view class="field-row">
+        <text class="label">用户ID</text>
+        <text class="value">{{detail.supplierUserId || '未绑定'}}</text>
+      </view>
+      <view class="field-row">
+        <text class="label">提交人</text>
+        <text class="value">{{detail.supplierName || '未知工厂账号'}}</text>
+      </view>
+      <view class="field-row">
+        <text class="label">联系方式</text>
+        <text class="value">{{detail.supplierPhone || '未填写'}}</text>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">道具表单</view>
+      <view class="grid">
+        <view class="field"><text class="label">风格</text><text class="value">{{detail.style || '-'}}</text></view>
+        <view class="field"><text class="label">类型</text><text class="value">{{detail.type || '-'}}</text></view>
+        <view class="field"><text class="label">租金</text><text class="value">¥{{detail.price || '0'}}/天</text></view>
+        <view class="field"><text class="label">押金</text><text class="value">¥{{detail.deposit || '0'}}</text></view>
+        <view class="field"><text class="label">尺寸描述</text><text class="value">{{detail.size || '-'}}</text></view>
+        <view class="field"><text class="label">长宽高</text><text class="value">{{detail.lengthCm || '-'}} × {{detail.widthCm || '-'}} × {{detail.heightCm || '-'}} cm</text></view>
+        <view class="field"><text class="label">材质</text><text class="value">{{detail.material || '-'}}</text></view>
+        <view class="field"><text class="label">是否阻燃</text><text class="value">{{detail.fireResistantOption || '-'}}</text></view>
+        <view class="field"><text class="label">重量</text><text class="value">{{detail.weight || '-'}} kg</text></view>
+        <view class="field"><text class="label">当前状态</text><text class="value">{{detail.propStatusText || detail.propStatus || '-'}}</text></view>
+      </view>
+      <view class="wide-field">
+        <view class="label">运输建议</view>
+        <view class="value">{{detail.transportSuggestion || '-'}}</view>
+      </view>
+      <view class="wide-field">
+        <view class="label">二维码ID</view>
+        <view class="value">{{detail.qrCodeId || '-'}}</view>
+      </view>
+      <view class="wide-field">
+        <view class="label">申请备注</view>
+        <view class="value">{{detail.remark || '-'}}</view>
+      </view>
+    </view>
+
+    <view class="row" wx:if="{{detail.status === 'pending'}}">
+      <button class="audit-btn ok" data-pass="1" bindtap="review">通过</button>
+      <button class="audit-btn no" data-pass="0" bindtap="review">驳回</button>
+    </view>
+  </view>
+</view>
+
+<view class="page" wx:else>
+  <view class="empty-list">加载中...</view>
+</view>

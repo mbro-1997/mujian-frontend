@@ -1,0 +1,134 @@
+<view class="container inventory-page" style="padding-bottom: 120rpx;">
+  <view class="card" style="margin: 16rpx;">
+    <view class="card-header">待扫码入库道具</view>
+    <view class="card-subtitle">管理员先生成二维码，工厂在这里选择一件待录入道具并补全资料。</view>
+
+    <view class="pending-list">
+      <view
+        class="pending-item {{selectedPendingProp && selectedPendingProp.id === item.id ? 'active' : ''}}"
+        wx:for="{{pendingProps}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="choosePendingProp"
+      >
+        <view class="pending-name">道具 {{item.id}}</view>
+        <view class="pending-meta">二维码：{{item.qrCodeId}}</view>
+        <view class="pending-meta">状态：待扫码录入</view>
+      </view>
+      <view class="empty-card" wx:if="{{!pendingProps.length}}">暂无待扫码入库道具</view>
+    </view>
+  </view>
+
+  <view class="card" style="margin: 0 16rpx 16rpx;" wx:if="{{selectedPendingProp}}">
+    <view class="card-header">扫码入库表单</view>
+    <view class="card-subtitle">当前录入道具 ID：{{selectedPendingProp.id}}</view>
+
+    <view class="form">
+      <view class="form-item">
+        <view class="form-label">道具名称</view>
+        <input class="form-input" placeholder="请输入道具名称" value="{{formData.name}}" bindinput="updateFormData" data-field="name" />
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">风格</view>
+        <picker mode="selector" range="{{styleOptions}}" value="{{styleIndex}}" bindchange="onStyleChange">
+          <view class="form-select {{!formData.style ? 'placeholder' : ''}}">
+            <text>{{formData.style || '---请选择---'}}</text>
+            <text class="select-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">类型</view>
+        <picker mode="selector" range="{{typeOptions}}" value="{{typeIndex}}" bindchange="onTypeChange">
+          <view class="form-select {{!formData.type ? 'placeholder' : ''}}">
+            <text>{{formData.type || '---请选择---'}}</text>
+            <text class="select-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">尺寸描述</view>
+        <input class="form-input" placeholder="请输入尺寸描述" value="{{formData.size}}" bindinput="updateFormData" data-field="size" />
+      </view>
+
+      <view class="size-row">
+        <view class="form-item size-item">
+          <view class="form-label">长(cm)</view>
+          <input class="form-input" type="digit" value="{{formData.lengthCm}}" bindinput="updateFormData" data-field="lengthCm" />
+        </view>
+        <view class="form-item size-item">
+          <view class="form-label">宽(cm)</view>
+          <input class="form-input" type="digit" value="{{formData.widthCm}}" bindinput="updateFormData" data-field="widthCm" />
+        </view>
+        <view class="form-item size-item">
+          <view class="form-label">高(cm)</view>
+          <input class="form-input" type="digit" value="{{formData.heightCm}}" bindinput="updateFormData" data-field="heightCm" />
+        </view>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">材质</view>
+        <input class="form-input" placeholder="请输入材质" value="{{formData.material}}" bindinput="updateFormData" data-field="material" />
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">是否阻燃</view>
+        <picker mode="selector" range="{{fireResistantOptions}}" value="{{fireResistantIndex}}" bindchange="onFireResistantChange">
+          <view class="form-select {{!formData.fireResistantOption ? 'placeholder' : ''}}">
+            <text>{{formData.fireResistantOption || '---请选择---'}}</text>
+            <text class="select-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">重量</view>
+        <view class="unit-input-wrap">
+          <input class="form-input unit-input" type="digit" placeholder="请输入重量" value="{{formData.weight}}" bindinput="updateFormData" data-field="weight" />
+          <text class="unit-text">kg</text>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">运输建议</view>
+        <input class="form-input" placeholder="请输入运输建议" value="{{formData.transportSuggestion}}" bindinput="updateFormData" data-field="transportSuggestion" />
+      </view>
+
+      <view class="money-row">
+        <view class="form-item money-item">
+          <view class="form-label">租金</view>
+          <view class="unit-input-wrap">
+            <input class="form-input unit-input" type="digit" placeholder="请输入租金" value="{{formData.price}}" bindinput="updateFormData" data-field="price" />
+            <text class="unit-text">元</text>
+          </view>
+        </view>
+        <view class="form-item money-item">
+          <view class="form-label">押金</view>
+          <view class="unit-input-wrap">
+            <input class="form-input unit-input" type="digit" placeholder="请输入押金" value="{{formData.deposit}}" bindinput="updateFormData" data-field="deposit" />
+            <text class="unit-text">元</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">图片上传（最多 4 张）</view>
+        <view class="upload-container">
+          <view class="upload-item" wx:for="{{formData.images}}" wx:key="index">
+            <image src="{{item}}" mode="aspectFill" />
+            <view class="delete-btn" bindtap="deleteImage" data-index="{{index}}">×</view>
+          </view>
+          <view class="upload-item" wx:if="{{formData.images.length < 4}}" bindtap="chooseImage">+</view>
+        </view>
+      </view>
+
+      <view class="form-actions">
+        <button class="btn btn-secondary" bindtap="resetSelection">取消</button>
+        <button class="btn btn-primary" bindtap="submitInventory">提交入库</button>
+      </view>
+    </view>
+  </view>
+</view>

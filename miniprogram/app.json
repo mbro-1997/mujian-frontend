@@ -1,0 +1,81 @@
+{
+  "pages": [
+    "pages/role/index",
+    "pages/admin/home",
+    "pages/admin/factory-audit",
+    "pages/admin/factory-audit-detail/index",
+    "pages/admin/factory-audit-history/index",
+    "pages/admin/prop-audit",
+    "pages/admin/prop-audit-history",
+    "pages/admin/prop-audit-detail",
+    "pages/admin/dispute",
+    "pages/admin/review",
+    "pages/admin/user-stats",
+    "pages/admin/qr-pool/index",
+    "pages/admin/invite-pool/index",
+    "pages/admin/factory-warehouse",
+    "pages/admin/factory-publish",
+    "pages/home/index",
+    "pages/factory-invite/index",
+    "pages/factory-application/index",
+    "pages/factory-audit-status/index",
+    "pages/publish/index",
+    "pages/project/index",
+    "pages/project-list/index",
+    "pages/demander-orders/index",
+    "pages/order-detail/index",
+    "pages/project-detail/index",
+    "pages/mine/index",
+    "pages/settings/index",
+    "pages/prop-detail/index",
+    "pages/warehouse/index",
+    "pages/inventory/index",
+    "pages/supplier-orders/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#121212",
+    "navigationBarTitleText": "幕后 MUHOU",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#888888",
+    "selectedColor": "#007AFF",
+    "borderStyle": "black",
+    "backgroundColor": "#1e1e1e",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页",
+        "iconPath": "/images/icons/home.png",
+        "selectedIconPath": "/images/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/publish/index",
+        "text": "发布",
+        "iconPath": "/images/icons/goods.png",
+        "selectedIconPath": "/images/icons/goods-active.png"
+      },
+      {
+        "pagePath": "pages/project/index",
+        "text": "项目",
+        "iconPath": "/images/icons/examples.png",
+        "selectedIconPath": "/images/icons/examples-active.png"
+      },
+      {
+        "pagePath": "pages/warehouse/index",
+        "text": "仓库",
+        "iconPath": "/images/icons/business.png",
+        "selectedIconPath": "/images/icons/business-active.png"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的",
+        "iconPath": "/images/icons/usercenter.png",
+        "selectedIconPath": "/images/icons/usercenter-active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,18 @@
+<view class="page">
+  <button class="history-btn" bindtap="goHistory">审核历史</button>
+
+  <view class="card" wx:for="{{list}}" wx:key="id" bindtap="openDetail" data-id="{{item.id}}">
+    <view class="row-top">
+      <view class="title">{{item.propName}}</view>
+      <view class="status {{item.status}}">{{item.statusText}}</view>
+    </view>
+    <view class="line">提交人：{{item.supplierName || '未知工厂账号'}}</view>
+    <view class="line">联系方式：{{item.supplierPhone || '未填写'}}</view>
+    <view class="line">申请动作：{{item.actionText || item.action}}</view>
+    <view class="line">申请备注：{{item.remark || '无'}}</view>
+    <view class="line">申请时间：{{item.createdAt}}</view>
+    <view class="enter-tip">点击查看详情并审核</view>
+  </view>
+
+  <view class="empty-list" wx:if="{{!list.length}}">暂无待审核道具</view>
+</view>

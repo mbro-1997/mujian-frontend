@@ -1,0 +1,51 @@
+<scroll-view class="page" scroll-y>
+  <view class="card">
+    <view class="title">工厂资料申请</view>
+    <view class="desc">邀请码验证通过后，请填写工厂资料并提交管理员审核。</view>
+
+    <view class="field">
+      <view class="label">工厂名称</view>
+      <input class="input" data-field="factoryName" value="{{form.factoryName}}" bindinput="onInput" placeholder="请输入工厂名称" />
+    </view>
+
+    <view class="field">
+      <view class="label">统一社会信用代码</view>
+      <input class="input" data-field="unifiedSocialCreditCode" value="{{form.unifiedSocialCreditCode}}" bindinput="onInput" placeholder="请输入统一社会信用代码" />
+    </view>
+
+    <view class="field">
+      <view class="label">营业执照</view>
+      <view class="upload-row">
+        <button class="upload-btn" bindtap="chooseLicense">上传营业执照</button>
+        <text class="upload-tip">{{form.businessLicenseUrl ? '已上传' : '未上传'}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <view class="label">联系人姓名</view>
+      <input class="input" data-field="contactName" value="{{form.contactName}}" bindinput="onInput" placeholder="请输入联系人姓名" />
+    </view>
+
+    <view class="field">
+      <view class="label">联系人手机号</view>
+      <input class="input" data-field="contactPhone" value="{{form.contactPhone}}" bindinput="onInput" placeholder="请输入联系人手机号" />
+    </view>
+
+    <view class="field">
+      <view class="label">工厂地址</view>
+      <input class="input" data-field="factoryAddress" value="{{form.factoryAddress}}" bindinput="onInput" placeholder="请输入工厂地址" />
+    </view>
+
+    <view class="field">
+      <view class="label">主营道具类型</view>
+      <input class="input" data-field="mainBusiness" value="{{form.mainBusiness}}" bindinput="onInput" placeholder="选填，例：舞台道具 / 布景道具" />
+    </view>
+
+    <view class="field">
+      <view class="label">备注说明</view>
+      <textarea class="textarea" data-field="remark" value="{{form.remark}}" bindinput="onInput" placeholder="选填，补充说明工厂情况"></textarea>
+    </view>
+
+    <button class="submit-btn" loading="{{loading}}" bindtap="submit">提交入驻申请</button>
+  </view>
+</scroll-view>

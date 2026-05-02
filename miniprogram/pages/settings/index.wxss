@@ -1,0 +1,16 @@
+.settings-page {
+  box-sizing: border-box;
+}
+
+.settings-card {
+  margin-bottom: 14rpx;
+}
+
+.version-row {
+  border-bottom: none;
+}
+
+.version {
+  color: #93c5fd;
+  font-size: 24rpx;
+}

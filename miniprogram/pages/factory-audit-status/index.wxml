@@ -1,0 +1,22 @@
+<view class="page">
+  <view class="card" wx:if="{{detail}}">
+    <view class="title" wx:if="{{detail.status === 'pending'}}">工厂入驻审核中</view>
+    <view class="title" wx:elif="{{detail.status === 'rejected'}}">工厂入驻申请未通过</view>
+    <view class="title" wx:elif="{{detail.status === 'approved'}}">工厂入驻已通过</view>
+
+    <view class="desc" wx:if="{{detail.status === 'pending'}}">您的资料已提交，请等待管理员审核。审核通过后即可进入工厂端。</view>
+    <view class="desc" wx:elif="{{detail.status === 'rejected'}}">当前申请未通过，请联系管理员重新获取邀请码后再次申请。</view>
+    <view class="desc" wx:elif="{{detail.status === 'approved'}}">管理员已通过您的工厂入驻申请，现在可以进入工厂端。</view>
+
+    <view class="info-line">工厂名称：{{detail.factoryName}}</view>
+    <view class="info-line">联系人：{{detail.contactName}}</view>
+    <view class="info-line">联系电话：{{detail.contactPhone}}</view>
+    <view class="info-line" wx:if="{{detail.submittedAt}}">提交时间：{{detail.submittedAt}}</view>
+    <view class="info-line" wx:if="{{detail.reviewedAt}}">审核时间：{{detail.reviewedAt}}</view>
+    <view class="reject-box" wx:if="{{detail.rejectReason}}">驳回原因：{{detail.rejectReason}}</view>
+
+    <button class="btn primary" wx:if="{{detail.status === 'pending'}}" bindtap="refreshStatus">刷新状态</button>
+    <button class="btn primary" wx:if="{{detail.status === 'approved'}}" bindtap="enterFactory">进入工厂端</button>
+    <button class="btn ghost" bindtap="contactAdmin">联系管理员</button>
+  </view>
+</view>

@@ -1,0 +1,164 @@
+<view class="orders-page">
+  <view class="top-panel">
+    <view class="page-tip">订单确认时限 1 小时，出库和归还均按道具逐件扫码。</view>
+
+    <view class="search-box">
+      <text class="search-icon">⌕</text>
+      <input
+        class="search-input"
+        placeholder="搜索订单号 / 租赁方 / 手机号"
+        placeholder-class="search-placeholder"
+        value="{{keyword}}"
+        bindinput="handleKeywordInput"
+        confirm-type="search"
+        bindconfirm="submitSearch"
+      />
+      <text wx:if="{{keyword}}" class="clear-search" bindtap="clearSearch">×</text>
+    </view>
+
+    <scroll-view scroll-x class="status-tabs" show-scrollbar="{{false}}">
+      <view
+        wx:for="{{statusTabs}}"
+        wx:key="value"
+        class="status-tab {{activeStatus === item.value ? 'active' : ''}}"
+        data-status="{{item.value}}"
+        bindtap="changeStatus"
+      >
+        {{item.label}}
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="filter-bar">
+    <picker mode="selector" range="{{dateRangeOptions}}" range-key="label" value="{{dateRangeIndex}}" bindchange="changeDateRange">
+      <view class="filter-chip">{{dateRangeText}}</view>
+    </picker>
+    <picker mode="selector" range="{{sortOptions}}" range-key="label" value="{{sortIndex}}" bindchange="changeSortType">
+      <view class="filter-chip">{{sortText}}</view>
+    </picker>
+    <view class="filter-chip ghost" bindtap="resetFilters">重置</view>
+  </view>
+
+  <view class="list-meta" wx:if="{{total}}">共 {{total}} 个订单</view>
+
+  <view class="order-list">
+    <view class="order-card" wx:for="{{list}}" wx:key="id" data-id="{{item.id}}" bindtap="openOrderDetail">
+      <view class="order-card-header">
+        <view class="order-no">订单号 {{item.id}}</view>
+        <view class="order-status {{item.statusClass}}">{{item.statusText}}</view>
+      </view>
+
+      <view class="order-card-body">
+        <view class="info-row">
+          <text class="info-label">租赁方</text>
+          <text class="info-value">{{item.demanderName || '未填写'}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">手机号</text>
+          <text class="info-value">{{item.demanderPhone || '未填写'}}</text>
+        </view>
+        <view class="info-pair">
+          <view><text class="info-label">日期</text><text class="info-value">{{item.date || '-'}}</text></view>
+          <view><text class="info-label">租期</text><text class="info-value">{{item.rentalDays || 1}} 天</text></view>
+        </view>
+        <view class="money-row">
+          <view><text class="money-label">租金</text><text class="money-value">¥{{item.price}}</text></view>
+          <view><text class="money-label">押金</text><text class="money-value">¥{{item.deposit}}</text></view>
+        </view>
+      </view>
+
+      <view class="order-card-progress">
+        <view class="progress-item">出库扫码 <text>{{item.outboundScannedCount}}/{{item.propCount}}</text></view>
+        <view class="progress-item">归还扫码 <text>{{item.returnScannedCount}}/{{item.propCount}}</text></view>
+      </view>
+
+      <view wx:if="{{item.status === 'wait_review'}}" class="review-progress">
+        评价进度：租赁方{{item.demanderReviewed ? '已评' : '待评'}} / 工厂{{item.supplierReviewed ? '已评' : '待评'}}
+      </view>
+
+      <view class="order-card-actions" catchtap="noop">
+        <button wx:if="{{item.canFactoryConfirm}}" class="action-btn primary" data-id="{{item.id}}" bindtap="confirmFactoryOrder">确认接单</button>
+        <button wx:if="{{item.canFactoryReject}}" class="action-btn secondary danger" data-id="{{item.id}}" bindtap="openRejectOrderModal">驳回订单</button>
+        <button wx:if="{{item.canScanOutbound}}" class="action-btn primary" data-id="{{item.id}}" data-mode="outbound" bindtap="openScanModal">出库扫码</button>
+        <button wx:if="{{item.canScanReturn && item.status === 'renting'}}" class="action-btn secondary" data-id="{{item.id}}" data-mode="return" bindtap="openScanModal">归还扫码</button>
+        <button wx:if="{{item.canReview}}" class="action-btn primary" data-id="{{item.id}}" bindtap="openReviewModal">评价订单</button>
+        <button wx:if="{{!item.canFactoryConfirm && !item.canFactoryReject && !item.canScanOutbound && !(item.canScanReturn && item.status === 'renting') && !item.canReview}}" class="action-btn secondary" data-id="{{item.id}}" bindtap="openOrderDetail">查看详情</button>
+        <button wx:if="{{item.canFactoryConfirm || item.canFactoryReject || item.canScanOutbound || (item.canScanReturn && item.status === 'renting') || item.canReview}}" class="action-btn ghost" data-id="{{item.id}}" bindtap="openOrderDetail">查看详情</button>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:if="{{!loading && !list.length}}">
+      <view class="empty-title">暂无订单</view>
+      <view class="empty-subtitle">当前筛选条件下没有工厂订单</view>
+    </view>
+
+    <view class="load-state" wx:if="{{loading}}">加载中...</view>
+    <view class="load-state" wx:if="{{!loading && list.length && !hasMore}}">没有更多订单了</view>
+    <view class="load-state error" wx:if="{{loadError}}" bindtap="reloadCurrent">加载失败，点击重试</view>
+  </view>
+
+  <view class="modal" wx:if="{{showRejectModal}}" bindtap="closeRejectOrderModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">驳回订单</view>
+      <view class="form-item">
+        <view class="form-label">驳回理由</view>
+        <textarea class="form-input reject-textarea" placeholder="请填写驳回理由" value="{{rejectReason}}" bindinput="updateRejectReason" />
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeRejectOrderModal">取消</view>
+        <view class="modal-button primary danger" bindtap="confirmRejectOrder">确认驳回</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="modal" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">订单评价</view>
+      <view class="form-item">
+        <view class="form-label">道具本身评分</view>
+        <view class="planet-rate">
+          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewPropScore" class="planet {{reviewPropScore >= item ? 'active' : ''}}">🪐</text>
+        </view>
+      </view>
+      <view class="form-item">
+        <view class="form-label">合作体验评分</view>
+        <view class="planet-rate">
+          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewCounterpartyScore" class="planet {{reviewCounterpartyScore >= item ? 'active' : ''}}">🪐</text>
+        </view>
+      </view>
+      <view class="form-item">
+        <view class="form-label">评价内容</view>
+        <textarea class="form-input reject-textarea" placeholder="请输入评价内容" value="{{reviewContent}}" bindinput="updateReviewContent" />
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeReviewModal">取消</view>
+        <view class="modal-button primary" bindtap="submitReview">提交评价</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="modal" wx:if="{{showScanModal}}" bindtap="closeScanModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">{{scanMode === 'outbound' ? '出库扫码' : '归还扫码'}}</view>
+      <view class="scan-order-id">订单号：{{currentOrder.id}}</view>
+      <view class="scan-order-id" wx:if="{{scanMode === 'outbound'}}">进度：{{currentOrder.outboundScannedCount}} / {{currentOrder.propCount}}</view>
+      <view class="scan-order-id" wx:else>进度：{{currentOrder.returnScannedCount}} / {{currentOrder.propCount}}</view>
+
+      <view class="scan-list">
+        <view class="scan-item" wx:for="{{currentOrder.props}}" wx:key="id">
+          <view class="scan-main">
+            <view class="scan-name">{{item.name}}</view>
+            <view class="scan-meta">状态：{{item.statusText}}</view>
+          </view>
+          <button wx:if="{{(scanMode === 'outbound' && !item.outboundScanned) || (scanMode === 'return' && !item.returnScanned)}}" class="mini-scan-btn primary" size="mini" data-prop-id="{{item.id}}" bindtap="scanOneProp">扫码</button>
+          <button wx:else class="mini-scan-btn disabled" size="mini">已扫码</button>
+        </view>
+      </view>
+
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeScanModal">关闭</view>
+        <view class="modal-button primary" bindtap="scanAllRemaining">一键扫完</view>
+      </view>
+    </view>
+  </view>
+</view>

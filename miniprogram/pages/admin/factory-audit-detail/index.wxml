@@ -1,0 +1,49 @@
+<view class="page">
+  <scroll-view class="content-scroll" scroll-y>
+    <view class="card" wx:if="{{detail}}">
+      <view class="title">{{detail.company || '未填写工厂名称'}}</view>
+      <view class="status {{detail.status}}">{{detail.statusText}}</view>
+
+      <view class="section-title">工厂资料</view>
+      <view class="line">工厂名称：{{detail.company || '未填写'}}</view>
+      <view class="line">统一社会信用代码：{{detail.unifiedSocialCreditCode || '未填写'}}</view>
+      <view class="line">工厂地址：{{detail.factoryAddress || '未填写'}}</view>
+      <view class="line">主营道具类型：{{detail.mainBusiness || '未填写'}}</view>
+      <view class="line">申请备注：{{detail.remark || '无'}}</view>
+
+      <view class="section-title">联系人信息</view>
+      <view class="line">联系人：{{detail.contact || '未填写'}}</view>
+      <view class="line">联系电话：{{detail.phone || '未填写'}}</view>
+
+      <view class="section-title">申请信息</view>
+      <view class="line">申请用户 ID：{{detail.applicantUserId || '无'}}</view>
+      <view class="line">邀请码记录 ID：{{detail.inviteCodeId || '无'}}</view>
+      <view class="line">提交时间：{{detail.createdAt || '未记录'}}</view>
+      <view class="line" wx:if="{{detail.reviewedAt}}">审核时间：{{detail.reviewedAt}}</view>
+      <view class="reject-box" wx:if="{{detail.rejectReason}}">驳回原因：{{detail.rejectReason}}</view>
+
+      <view class="section-title">营业执照</view>
+      <image wx:if="{{detail.businessLicenseUrl}}" class="license" src="{{detail.businessLicenseUrl}}" mode="aspectFit" bindtap="previewLicense"></image>
+      <view wx:else class="empty-license">未上传营业执照</view>
+
+      <view class="row" wx:if="{{detail.status === 'pending'}}">
+        <button class="audit-btn ok" bindtap="approveAudit">通过</button>
+        <button class="audit-btn no" bindtap="openRejectModal">驳回</button>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="modal" wx:if="{{showRejectModal}}" bindtap="closeRejectModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">驳回入驻申请</view>
+      <view class="form-item">
+        <view class="form-label">驳回原因</view>
+        <textarea class="textarea" value="{{rejectReason}}" bindinput="updateRejectReason" placeholder="请填写驳回原因"></textarea>
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeRejectModal">取消</view>
+        <view class="modal-button primary danger" bindtap="confirmRejectAudit">确认驳回</view>
+      </view>
+    </view>
+  </view>
+</view>

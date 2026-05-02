@@ -1,0 +1,135 @@
+<view class="publish-page">
+  <block wx:if="{{showAdminOps}}">
+    <view class="page-title">运营管理</view>
+
+    <view class="panel-card section-card">
+      <view class="section-title">评价管理</view>
+      <scroll-view wx:if="{{adminReviews.length}}" scroll-y class="preview-scroll">
+        <view class="preview-item" wx:for="{{adminReviews}}" wx:key="id">
+          <view class="preview-main">{{item.user}} · 综合{{item.score}}分</view>
+          <view class="preview-sub">订单：{{item.orderId}}</view>
+          <view class="preview-sub">道具{{item.propScore || item.score}}分 / 合作体验{{item.counterpartyScore || item.score}}分</view>
+          <view class="preview-sub">{{item.content}}</view>
+          <view class="preview-sub">状态：{{item.visibleText}}</view>
+        </view>
+      </scroll-view>
+      <view wx:else class="empty-panel">暂无评价数据</view>
+      <button class="more-btn" bindtap="viewMoreReviews">查看更多</button>
+    </view>
+
+    <view class="panel-card section-card">
+      <view class="section-title">用户列表</view>
+      <scroll-view wx:if="{{adminUsers.length}}" scroll-y class="preview-scroll">
+        <view class="preview-item" wx:for="{{adminUsers}}" wx:key="id">
+          <view class="preview-main">{{item.name}}</view>
+          <view class="preview-sub">角色：{{item.role}}</view>
+          <view class="preview-sub">认证：{{item.verifiedText}}</view>
+          <view class="preview-sub">状态：{{item.statusText}}</view>
+        </view>
+      </scroll-view>
+      <view wx:else class="empty-panel">暂无用户数据</view>
+      <button class="more-btn" bindtap="viewMoreUsers">查看更多</button>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="page-title">发布</view>
+
+    <view class="action-card">
+      <view class="action-left">
+        <view class="scan-icon">
+          <view class="scan-dot"></view>
+          <view class="scan-line"></view>
+        </view>
+        <view class="action-copy">
+          <view class="action-title">扫码入库</view>
+          <view class="action-subtitle">快速录入道具资产信息</view>
+        </view>
+      </view>
+      <button class="scan-btn" bindtap="scanCode">立即扫码</button>
+    </view>
+
+    <view class="section-block">
+      <view class="section-title">库存概览</view>
+      <view class="core-grid">
+        <view class="metric-card metric-card-large">
+          <view class="metric-label">总资产数</view>
+          <view class="metric-value metric-total">{{totalProps}}</view>
+          <view class="metric-desc">当前库存总量</view>
+        </view>
+        <view class="metric-card metric-card-large">
+          <view class="metric-label">空闲资产</view>
+          <view class="metric-value metric-brand">{{idleProps}}</view>
+          <view class="metric-desc">可立即租赁</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-block">
+      <view class="section-title">资产状态</view>
+      <view class="status-grid">
+        <view class="status-card">
+          <view class="status-mark status-warning"></view>
+          <view class="status-info">
+            <view class="status-label">已锁定</view>
+            <view class="status-value">{{lockedProps}}</view>
+          </view>
+        </view>
+        <view class="status-card">
+          <view class="status-mark status-muted"></view>
+          <view class="status-info">
+            <view class="status-label">已下架</view>
+            <view class="status-value">{{offlineProps}}</view>
+          </view>
+        </view>
+        <view class="status-card">
+          <view class="status-mark status-brand"></view>
+          <view class="status-info">
+            <view class="status-label">利用率</view>
+            <view class="status-value">{{utilizationRate}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-block">
+      <view class="section-title">订单状态</view>
+      <view class="order-grid">
+        <view class="metric-card">
+          <view class="metric-label">租赁中</view>
+          <view class="metric-value">{{rentingProps}}</view>
+          <view class="metric-desc">正在执行订单</view>
+        </view>
+        <view class="metric-card order-alert">
+          <view class="pending-tag">待处理</view>
+          <view class="metric-label">待确认订单</view>
+          <view class="metric-value metric-warning">{{pendingConfirmOrders}}</view>
+          <view class="metric-desc">需 1 小时内处理</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-block">
+      <view class="section-title">收益数据</view>
+      <view class="revenue-card">
+        <view>
+          <view class="metric-label">押金总额</view>
+          <view class="metric-value">¥{{totalDeposit}}</view>
+          <view class="metric-desc">全资产押金累计</view>
+        </view>
+      </view>
+      <view class="order-grid revenue-grid">
+        <view class="metric-card">
+          <view class="metric-label">预计日营收</view>
+          <view class="metric-value">¥{{dailyRevenue}}</view>
+          <view class="metric-desc">租赁中资产日租合计</view>
+        </view>
+        <view class="metric-card">
+          <view class="metric-label">平均日租</view>
+          <view class="metric-value">¥{{avgRentPrice}}</view>
+          <view class="metric-desc">单件道具均价</view>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

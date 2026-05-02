@@ -1,0 +1,84 @@
+<view class="container project-detail-page" style="padding-bottom: 140rpx;" wx:if="{{currentProject}}">
+  <view class="card detail-card">
+    <view class="page-title">方案详情</view>
+    <view class="form-item">
+      <view class="form-label">方案名称</view>
+      <input class="form-input" value="{{currentProject.name}}" disabled="{{currentProject.status !== 'editing'}}" bindinput="updateProjectName" />
+    </view>
+    <view class="form-item">
+      <view class="form-label">方案说明</view>
+      <textarea class="form-input textarea-input" value="{{currentProject.description}}" disabled="{{currentProject.status !== 'editing'}}" bindinput="updateProjectDescription" />
+    </view>
+  </view>
+
+  <view class="card detail-card">
+    <view class="section-title">道具清单</view>
+    <view class="cart-list">
+      <view class="cart-item {{currentProject.status === 'editing' && !item.orderable ? 'cart-item-danger' : ''}}" wx:for="{{currentProject.props}}" wx:key="id">
+        <image src="{{item.image}}" class="cart-image" mode="aspectFill" />
+        <view class="cart-main">
+          <view class="cart-name {{currentProject.status === 'editing' && !item.orderable ? 'danger' : ''}}">{{item.name}}</view>
+          <view class="cart-meta">状态：{{item.statusText}}</view>
+          <view class="cart-meta">¥{{item.price}}/天 · 押金 ¥{{item.deposit}}</view>
+        </view>
+        <button wx:if="{{currentProject.status === 'editing'}}" class="btn btn-secondary cart-remove" size="mini" bindtap="removeProjectProp" data-prop-id="{{item.id}}">移除</button>
+      </view>
+      <view class="empty-card" wx:if="{{!currentProject.props.length}}">清单为空，请先添加道具</view>
+    </view>
+  </view>
+
+  <view class="card submit-card">
+    <view class="submit-tip" wx:if="{{currentProject.status !== 'editing'}}">该方案已下单，当前仅支持查看</view>
+    <view class="submit-tip danger" wx:elif="{{currentProject.unavailableCount > 0}}">存在不可下单道具，请先移除红色项</view>
+    <view class="submit-tip" wx:elif="{{!currentProject.props.length}}">暂无可提交道具</view>
+    <view class="submit-tip" wx:else>提交订单会先自动保存当前方案，再进入支付流程</view>
+    <view wx:if="{{currentProject.status === 'editing'}}" class="submit-btn {{currentProject.canSubmit ? 'enabled' : 'disabled'}}" bindtap="submitProjectOrder">提交订单</view>
+  </view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn secondary" bindtap="cancelEdit">{{currentProject.status === 'editing' ? '取消' : '关闭'}}</view>
+    <view wx:if="{{currentProject.status === 'editing'}}" class="bottom-btn primary" bindtap="saveProject">保存方案</view>
+  </view>
+
+  <view class="modal" wx:if="{{showPayModal}}" bindtap="closePayModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">支付订单</view>
+      <view class="form-item">
+        <view class="form-label">租赁开始日期</view>
+        <picker mode="date" value="{{rentalStartDate}}" bindchange="updateRentalStartDate">
+          <view class="form-input date-picker {{rentalStartDate ? '' : 'placeholder'}}">{{rentalStartDate || '请选择开始日期'}}</view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <view class="form-label">租赁结束日期</view>
+        <picker mode="date" value="{{rentalEndDate}}" start="{{rentalStartDate}}" bindchange="updateRentalEndDate">
+          <view class="form-input date-picker {{rentalEndDate ? '' : 'placeholder'}}">{{rentalEndDate || '请选择结束日期'}}</view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <view class="form-label">租赁天数</view>
+        <view class="form-input readonly-days">{{rentalDays || 0}} 天</view>
+      </view>
+      <view class="form-item">
+        <view class="form-label">地址</view>
+        <input class="form-input" placeholder="请输入本次使用或收货地址" value="{{contactAddress}}" bindinput="updateContactAddress" />
+      </view>
+      <view class="form-item">
+        <view class="form-label">使用场景</view>
+        <input class="form-input" placeholder="例如：校园晚会、舞台剧、展演活动" value="{{useScene}}" bindinput="updateUseScene" />
+      </view>
+      <view class="form-item">
+        <view class="form-label">备注（有无特殊用途）</view>
+        <textarea class="form-input textarea-input" placeholder="可填写特殊用途、运输时间、联系人等补充说明" value="{{specialRemark}}" bindinput="updateSpecialRemark" />
+      </view>
+      <view class="pay-row"><text>日租合计</text><text>¥{{payInfo.dailyRent}} × {{payInfo.rentalDays || 0}} 天</text></view>
+      <view class="pay-row"><text>租金</text><text>¥{{payInfo.price}}</text></view>
+      <view class="pay-row"><text>押金</text><text>¥{{payInfo.deposit}}</text></view>
+      <view class="pay-row pay-total"><text>总计</text><text>¥{{payInfo.total}}</text></view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closePayModal">取消</view>
+        <view class="modal-button primary" bindtap="simulatePay">确认支付</view>
+      </view>
+    </view>
+  </view>
+</view>

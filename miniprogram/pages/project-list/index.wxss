@@ -1,0 +1,55 @@
+.header-card {
+  margin: 0 16rpx 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-title {
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.create-btn {
+  min-width: 160rpx;
+}
+
+.project-card {
+  margin: 0 16rpx 16rpx;
+}
+
+.project-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.project-name {
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.project-desc,
+.project-tip {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #cbd5e1;
+}
+
+.project-actions {
+  margin-top: 14rpx;
+  display: flex;
+  gap: 12rpx;
+}
+
+.danger {
+  color: #f87171 !important;
+}
+
+.empty-card {
+  min-height: 420rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}

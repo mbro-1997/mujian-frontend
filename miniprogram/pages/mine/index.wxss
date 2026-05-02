@@ -1,0 +1,151 @@
+.mine-page {
+  box-sizing: border-box;
+}
+
+.profile-card {
+  margin-bottom: 14rpx;
+}
+
+.profile-top {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  margin-right: 22rpx;
+  border: 2px solid rgba(148, 163, 184, 0.4);
+}
+
+.user-details {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.user-role {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #cbd5e1;
+}
+
+.credit-wrap {
+  margin-top: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 18rpx;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.credit-label {
+  font-size: 24rpx;
+  color: #cbd5e1;
+}
+
+.credit-score {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.section-card {
+  margin-bottom: 14rpx;
+}
+
+.logout {
+  color: #f87171;
+  border-bottom: none;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-bottom: 10rpx;
+}
+
+.admin-action-row {
+  display: flex;
+  gap: 12rpx;
+}
+
+.admin-action-btn {
+  flex: 1;
+  height: 76rpx;
+  line-height: 76rpx;
+  border-radius: 12rpx;
+  font-size: 27rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+}
+
+.admin-action-btn::after {
+  border: none;
+}
+
+.qr-btn {
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+}
+
+.invite-btn {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+
+.preview-scroll {
+  max-height: 280rpx;
+  border-radius: 12rpx;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(30, 41, 59, 0.45);
+  padding: 10rpx 12rpx;
+  box-sizing: border-box;
+}
+
+.preview-item {
+  padding: 10rpx 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
+.preview-main {
+  font-size: 27rpx;
+  font-weight: 700;
+}
+
+.preview-sub {
+  margin-top: 6rpx;
+  font-size: 23rpx;
+  color: #cbd5e1;
+}
+
+.more-btn {
+  margin-top: 12rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  border-radius: 12rpx;
+  background: linear-gradient(135deg, #60a5fa, #38bdf8);
+  color: #0a1b34;
+  letter-spacing: 1rpx;
+}
+
+.more-btn::after {
+  border: none;
+}
+
+.empty-tip {
+  text-align: center;
+  color: #94a3b8;
+  padding: 14rpx 0 6rpx;
+}

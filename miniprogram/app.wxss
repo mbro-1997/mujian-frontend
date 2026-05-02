@@ -1,0 +1,228 @@
+page {
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  box-sizing: border-box;
+}
+
+.card {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-sizing: border-box;
+  backdrop-filter: blur(8px);
+}
+
+.btn {
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  line-height: 1.2;
+  padding: 16rpx 20rpx;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: rgba(30, 41, 59, 0.9);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+}
+
+.btn-disabled {
+  background: rgba(71, 85, 105, 0.5);
+  color: #94a3b8;
+}
+
+.form-input,
+.search-input {
+  background: rgba(30, 41, 59, 0.9);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 12rpx;
+  box-sizing: border-box;
+}
+
+.search-bar {
+  padding: 18rpx 20rpx 8rpx;
+}
+
+.search-input {
+  height: 76rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+}
+
+.filter-bar {
+  display: flex;
+  overflow-x: auto;
+  gap: 12rpx;
+  padding: 8rpx 20rpx 14rpx;
+}
+
+.filter-item {
+  padding: 12rpx 20rpx;
+  border-radius: 999rpx;
+  background: rgba(30, 41, 59, 0.95);
+  color: #cbd5e1;
+  font-size: 24rpx;
+  white-space: nowrap;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.filter-item.active {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.9), rgba(29, 78, 216, 0.9));
+  color: #ffffff;
+  border-color: rgba(96, 165, 250, 0.6);
+}
+
+.list {
+  padding: 0 20rpx 20rpx;
+}
+
+.list-item {
+  margin-bottom: 14rpx;
+}
+
+.img {
+  width: 100%;
+  border-radius: 12rpx;
+  background: #1e293b;
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+}
+
+.status-free {
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
+}
+
+.status-renting {
+  background: rgba(249, 115, 22, 0.18);
+  color: #fb923c;
+}
+
+.status-pending {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+}
+
+.status-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 560rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.modal-title {
+  text-align: center;
+  font-size: 34rpx;
+  font-weight: 700;
+  margin-bottom: 8rpx;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 18rpx;
+  position: sticky;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.98);
+  padding-top: 10rpx;
+}
+
+.modal-button {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+}
+
+.modal-button.primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+}
+
+.modal-button.secondary {
+  background: rgba(30, 41, 59, 0.95);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.form-item {
+  margin-bottom: 14rpx;
+}
+
+.form-label {
+  margin-bottom: 8rpx;
+  font-size: 24rpx;
+  color: #cbd5e1;
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  min-height: 80rpx;
+  line-height: 40rpx;
+  padding: 16rpx;
+  font-size: 28rpx;
+}
+
+textarea.form-input {
+  min-height: 180rpx;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  font-size: 28rpx;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.arrow {
+  color: #94a3b8;
+}
