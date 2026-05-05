@@ -140,6 +140,13 @@ function resolveEntryPath(defaultEntry) {
   }
 }
 
+function shouldSetupProfile(user = {}) {
+  const accountKey = getSelectedAccount();
+  return accountKey === REAL_WECHAT_ACCOUNT_KEY
+    && user.needRoleSelection
+    && (!user.phone || !user.nickname || user.nickname.startsWith("微信用户"));
+}
+
 async function fetchDemoAccounts() {
   if (!ENABLE_MOCK) {
     return ensureRealWechatAccount(DEFAULT_DEMO_ACCOUNTS);
@@ -273,6 +280,33 @@ async function bindDemanderRole() {
   return loginByRole("demander");
 }
 
+async function updateUserProfile(data = {}) {
+  const updated = await request({
+    url: "/users/profile",
+    method: "PUT",
+    data: {
+      nickname: data.nickname || "",
+      avatarUrl: data.avatarUrl || "",
+    },
+  });
+  const role = (updated && updated.currentRole) || getSelectedRole();
+  const user = normalizeUser(updated || {}, role, getDemoAccountByKey(getSelectedAccount()));
+  updateUser(user);
+  return user;
+}
+
+async function bindWechatPhone(code) {
+  const updated = await request({
+    url: "/users/phone/wechat",
+    method: "POST",
+    data: { code },
+  });
+  const role = (updated && updated.currentRole) || getSelectedRole();
+  const user = normalizeUser(updated || {}, role, getDemoAccountByKey(getSelectedAccount()));
+  updateUser(user);
+  return user;
+}
+
 async function verifyFactoryInvite(code) {
   return request({
     url: "/users/factory-invite/verify",
@@ -313,9 +347,12 @@ module.exports = {
   loginRealWechat,
   loginByRole,
   bindDemanderRole,
+  updateUserProfile,
+  bindWechatPhone,
   verifyFactoryInvite,
   submitFactoryApplication,
   getFactoryAuditStatus,
   resolveEntryPath,
+  shouldSetupProfile,
   REAL_WECHAT_ACCOUNT_KEY,
 };

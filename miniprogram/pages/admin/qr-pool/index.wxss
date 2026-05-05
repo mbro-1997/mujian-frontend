@@ -5,9 +5,19 @@
 .filter-btn.active { background: #22d3ee; color: #03111a; border-color: rgba(34, 211, 238, 0.72); }
 .filter-btn::after,
 .create-btn::after,
-.copy-btn::after { border: none; }
+.copy-btn::after,
+.danger-btn::after { border: none; }
 .card { margin-top: 16rpx; background: rgba(16, 26, 44, 0.96); border: 1px solid rgba(125, 211, 192, 0.22); border-radius: 18rpx; padding: 22rpx; color: #dbeafe; box-shadow: 0 16rpx 44rpx rgba(2, 8, 23, 0.24); }
+.card-main { display: flex; gap: 20rpx; align-items: center; }
+.qr-image,
+.qr-missing { width: 156rpx; height: 156rpx; flex: 0 0 156rpx; border-radius: 18rpx; background: rgba(226, 232, 240, 0.08); }
+.qr-missing { display: flex; align-items: center; justify-content: center; color: #fb7185; font-size: 22rpx; }
+.info { min-width: 0; flex: 1; }
 .title { font-size: 30rpx; font-weight: 800; }
 .line { margin-top: 10rpx; font-size: 24rpx; color: #b6c5dd; line-height: 1.5; }
-.copy-btn { margin-top: 18rpx; height: 72rpx; line-height: 72rpx; border-radius: 999rpx; background: rgba(55, 83, 105, 0.92); color: #e5f7f2; font-size: 25rpx; font-weight: 700; }
+.actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14rpx; margin-top: 18rpx; }
+.copy-btn,
+.danger-btn { height: 72rpx; line-height: 72rpx; border-radius: 999rpx; font-size: 25rpx; font-weight: 700; }
+.copy-btn { background: rgba(55, 83, 105, 0.92); color: #e5f7f2; }
+.danger-btn { background: rgba(251, 113, 133, 0.14); color: #fb7185; }
 .empty-list { min-height: 420rpx; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 18rpx; background: rgba(16, 26, 44, 0.72); margin-top: 16rpx; }

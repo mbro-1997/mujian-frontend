@@ -1,6 +1,8 @@
 {
   "pages": [
     "pages/role/index",
+    "pages/qr-entry/index",
+    "pages/profile-setup/index",
     "pages/admin/home",
     "pages/admin/factory-audit",
     "pages/admin/factory-audit-detail/index",

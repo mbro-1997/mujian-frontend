@@ -1,0 +1,9 @@
+<view class="page">
+  <view class="card">
+    <view class="loader"></view>
+    <view class="title">{{title}}</view>
+    <view class="message">{{message}}</view>
+    <button wx:if="{{showRoleButton}}" class="primary-btn" bindtap="goRole">去登录</button>
+    <button wx:if="{{showHomeButton}}" class="ghost-btn" bindtap="goHome">返回首页</button>
+  </view>
+</view>

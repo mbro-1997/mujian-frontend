@@ -1,0 +1,166 @@
+.profile-page {
+  min-height: 100vh;
+  padding: 28rpx 24rpx calc(40rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(34, 211, 238, 0.14), transparent 34%),
+    radial-gradient(circle at 100% 12%, rgba(52, 211, 153, 0.12), transparent 30%),
+    #070b16;
+  color: #f8fafc;
+}
+
+.hero-card,
+.form-card,
+.action-card {
+  border-radius: 26rpx;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1rpx solid rgba(148, 163, 184, 0.16);
+  padding: 28rpx;
+  box-sizing: border-box;
+}
+
+.eyebrow {
+  color: #22d3ee;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.title {
+  margin-top: 10rpx;
+  font-size: 42rpx;
+  font-weight: 800;
+}
+
+.desc {
+  margin-top: 14rpx;
+  color: #94a3b8;
+  font-size: 25rpx;
+  line-height: 1.6;
+}
+
+.form-card,
+.action-card {
+  margin-top: 22rpx;
+}
+
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 22rpx;
+}
+
+.avatar-button {
+  width: 126rpx;
+  height: 126rpx;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(30, 41, 59, 0.8);
+}
+
+.avatar-button::after {
+  border: none;
+}
+
+.avatar {
+  width: 126rpx;
+  height: 126rpx;
+}
+
+.avatar-copy {
+  flex: 1;
+}
+
+.field-block {
+  margin-top: 26rpx;
+}
+
+.field-title {
+  color: #e2e8f0;
+  font-size: 27rpx;
+  font-weight: 700;
+}
+
+.field-tip {
+  margin-top: 8rpx;
+  color: #64748b;
+  font-size: 23rpx;
+}
+
+.input {
+  margin-top: 12rpx;
+  height: 78rpx;
+  line-height: 78rpx;
+  padding: 0 22rpx;
+  border-radius: 18rpx;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1rpx solid rgba(148, 163, 184, 0.18);
+  color: #f8fafc;
+  font-size: 27rpx;
+  box-sizing: border-box;
+}
+
+.phone-box {
+  margin-top: 12rpx;
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.phone-value {
+  flex: 1;
+  height: 78rpx;
+  line-height: 78rpx;
+  padding: 0 22rpx;
+  border-radius: 18rpx;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1rpx solid rgba(148, 163, 184, 0.18);
+  color: #cbd5e1;
+  font-size: 26rpx;
+  box-sizing: border-box;
+}
+
+.phone-button {
+  width: 190rpx;
+  height: 78rpx;
+  line-height: 78rpx;
+  padding: 0;
+  border-radius: 999rpx;
+  background: #22d3ee;
+  color: #03111a;
+  font-size: 25rpx;
+  font-weight: 800;
+}
+
+.phone-button::after,
+.action-btn::after {
+  border: none;
+}
+
+.action-btn {
+  margin-top: 16rpx;
+  height: 82rpx;
+  line-height: 82rpx;
+  border-radius: 999rpx;
+  color: #03111a;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.action-btn:first-child {
+  margin-top: 0;
+}
+
+.action-btn.demander {
+  background: #22d3ee;
+}
+
+.action-btn.supplier {
+  background: #34d399;
+}
+
+.action-btn.ghost {
+  background: rgba(30, 41, 59, 0.9);
+  color: #cbd5e1;
+  border: 1rpx solid rgba(148, 163, 184, 0.18);
+}

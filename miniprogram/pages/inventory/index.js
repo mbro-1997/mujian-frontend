@@ -29,6 +29,8 @@ function createEmptyFormData(selectedPendingProp = null) {
 Page({
   data: {
     pendingProps: [],
+    routePropId: null,
+    routeQrCodeId: "",
     selectedPendingProp: null,
     styleOptions: [PLACEHOLDER, ...PROP_STYLE_OPTIONS],
     typeOptions: [PLACEHOLDER, ...PROP_TYPE_OPTIONS],
@@ -39,6 +41,13 @@ Page({
     formData: createEmptyFormData(),
   },
 
+  onLoad(options = {}) {
+    this.setData({
+      routePropId: options.propId ? Number(options.propId) : null,
+      routeQrCodeId: options.qrCodeId || "",
+    });
+  },
+
   async onShow() {
     await this.loadPendingProps();
   },
@@ -47,9 +56,28 @@ Page({
     try {
       const pendingProps = await listPendingFillProps();
       this.setData({ pendingProps });
+      this.preselectRouteProp(pendingProps);
     } catch (err) {
       wx.showToast({ title: err.message || "加载待扫码道具失败", icon: "none" });
     }
+  },
+
+  preselectRouteProp(pendingProps) {
+    if (!this.data.routePropId || this.data.selectedPendingProp) {
+      return;
+    }
+    const selectedPendingProp = pendingProps.find((item) => item.id === this.data.routePropId);
+    if (!selectedPendingProp) {
+      wx.showToast({ title: "该二维码不可录入或已被处理", icon: "none" });
+      return;
+    }
+    this.setData({
+      selectedPendingProp,
+      styleIndex: 0,
+      typeIndex: 0,
+      fireResistantIndex: 0,
+      formData: createEmptyFormData(selectedPendingProp),
+    });
   },
 
   choosePendingProp(e) {

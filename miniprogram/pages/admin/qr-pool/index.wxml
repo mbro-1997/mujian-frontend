@@ -1,5 +1,5 @@
 <view class="page">
-  <button class="create-btn" loading="{{generating}}" bindtap="generateQr">生成二维码</button>
+  <button class="create-btn" loading="{{generating}}" bindtap="generateQr">生成小程序码</button>
 
   <view class="filter-actions">
     <button class="filter-btn {{!showHistory ? 'active' : ''}}" bindtap="showActiveList">未登记二维码</button>
@@ -7,12 +7,34 @@
   </view>
 
   <view class="card" wx:for="{{list}}" wx:key="id">
-    <view class="title">{{item.name || '待登记道具'}}</view>
-    <view class="line">道具ID：{{item.id}}</view>
-    <view class="line">二维码标识：{{item.qrCodeId}}</view>
-    <view class="line">登记状态：{{item.fillStatus === 'pending_fill' ? '未登记' : '已登记'}}</view>
-    <view class="line" wx:if="{{item.statusText}}">当前状态：{{item.statusText}}</view>
-    <button class="copy-btn" data-code="{{item.qrCodeId}}" bindtap="copyCode">复制二维码标识</button>
+    <view class="card-main">
+      <image
+        wx:if="{{item.qrImageFullUrl}}"
+        class="qr-image"
+        src="{{item.qrImageFullUrl}}"
+        mode="aspectFit"
+        data-url="{{item.qrImageFullUrl}}"
+        bindtap="previewQr"
+      />
+      <view class="qr-missing" wx:else>图片遗失</view>
+      <view class="info">
+        <view class="title">{{item.name || '待登记道具'}}</view>
+        <view class="line">道具ID：{{item.id}}</view>
+        <view class="line">二维码标识：{{item.qrCodeId}}</view>
+        <view class="line">登记状态：{{item.registerText}}</view>
+        <view class="line" wx:if="{{item.statusText}}">当前状态：{{item.statusText}}</view>
+      </view>
+    </view>
+
+    <view class="actions">
+      <button class="copy-btn" data-code="{{item.qrCodeId}}" bindtap="copyCode">复制标识</button>
+      <button
+        wx:if="{{!showHistory}}"
+        class="danger-btn"
+        data-id="{{item.id}}"
+        bindtap="revokeQr"
+      >作废</button>
+    </view>
   </view>
 
   <view class="empty-list" wx:if="{{!list.length}}">

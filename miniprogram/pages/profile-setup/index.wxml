@@ -1,0 +1,40 @@
+<view class="profile-page">
+  <view class="hero-card">
+    <view class="eyebrow">微信官方登录</view>
+    <view class="title">完善账号资料</view>
+    <view class="desc">当前账号已通过 wx.login 识别 openid。请补充头像、昵称并授权手机号后，再选择租赁方或工厂方身份。</view>
+  </view>
+
+  <view class="form-card">
+    <view class="avatar-row">
+      <button class="avatar-button" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image class="avatar" src="{{avatarUrl}}" mode="aspectFill" />
+      </button>
+      <view class="avatar-copy">
+        <view class="field-title">头像</view>
+        <view class="field-tip">点击头像使用微信官方头像选择能力</view>
+      </view>
+    </view>
+
+    <view class="field-block">
+      <view class="field-title">昵称</view>
+      <input class="input" type="nickname" placeholder="请输入微信昵称" value="{{nickname}}" bindinput="onNicknameInput" />
+    </view>
+
+    <view class="field-block">
+      <view class="field-title">手机号</view>
+      <view class="phone-box">
+        <view class="phone-value">{{phone || '未授权手机号'}}</view>
+        <button class="phone-button" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber" loading="{{phoneLoading}}">
+          {{phone ? '重新授权' : '授权手机号'}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <view class="action-card">
+    <button class="action-btn demander" loading="{{loading}}" bindtap="enterDemander">进入租赁端</button>
+    <button class="action-btn supplier" loading="{{loading}}" bindtap="enterFactory">申请工厂入驻</button>
+    <button class="action-btn ghost" bindtap="backToRole">返回角色选择</button>
+  </view>
+</view>

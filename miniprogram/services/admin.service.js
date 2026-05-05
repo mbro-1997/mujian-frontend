@@ -112,6 +112,13 @@ function getAdminQrProps() {
   return request({ url: "/admin/props/qr-codes" });
 }
 
+function revokePropQrCode(propId) {
+  return request({
+    url: `/admin/props/qr-codes/${propId}/revoke`,
+    method: "POST",
+  });
+}
+
 function bindUserRole(id, role) {
   return request({
     url: `/admin/users/${id}/roles`,
@@ -149,6 +156,7 @@ module.exports = {
   generatePropQrCode,
   getPendingFillProps,
   getAdminQrProps,
+  revokePropQrCode,
   bindUserRole,
   unbindUserRole,
 };

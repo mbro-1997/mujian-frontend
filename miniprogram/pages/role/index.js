@@ -10,6 +10,7 @@ const {
   loginByRole,
   bindDemanderRole,
   resolveEntryPath,
+  shouldSetupProfile,
 } = require("../../services/user.service");
 const { KEYS, getItem, setItem } = require("../../store/local-db");
 
@@ -136,6 +137,10 @@ Page({
         canEnterSupplier: (user.roleBindings || []).includes("supplier"),
         canEnterAdmin: (user.roleBindings || []).includes("admin"),
       });
+      if (shouldSetupProfile(user)) {
+        wx.navigateTo({ url: "/pages/profile-setup/index" });
+        return;
+      }
       if (user.defaultEntry && user.defaultEntry !== "role_select") {
         this.redirectByUser(user);
         return;
@@ -201,6 +206,12 @@ Page({
   },
 
   redirectByUser(user) {
+    const pendingQrCodeId = getItem(KEYS.PENDING_QR_CODE_ID, "");
+    if (pendingQrCodeId) {
+      setItem(KEYS.PENDING_QR_CODE_ID, "");
+      wx.reLaunch({ url: `/pages/qr-entry/index?q=${encodeURIComponent(pendingQrCodeId)}` });
+      return;
+    }
     const url = resolveEntryPath(user.defaultEntry);
     if (url === "/pages/role/index") {
       return;

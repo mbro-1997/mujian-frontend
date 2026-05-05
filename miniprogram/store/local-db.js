@@ -10,6 +10,7 @@ const KEYS = {
   SELECTED_ACCOUNT: "selectedAccount",
   SELECTED_ROLE: "selectedRole",
   AUTH_TOKEN: "authToken",
+  PENDING_QR_CODE_ID: "pendingQrCodeId",
   ROLE_ENTRY_HOLD_UNTIL: "roleEntryHoldUntil",
   INITED: "mock_inited",
 };
