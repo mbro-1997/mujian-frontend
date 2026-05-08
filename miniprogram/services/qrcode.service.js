@@ -6,7 +6,8 @@ function resolveQrCode(qrCodeId) {
 }
 
 function buildQrImageUrl(qrCodeId) {
-  return `${API_BASE_URL}/qrcodes/${encodeURIComponent(qrCodeId)}/image`;
+  const apiOrigin = API_BASE_URL.replace(/\/api\/?$/, "");
+  return `${apiOrigin}/api/qrcodes/${encodeURIComponent(qrCodeId)}/image`;
 }
 
 module.exports = {

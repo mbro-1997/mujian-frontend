@@ -284,6 +284,14 @@ page {
   font-weight: 700;
 }
 
+.action-btn.scan-action {
+  min-width: 42%;
+  height: 68rpx;
+  line-height: 68rpx;
+  font-size: 24rpx;
+  letter-spacing: 1rpx;
+}
+
 .action-btn::after,
 .mini-scan-btn::after {
   border: none;
@@ -311,6 +319,16 @@ page {
   background: transparent;
   border: 1rpx solid rgba(34, 211, 238, 0.28);
   color: #22d3ee;
+}
+
+.action-btn.disabled {
+  background: rgba(30, 41, 59, 0.62);
+  border: 1rpx solid rgba(148, 163, 184, 0.14);
+  color: #64748b;
+}
+
+.action-btn[disabled] {
+  opacity: 1;
 }
 
 .empty-state {
@@ -474,6 +492,40 @@ page {
   border-radius: 18rpx;
   padding: 0 14rpx;
   background: rgba(30, 41, 59, 0.42);
+}
+
+.scan-confirm {
+  margin-top: 18rpx;
+  border: 1rpx solid rgba(34, 211, 238, 0.2);
+  border-radius: 20rpx;
+  padding: 22rpx;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.scan-confirm-title {
+  color: #f8fafc;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.scan-confirm-code {
+  margin-top: 12rpx;
+  color: #67e8f9;
+  font-size: 24rpx;
+  word-break: break-all;
+}
+
+.scan-confirm-prop {
+  margin-top: 10rpx;
+  color: #e2e8f0;
+  font-size: 25rpx;
+}
+
+.scan-confirm-tip {
+  margin-top: 14rpx;
+  color: #94a3b8;
+  font-size: 23rpx;
+  line-height: 1.6;
 }
 
 .scan-item {

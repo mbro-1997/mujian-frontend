@@ -1,6 +1,6 @@
 .order-detail-page {
   min-height: 100vh;
-  padding: 16rpx 16rpx 140rpx;
+  padding: 16rpx 16rpx 500rpx;
   box-sizing: border-box;
 }
 
@@ -235,11 +235,17 @@
   border-top: 1px solid rgba(148, 163, 184, 0.18);
   box-sizing: border-box;
   display: flex;
+  flex-direction: column;
   gap: 14rpx;
 }
 
+.scan-action-row {
+  display: flex;
+  gap: 14rpx;
+  width: 100%;
+}
+
 .bottom-btn {
-  flex: 1;
   height: 82rpx;
   line-height: 82rpx;
   border-radius: 18rpx;
@@ -248,10 +254,90 @@
   color: #fff;
   font-size: 28rpx;
   font-weight: 800;
+  box-sizing: border-box;
+}
+
+.bottom-btn.full {
+  width: 100%;
+}
+
+.bottom-btn.half {
+  flex: 1;
+  min-width: 0;
+}
+
+.bottom-btn.scan-btn {
+  height: 82rpx;
+  line-height: 82rpx;
+  font-size: 28rpx;
+  background: linear-gradient(135deg, #22d3ee, #0891b2);
+  color: #03111a;
+}
+
+.bottom-btn.disabled {
+  background: rgba(30, 41, 59, 0.72);
+  color: #64748b;
 }
 
 .bottom-btn.secondary {
   background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.bottom-btn.subtle {
+  background: rgba(30, 41, 59, 0.92);
+  border: 1rpx solid rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+
+.dispute-tip {
+  margin-top: 12rpx;
+  padding: 18rpx;
+  border-radius: 18rpx;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1rpx solid rgba(251, 191, 36, 0.18);
+  color: #fbbf24;
+  font-size: 23rpx;
+  line-height: 1.6;
+}
+
+.scan-order-id {
+  margin-top: 10rpx;
+  color: #94a3b8;
+  font-size: 24rpx;
+}
+
+.scan-confirm {
+  margin-top: 18rpx;
+  border: 1rpx solid rgba(34, 211, 238, 0.2);
+  border-radius: 20rpx;
+  padding: 22rpx;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.scan-confirm-title {
+  color: #f8fafc;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.scan-confirm-code {
+  margin-top: 12rpx;
+  color: #67e8f9;
+  font-size: 24rpx;
+  word-break: break-all;
+}
+
+.scan-confirm-prop {
+  margin-top: 10rpx;
+  color: #e2e8f0;
+  font-size: 25rpx;
+}
+
+.scan-confirm-tip {
+  margin-top: 14rpx;
+  color: #94a3b8;
+  font-size: 23rpx;
+  line-height: 1.6;
 }
 
 .planet-rate {
@@ -283,4 +369,49 @@
   min-height: 170rpx;
   line-height: 1.5;
   padding-top: 18rpx;
+}
+
+.evidence-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+}
+
+.evidence-item,
+.evidence-add {
+  position: relative;
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 18rpx;
+  overflow: hidden;
+  background: rgba(30, 41, 59, 0.72);
+  border: 1rpx solid rgba(148, 163, 184, 0.16);
+}
+
+.evidence-img {
+  width: 100%;
+  height: 100%;
+}
+
+.evidence-remove {
+  position: absolute;
+  right: 8rpx;
+  top: 8rpx;
+  width: 38rpx;
+  height: 38rpx;
+  line-height: 34rpx;
+  border-radius: 50%;
+  text-align: center;
+  background: rgba(2, 6, 23, 0.76);
+  color: #fff;
+  font-size: 30rpx;
+}
+
+.evidence-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #22d3ee;
+  font-size: 25rpx;
+  font-weight: 700;
 }

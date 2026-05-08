@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="header-card">
+    <view class="title">{{orderNo}}</view>
+    <view class="sub">订单双方评价详情</view>
+  </view>
+
+  <template name="reviewCard">
+    <view class="card" wx:if="{{review}}">
+      <view class="card-head">
+        <view class="review-title">{{review.roleText}}</view>
+        <view class="status {{review.visible ? 'visible' : 'hidden'}}">{{review.visible ? '显示中' : '已隐藏'}}</view>
+      </view>
+      <view class="line">评价人：{{review.user || '-'}}</view>
+      <view class="line">综合评分：{{review.scoreText}}</view>
+      <view class="line">道具评分：{{review.propScoreText}}</view>
+      <view class="line">履约体验评分：{{review.counterpartyScoreText}}</view>
+      <view class="content">{{review.content || '无文字评价'}}</view>
+      <view class="line">{{review.auto ? '系统默认好评' : '用户主动评价'}} · {{review.createdAt || '-'}}</view>
+      <view class="actions">
+        <button class="btn hide" data-id="{{review.id}}" bindtap="hide">隐藏</button>
+        <button class="btn del" data-id="{{review.id}}" bindtap="remove">删除</button>
+      </view>
+    </view>
+    <view class="empty-card" wx:else>暂无该方评价</view>
+  </template>
+
+  <template is="reviewCard" data="{{review: demanderReview}}" />
+  <template is="reviewCard" data="{{review: supplierReview}}" />
+</view>

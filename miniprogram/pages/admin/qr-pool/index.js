@@ -8,7 +8,8 @@ const {
 function absoluteUrl(url) {
   if (!url) return "";
   if (/^https?:\/\//.test(url)) return url;
-  return `${API_BASE_URL}${url.startsWith("/") ? url : `/${url}`}`;
+  const apiOrigin = API_BASE_URL.replace(/\/api\/?$/, "");
+  return `${apiOrigin}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
 Page({
@@ -28,6 +29,7 @@ Page({
       const allList = (await getAdminQrProps()).map((item) => ({
         ...item,
         qrImageFullUrl: absoluteUrl(item.qrCodeUrl),
+        qrImageViewUrl: item.qrCodeUrl ? `${absoluteUrl(item.qrCodeUrl)}?v=${item.id || item.qrCodeId}` : "",
         registerText: item.fillStatus === "pending_fill"
           ? "未登记"
           : item.fillStatus === "revoked" || item.qrStatus === "revoked"
@@ -108,8 +110,9 @@ Page({
           const allList = await revokePropQrCode(propId);
           this.setData({
             allList: (allList || []).map((item) => ({
-              ...item,
-              qrImageFullUrl: absoluteUrl(item.qrCodeUrl),
+            ...item,
+            qrImageFullUrl: absoluteUrl(item.qrCodeUrl),
+              qrImageViewUrl: item.qrCodeUrl ? `${absoluteUrl(item.qrCodeUrl)}?v=${item.id || item.qrCodeId}` : "",
               registerText: item.fillStatus === "pending_fill" ? "未登记" : "已作废",
             })),
           });

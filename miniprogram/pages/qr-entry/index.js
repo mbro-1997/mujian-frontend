@@ -19,6 +19,7 @@ function extractQrCodeId(options = {}) {
 Page({
   data: {
     qrCodeId: "",
+    source: "",
     title: "正在识别二维码",
     message: "请稍候，系统正在解析二维码状态。",
     showRoleButton: false,
@@ -27,7 +28,7 @@ Page({
 
   async onLoad(options) {
     const qrCodeId = extractQrCodeId(options);
-    this.setData({ qrCodeId });
+    this.setData({ qrCodeId, source: options.source || "" });
     if (!qrCodeId) {
       this.showMessage("二维码无效", "未识别到二维码业务参数。", true);
       return;
@@ -50,7 +51,7 @@ Page({
       }
       if (result.redirectType === "inventory_form") {
         wx.redirectTo({
-          url: `/pages/inventory/index?propId=${result.propId}&qrCodeId=${encodeURIComponent(qrCodeId)}`,
+          url: `/pages/inventory/index?propId=${result.propId}&qrCodeId=${encodeURIComponent(qrCodeId)}&source=${encodeURIComponent(this.data.source || "")}`,
         });
         return;
       }

@@ -53,6 +53,8 @@ function normalizeOrder(item) {
     canScanOutbound: !!item.canScanOutbound,
     canScanReturn: !!item.canScanReturn,
     canReview: !!item.canReview,
+    canApplyDispute: !!item.canApplyDispute,
+    disputeCount: Number(item.disputeCount || 0),
     demanderReviewed: !!item.demanderReviewed,
     supplierReviewed: !!item.supplierReviewed,
     confirmDeadlineAt: item.confirmDeadlineAt || null,
@@ -139,6 +141,24 @@ async function scanReturnProp(orderId, propId) {
   return normalizeOrder(data);
 }
 
+async function scanOutboundQrCode(orderId, qrCodeId) {
+  const data = await request({
+    url: `/factory/orders/${orderId}/outbound-scan`,
+    method: "POST",
+    data: { qrCodeId },
+  });
+  return normalizeOrder(data);
+}
+
+async function scanReturnQrCode(orderId, qrCodeId) {
+  const data = await request({
+    url: `/factory/orders/${orderId}/return-scan`,
+    method: "POST",
+    data: { qrCodeId },
+  });
+  return normalizeOrder(data);
+}
+
 async function submitOrderReview(orderId, reviewPayload) {
   const data = await request({
     url: `/orders/${orderId}/reviews`,
@@ -149,6 +169,19 @@ async function submitOrderReview(orderId, reviewPayload) {
       counterpartyScore: Number(reviewPayload.counterpartyScore || reviewPayload.score || 5),
       content: reviewPayload.content || "",
       reviewerRole: reviewPayload.reviewerRole || getSelectedRole(),
+    },
+  });
+  return normalizeOrder(data);
+}
+
+async function submitOrderDispute(orderId, disputePayload) {
+  const data = await request({
+    url: `/orders/${orderId}/disputes`,
+    method: "POST",
+    data: {
+      reason: disputePayload.reason || "",
+      claimAmount: Number(disputePayload.claimAmount || 0),
+      evidenceUrls: disputePayload.evidenceUrls || "",
     },
   });
   return normalizeOrder(data);
@@ -171,7 +204,10 @@ module.exports = {
   rejectOrderByFactory,
   scanOutboundProp,
   scanReturnProp,
+  scanOutboundQrCode,
+  scanReturnQrCode,
   submitOrderReview,
+  submitOrderDispute,
   expireTimedOutOrders,
   normalizeOrder,
 };

@@ -2,6 +2,7 @@ const { listProps } = require("../../services/prop.service");
 const { listOrders } = require("../../services/order.service");
 const { PROP_STATUS, ORDER_STATUS } = require("../../constants/status");
 const { loginAsRole, getSelectedRole } = require("../../services/user.service");
+const { scanQrCode } = require("../../utils/qr-scan");
 
 Page({
   data: {
@@ -64,7 +65,12 @@ Page({
     }
   },
 
-  scanCode() {
-    wx.navigateTo({ url: "/pages/inventory/index?mode=scan" });
+  async scanCode() {
+    try {
+      const { qrCodeId } = await scanQrCode();
+      wx.navigateTo({ url: `/pages/qr-entry/index?q=${encodeURIComponent(qrCodeId)}&source=admin_publish` });
+    } catch (err) {
+      wx.showToast({ title: err.message || "扫码失败", icon: "none" });
+    }
   },
 });

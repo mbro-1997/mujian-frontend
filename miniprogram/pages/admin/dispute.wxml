@@ -1,12 +1,53 @@
 <view class="page">
+  <view class="hint-card">仲裁记录按订单生成，管理员需结合订单节点、扫码记录、押金上限和双方说明进行裁定。</view>
+
   <view class="card" wx:for="{{list}}" wx:key="id">
-    <view class="title">{{item.title}}</view>
-    <view class="line">纠纷单号：{{item.id}}</view>
-    <view class="line">订单号：{{item.orderId}}</view>
+    <view class="card-head">
+      <view class="title">{{item.title}}</view>
+      <view class="status {{item.status}}">{{item.statusText}}</view>
+    </view>
+    <view class="line">仲裁单号：{{item.id}}</view>
+    <view class="line">订单：{{item.orderNo || item.orderId}}</view>
+    <view class="line">发起方：{{item.applicant || '-'}}（{{item.applicantRoleText || '-'}}）</view>
+    <view class="line">发起节点：{{item.applyStageText || '-'}}</view>
+    <view class="amount-row">
+      <view class="amount-card">
+        <view class="amount-label">申请金额</view>
+        <view class="amount-value">¥{{item.claimAmount}}</view>
+      </view>
+      <view class="amount-card">
+        <view class="amount-label">押金上限</view>
+        <view class="amount-value">¥{{item.depositAmount}}</view>
+      </view>
+    </view>
+    <view class="content">{{item.content}}</view>
+    <view class="evidence-row" wx:if="{{item.evidenceImages && item.evidenceImages.length}}">
+      <image
+        wx:for="{{item.evidenceImages}}"
+        wx:key="*this"
+        src="{{item}}"
+        mode="aspectFill"
+        class="evidence-img"
+        data-url="{{item}}"
+        data-urls="{{item.evidenceImages}}"
+        bindtap="previewEvidence"
+      />
+    </view>
     <view class="line">申请时间：{{item.createdAt}}</view>
-    <view class="line" wx:if="{{item.resolution}}">裁定结果：{{item.resolution}}</view>
-    <view class="status {{item.status}}">{{item.statusText}}</view>
-    <button wx:if="{{item.status === 'pending'}}" class="btn" data-id="{{item.id}}" bindtap="resolve">确认仲裁</button>
+    <view class="resolution" wx:if="{{item.resolution}}">裁定结果：{{item.resolution}}</view>
+    <button wx:if="{{item.status === 'pending'}}" class="btn" data-id="{{item.id}}" bindtap="openResolve">填写裁定结果</button>
   </view>
-  <view class="empty-list" wx:if="{{!list.length}}">暂无纠纷数据</view>
+
+  <view class="empty-list" wx:if="{{!list.length}}">暂无仲裁数据</view>
+
+  <view class="modal" wx:if="{{showResolveModal}}" bindtap="closeResolve">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">仲裁裁定</view>
+      <textarea class="resolve-input" placeholder="请输入裁定结果、责任划分和押金处理建议" value="{{resolution}}" bindinput="updateResolution" />
+      <view class="modal-actions">
+        <view class="modal-btn secondary" bindtap="closeResolve">取消</view>
+        <view class="modal-btn primary" bindtap="submitResolve">确认裁定</view>
+      </view>
+    </view>
+  </view>
 </view>

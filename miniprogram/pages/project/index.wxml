@@ -167,18 +167,18 @@
       </view>
     </view>
 
-    <view class="modal" wx:if="{{showPayModal}}" bindtap="closePayModal">
-      <view class="modal-content" catchtap="true">
+    <view class="modal" wx:if="{{showPayModal}}">
+      <view class="modal-content pay-modal-content" catchtap="true">
         <view class="modal-title">支付订单</view>
         <view class="form-item">
           <view class="form-label">租赁开始日期</view>
-          <picker mode="date" value="{{rentalStartDate}}" bindchange="updateRentalStartDate">
+          <picker mode="date" value="{{rentalStartDate}}" start="{{today}}" bindchange="updateRentalStartDate">
             <view class="form-input date-picker {{rentalStartDate ? '' : 'placeholder'}}">{{rentalStartDate || '请选择开始日期'}}</view>
           </picker>
         </view>
         <view class="form-item">
           <view class="form-label">租赁结束日期</view>
-          <picker mode="date" value="{{rentalEndDate}}" start="{{rentalStartDate}}" bindchange="updateRentalEndDate">
+          <picker mode="date" value="{{rentalEndDate}}" start="{{rentalStartDate || today}}" bindchange="updateRentalEndDate">
             <view class="form-input date-picker {{rentalEndDate ? '' : 'placeholder'}}">{{rentalEndDate || '请选择结束日期'}}</view>
           </picker>
         </view>

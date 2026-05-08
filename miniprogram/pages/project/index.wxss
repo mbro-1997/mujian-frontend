@@ -61,6 +61,11 @@
   padding-top: 18rpx;
 }
 
+.pay-modal-content {
+  width: 94vw;
+  max-width: 680rpx;
+}
+
 .project-name {
   font-size: 30rpx;
   font-weight: 700;

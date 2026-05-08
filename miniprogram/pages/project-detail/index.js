@@ -42,6 +42,14 @@ function calcRentalDays(startDate, endDate) {
   return Math.floor((end - start) / 86400000) + 1;
 }
 
+function getTodayDateString() {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function buildPayInfo(project, rentalDays = 0) {
   const props = project.props || [];
   const days = normalizeRentalDays(rentalDays);
@@ -56,6 +64,7 @@ Page({
     projectId: null,
     currentProject: null,
     originalProject: null,
+    today: getTodayDateString(),
     showPayModal: false,
     rentalStartDate: "",
     rentalEndDate: "",
@@ -192,6 +201,10 @@ Page({
 
   updateRentalStartDate(e) {
     const rentalStartDate = e.detail.value || "";
+    if (rentalStartDate && rentalStartDate < this.data.today) {
+      wx.showToast({ title: "开始日期不能早于今天", icon: "none" });
+      return;
+    }
     const rentalEndDate = this.data.rentalEndDate && this.data.rentalEndDate < rentalStartDate ? "" : this.data.rentalEndDate;
     const rentalDays = calcRentalDays(rentalStartDate, rentalEndDate);
     this.setData({
@@ -204,6 +217,10 @@ Page({
 
   updateRentalEndDate(e) {
     const rentalEndDate = e.detail.value || "";
+    if (this.data.rentalStartDate && rentalEndDate && rentalEndDate < this.data.rentalStartDate) {
+      wx.showToast({ title: "结束日期不能早于开始日期", icon: "none" });
+      return;
+    }
     const rentalDays = calcRentalDays(this.data.rentalStartDate, rentalEndDate);
     this.setData({
       rentalEndDate,
@@ -233,6 +250,10 @@ Page({
     const rentalDays = calcRentalDays(this.data.rentalStartDate, this.data.rentalEndDate);
     if (!this.data.rentalStartDate || !this.data.rentalEndDate) {
       wx.showToast({ title: "请选择租赁起止日期", icon: "none" });
+      return;
+    }
+    if (this.data.rentalStartDate < this.data.today) {
+      wx.showToast({ title: "开始日期不能早于今天", icon: "none" });
       return;
     }
     if (!rentalDays) {

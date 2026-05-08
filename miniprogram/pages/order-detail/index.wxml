@@ -3,7 +3,7 @@
     <view class="hero-top">
       <view>
         <view class="page-title">订单详情</view>
-        <view class="order-no">订单号：{{order.id}}</view>
+        <view class="order-no">订单号：{{order.orderNo || order.id}}</view>
       </view>
       <view class="status-tag {{order.statusClass}}">{{order.statusText}}</view>
     </view>
@@ -55,8 +55,36 @@
   </view>
 
   <view class="bottom-actions">
-    <view wx:if="{{order.canReview}}" class="bottom-btn secondary" bindtap="openReviewModal">评价订单</view>
-    <view class="bottom-btn" bindtap="goBack">关闭</view>
+    <view class="scan-action-row" wx:if="{{isSupplier && (order.showOutboundScan || order.showReturnScan)}}">
+      <view wx:if="{{order.showOutboundScan && order.canScanOutboundNow}}" class="bottom-btn scan-btn half" data-mode="outbound" bindtap="openScanModal">出库扫码</view>
+      <view wx:if="{{order.showOutboundScan && !order.canScanOutboundNow}}" class="bottom-btn disabled half">{{order.outboundDisabledText}}</view>
+      <view wx:if="{{order.showReturnScan && order.canScanReturnNow}}" class="bottom-btn scan-btn half" data-mode="return" bindtap="openScanModal">入库扫码</view>
+      <view wx:if="{{order.showReturnScan && !order.canScanReturnNow}}" class="bottom-btn disabled half">{{order.returnDisabledText}}</view>
+    </view>
+    <view wx:if="{{order.canReview}}" class="bottom-btn secondary full" bindtap="openReviewModal">评价订单</view>
+    <view wx:if="{{order.canApplyDispute}}" class="bottom-btn subtle full" bindtap="openDisputeModal">申请仲裁</view>
+    <view class="bottom-btn full" bindtap="goBack">关闭</view>
+  </view>
+
+  <view class="modal" wx:if="{{showScanModal}}">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">{{scanMode === 'outbound' ? '确认出库扫码' : '确认入库扫码'}}</view>
+      <view class="scan-order-id">订单号：{{order.orderNo || order.id}}</view>
+      <view class="scan-order-id" wx:if="{{scanMode === 'outbound'}}">出库进度：{{order.outboundScannedCount}} / {{order.propCount}}</view>
+      <view class="scan-order-id" wx:else>入库进度：{{order.returnScannedCount}} / {{order.propCount}}</view>
+
+      <view class="scan-confirm">
+        <view class="scan-confirm-title">已识别小程序码</view>
+        <view class="scan-confirm-code">{{scanQrCodeId}}</view>
+        <view class="scan-confirm-prop" wx:if="{{scanPropName}}">道具：{{scanPropName}}</view>
+        <view class="scan-confirm-tip">请核对道具属于当前订单和当前工厂，确认后才会提交扫码结果。</view>
+      </view>
+
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeScanModal">取消</view>
+        <view class="modal-button primary" bindtap="confirmScannedQr">{{scanMode === 'outbound' ? '确认出库' : '确认入库'}}</view>
+      </view>
+    </view>
   </view>
 
   <view class="modal" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
@@ -65,13 +93,13 @@
       <view class="form-item">
         <view class="form-label">道具本身评分</view>
         <view class="planet-rate">
-          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewPropScore" class="planet {{reviewPropScore >= item ? 'active' : ''}}">🪐</text>
+          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewPropScore" class="planet {{reviewPropScore >= item ? 'active' : ''}}">🌟</text>
         </view>
       </view>
       <view class="form-item">
-        <view class="form-label">合作体验评分</view>
+        <view class="form-label">履约体验评分</view>
         <view class="planet-rate">
-          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewCounterpartyScore" class="planet {{reviewCounterpartyScore >= item ? 'active' : ''}}">🪐</text>
+          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" data-score="{{item}}" bindtap="updateReviewCounterpartyScore" class="planet {{reviewCounterpartyScore >= item ? 'active' : ''}}">🌟</text>
         </view>
       </view>
       <view class="form-item">
@@ -81,6 +109,35 @@
       <view class="modal-buttons">
         <view class="modal-button secondary" bindtap="closeReviewModal">取消</view>
         <view class="modal-button primary" bindtap="submitReview">提交评价</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="modal" wx:if="{{showDisputeModal}}">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">订单仲裁申请</view>
+      <view class="dispute-tip">请写清楚争议原因、发生节点和期望处理方式。仲裁金额不能超过当前订单押金总额 ¥{{order.deposit}}。</view>
+      <view class="form-item">
+        <view class="form-label">仲裁原因</view>
+        <textarea class="form-input review-textarea" placeholder="例如：归还时双方对道具破损责任存在争议" value="{{disputeReason}}" bindinput="updateDisputeReason" />
+      </view>
+      <view class="form-item">
+        <view class="form-label">仲裁金额（元）</view>
+        <input class="form-input" type="digit" placeholder="可填 0，最高不超过押金总额" value="{{disputeAmount}}" bindinput="updateDisputeAmount" />
+      </view>
+      <view class="form-item">
+        <view class="form-label">证明图片（最多 3 张，选填）</view>
+        <view class="evidence-grid">
+          <view class="evidence-item" wx:for="{{disputeImages}}" wx:key="*this">
+            <image src="{{item}}" mode="aspectFill" class="evidence-img" bindtap="previewDisputeImage" data-url="{{item}}" />
+            <view class="evidence-remove" bindtap="removeDisputeImage" data-index="{{index}}">×</view>
+          </view>
+          <view wx:if="{{disputeImages.length < 3}}" class="evidence-add" bindtap="chooseDisputeImages">+ 上传</view>
+        </view>
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-button secondary" bindtap="closeDisputeModal">取消</view>
+        <view class="modal-button primary" bindtap="submitDispute">提交仲裁</view>
       </view>
     </view>
   </view>

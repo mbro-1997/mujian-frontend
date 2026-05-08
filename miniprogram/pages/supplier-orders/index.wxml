@@ -69,7 +69,7 @@
 
       <view class="order-card-progress">
         <view class="progress-item">出库扫码 <text>{{item.outboundScannedCount}}/{{item.propCount}}</text></view>
-        <view class="progress-item">归还扫码 <text>{{item.returnScannedCount}}/{{item.propCount}}</text></view>
+        <view class="progress-item">入库扫码 <text>{{item.returnScannedCount}}/{{item.propCount}}</text></view>
       </view>
 
       <view wx:if="{{item.status === 'wait_review'}}" class="review-progress">
@@ -79,11 +79,13 @@
       <view class="order-card-actions" catchtap="noop">
         <button wx:if="{{item.canFactoryConfirm}}" class="action-btn primary" data-id="{{item.id}}" bindtap="confirmFactoryOrder">确认接单</button>
         <button wx:if="{{item.canFactoryReject}}" class="action-btn secondary danger" data-id="{{item.id}}" bindtap="openRejectOrderModal">驳回订单</button>
-        <button wx:if="{{item.canScanOutbound}}" class="action-btn primary" data-id="{{item.id}}" data-mode="outbound" bindtap="openScanModal">出库扫码</button>
-        <button wx:if="{{item.canScanReturn && item.status === 'renting'}}" class="action-btn secondary" data-id="{{item.id}}" data-mode="return" bindtap="openScanModal">归还扫码</button>
+        <button wx:if="{{item.showOutboundScan && item.canScanOutboundNow}}" class="action-btn scan-action primary" data-id="{{item.id}}" data-mode="outbound" bindtap="openScanModal">出库扫码</button>
+        <button wx:if="{{item.showOutboundScan && !item.canScanOutboundNow}}" class="action-btn scan-action disabled" disabled>{{item.outboundDisabledText}}</button>
+        <button wx:if="{{item.showReturnScan && item.canScanReturnNow}}" class="action-btn scan-action primary" data-id="{{item.id}}" data-mode="return" bindtap="openScanModal">入库扫码</button>
+        <button wx:if="{{item.showReturnScan && !item.canScanReturnNow}}" class="action-btn scan-action disabled" disabled>{{item.returnDisabledText}}</button>
         <button wx:if="{{item.canReview}}" class="action-btn primary" data-id="{{item.id}}" bindtap="openReviewModal">评价订单</button>
-        <button wx:if="{{!item.canFactoryConfirm && !item.canFactoryReject && !item.canScanOutbound && !(item.canScanReturn && item.status === 'renting') && !item.canReview}}" class="action-btn secondary" data-id="{{item.id}}" bindtap="openOrderDetail">查看详情</button>
-        <button wx:if="{{item.canFactoryConfirm || item.canFactoryReject || item.canScanOutbound || (item.canScanReturn && item.status === 'renting') || item.canReview}}" class="action-btn ghost" data-id="{{item.id}}" bindtap="openOrderDetail">查看详情</button>
+        <button wx:if="{{!item.canFactoryConfirm && !item.canFactoryReject && !item.showOutboundScan && !item.showReturnScan && !item.canReview}}" class="action-btn secondary" data-id="{{item.id}}" bindtap="openOrderDetail">查看详情</button>
+        <button wx:if="{{item.canFactoryConfirm || item.canFactoryReject || item.showOutboundScan || item.showReturnScan || item.canReview}}" class="action-btn ghost" data-id="{{item.id}}" bindtap="openOrderDetail">查看详情</button>
       </view>
     </view>
 
@@ -139,25 +141,21 @@
 
   <view class="modal" wx:if="{{showScanModal}}" bindtap="closeScanModal">
     <view class="modal-content" catchtap="true">
-      <view class="modal-title">{{scanMode === 'outbound' ? '出库扫码' : '归还扫码'}}</view>
+      <view class="modal-title">{{scanMode === 'outbound' ? '确认出库扫码' : '确认入库扫码'}}</view>
       <view class="scan-order-id">订单号：{{currentOrder.id}}</view>
-      <view class="scan-order-id" wx:if="{{scanMode === 'outbound'}}">进度：{{currentOrder.outboundScannedCount}} / {{currentOrder.propCount}}</view>
-      <view class="scan-order-id" wx:else>进度：{{currentOrder.returnScannedCount}} / {{currentOrder.propCount}}</view>
+      <view class="scan-order-id" wx:if="{{scanMode === 'outbound'}}">出库进度：{{currentOrder.outboundScannedCount}} / {{currentOrder.propCount}}</view>
+      <view class="scan-order-id" wx:else>入库进度：{{currentOrder.returnScannedCount}} / {{currentOrder.propCount}}</view>
 
-      <view class="scan-list">
-        <view class="scan-item" wx:for="{{currentOrder.props}}" wx:key="id">
-          <view class="scan-main">
-            <view class="scan-name">{{item.name}}</view>
-            <view class="scan-meta">状态：{{item.statusText}}</view>
-          </view>
-          <button wx:if="{{(scanMode === 'outbound' && !item.outboundScanned) || (scanMode === 'return' && !item.returnScanned)}}" class="mini-scan-btn primary" size="mini" data-prop-id="{{item.id}}" bindtap="scanOneProp">扫码</button>
-          <button wx:else class="mini-scan-btn disabled" size="mini">已扫码</button>
-        </view>
+      <view class="scan-confirm">
+        <view class="scan-confirm-title">已识别小程序码</view>
+        <view class="scan-confirm-code">{{scanQrCodeId}}</view>
+        <view class="scan-confirm-prop" wx:if="{{scanPropName}}">道具：{{scanPropName}}</view>
+        <view class="scan-confirm-tip">请核对道具属于当前订单和当前工厂，确认后才会提交扫码结果。</view>
       </view>
 
       <view class="modal-buttons">
-        <view class="modal-button secondary" bindtap="closeScanModal">关闭</view>
-        <view class="modal-button primary" bindtap="scanAllRemaining">一键扫完</view>
+        <view class="modal-button secondary" bindtap="closeScanModal">取消</view>
+        <view class="modal-button primary" bindtap="confirmScannedQr">{{scanMode === 'outbound' ? '确认出库' : '确认入库'}}</view>
       </view>
     </view>
   </view>

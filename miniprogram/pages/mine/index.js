@@ -16,6 +16,10 @@ Page({
   },
 
   async onShow() {
+    if (wx.getStorageSync("adminFactoryContext") === "1") {
+      await loginAsRole("admin").catch(() => null);
+      wx.removeStorageSync("adminFactoryContext");
+    }
     await this.loadUserInfo();
     wx.setNavigationBarTitle({ title: "我的" });
 
@@ -47,12 +51,19 @@ Page({
     });
   },
 
-  goAdminWarehouse() {
+  async goAdminWarehouse() {
+    if (this.data.isAdmin) {
+      wx.setStorageSync("adminFactoryContext", "1");
+      await loginAsRole("supplier");
+      wx.navigateTo({ url: "/pages/admin/factory-warehouse?fromAdmin=1" });
+      return;
+    }
     wx.navigateTo({ url: "/pages/admin/factory-warehouse" });
   },
 
   async goAdminOrders() {
     if (this.data.isAdmin) {
+      wx.setStorageSync("adminFactoryContext", "1");
       await loginAsRole("supplier");
       wx.navigateTo({ url: "/pages/supplier-orders/index?fromAdmin=1" });
       return;
@@ -61,6 +72,9 @@ Page({
   },
 
   goAdminPublish() {
+    if (this.data.isAdmin) {
+      wx.setStorageSync("adminFactoryContext", "1");
+    }
     wx.navigateTo({ url: "/pages/admin/factory-publish" });
   },
 
@@ -74,6 +88,10 @@ Page({
 
   viewOrders() {
     wx.switchTab({ url: "/pages/project/index" });
+  },
+
+  viewCreditLogs() {
+    wx.navigateTo({ url: "/pages/credit-log/index" });
   },
 
   viewProjects() {

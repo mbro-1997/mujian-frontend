@@ -1,19 +1,100 @@
-﻿<view class="container" style="padding-bottom: 40rpx;">
-  <view class="action-card" bindtap="scanCode" style="margin: 16rpx 16rpx 14rpx;">
-    <view class="action-title">扫码入库</view>
-    <view class="action-subtitle">快速录入道具资产信息</view>
+<view class="publish-page">
+  <view class="page-title">发布</view>
+
+  <view class="action-card">
+    <view class="action-left">
+      <view class="scan-icon">
+        <view class="scan-dot"></view>
+        <view class="scan-line"></view>
+      </view>
+      <view class="action-copy">
+        <view class="action-title">扫码入库</view>
+        <view class="action-subtitle">快速录入道具资产信息</view>
+      </view>
+    </view>
+    <button class="scan-btn" bindtap="scanCode">立即扫码</button>
   </view>
 
-  <view class="dashboard-grid" style="margin: 0 16rpx 0;">
-    <view class="metric-card metric-main"><view class="metric-label">总资产数</view><view class="metric-value">{{totalProps}}</view><view class="metric-desc">当前库存总量</view></view>
-    <view class="metric-card metric-cyan"><view class="metric-label">空闲资产</view><view class="metric-value">{{idleProps}}</view><view class="metric-desc">可立即租赁</view></view>
-    <view class="metric-card metric-purple"><view class="metric-label">已锁定</view><view class="metric-value">{{lockedProps}}</view><view class="metric-desc">待工厂确认订单</view></view>
-    <view class="metric-card metric-orange"><view class="metric-label">租赁中</view><view class="metric-value">{{rentingProps}}</view><view class="metric-desc">正在执行订单</view></view>
-    <view class="metric-card metric-gray"><view class="metric-label">已下架</view><view class="metric-value">{{offlineProps}}</view><view class="metric-desc">不可租赁</view></view>
-    <view class="metric-card metric-teal"><view class="metric-label">待确认订单</view><view class="metric-value">{{pendingConfirmOrders}}</view><view class="metric-desc">需 1 小时内处理</view></view>
-    <view class="metric-card metric-green"><view class="metric-label">预计日营收</view><view class="metric-value">¥{{dailyRevenue}}</view><view class="metric-desc">租赁中资产日租合计</view></view>
-    <view class="metric-card metric-blue"><view class="metric-label">押金总额</view><view class="metric-value">¥{{totalDeposit}}</view><view class="metric-desc">全资产押金累计</view></view>
-    <view class="metric-card metric-orange"><view class="metric-label">利用率</view><view class="metric-value">{{utilizationRate}}</view><view class="metric-desc">租赁中 / 总资产</view></view>
-    <view class="metric-card metric-cyan"><view class="metric-label">平均日租</view><view class="metric-value">¥{{avgRentPrice}}</view><view class="metric-desc">单件道具均价</view></view>
+  <view class="section-block">
+    <view class="section-title">库存概览</view>
+    <view class="core-grid">
+      <view class="metric-card metric-card-large">
+        <view class="metric-label">总资产数</view>
+        <view class="metric-value metric-total">{{totalProps}}</view>
+        <view class="metric-desc">当前库存总量</view>
+      </view>
+      <view class="metric-card metric-card-large">
+        <view class="metric-label">空闲资产</view>
+        <view class="metric-value metric-brand">{{idleProps}}</view>
+        <view class="metric-desc">可立即租赁</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-block">
+    <view class="section-title">资产状态</view>
+    <view class="status-grid">
+      <view class="status-card">
+        <view class="status-mark status-warning"></view>
+        <view class="status-info">
+          <view class="status-label">已锁定</view>
+          <view class="status-value">{{lockedProps}}</view>
+        </view>
+      </view>
+      <view class="status-card">
+        <view class="status-mark status-muted"></view>
+        <view class="status-info">
+          <view class="status-label">已下架</view>
+          <view class="status-value">{{offlineProps}}</view>
+        </view>
+      </view>
+      <view class="status-card">
+        <view class="status-mark status-brand"></view>
+        <view class="status-info">
+          <view class="status-label">利用率</view>
+          <view class="status-value">{{utilizationRate}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-block">
+    <view class="section-title">订单状态</view>
+    <view class="order-grid">
+      <view class="metric-card">
+        <view class="metric-label">租赁中</view>
+        <view class="metric-value">{{rentingProps}}</view>
+        <view class="metric-desc">正在执行订单</view>
+      </view>
+      <view class="metric-card order-alert">
+        <view class="pending-tag">待处理</view>
+        <view class="metric-label">待确认订单</view>
+        <view class="metric-value metric-warning">{{pendingConfirmOrders}}</view>
+        <view class="metric-desc">需 1 小时内处理</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-block">
+    <view class="section-title">收益数据</view>
+    <view class="revenue-card">
+      <view>
+        <view class="metric-label">押金总额</view>
+        <view class="metric-value">¥{{totalDeposit}}</view>
+        <view class="metric-desc">全资产押金累计</view>
+      </view>
+    </view>
+    <view class="order-grid revenue-grid">
+      <view class="metric-card">
+        <view class="metric-label">预计日营收</view>
+        <view class="metric-value">¥{{dailyRevenue}}</view>
+        <view class="metric-desc">租赁中资产日租合计</view>
+      </view>
+      <view class="metric-card">
+        <view class="metric-label">平均日租</view>
+        <view class="metric-value">¥{{avgRentPrice}}</view>
+        <view class="metric-desc">单件道具均价</view>
+      </view>
+    </view>
   </view>
 </view>

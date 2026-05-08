@@ -3,6 +3,7 @@ const { getSelectedRole } = require("../../services/user.service");
 const { getReviews, getUserStats } = require("../../services/admin.service");
 const { listOrders } = require("../../services/order.service");
 const { PROP_STATUS, ORDER_STATUS } = require("../../constants/status");
+const { scanQrCode } = require("../../utils/qr-scan");
 
 const USER_STATUS_TEXT = {
   active: "正常",
@@ -125,7 +126,12 @@ Page({
     }
   },
 
-  scanCode() {
-    wx.navigateTo({ url: "/pages/inventory/index?mode=scan" });
+  async scanCode() {
+    try {
+      const { qrCodeId } = await scanQrCode();
+      wx.navigateTo({ url: `/pages/qr-entry/index?q=${encodeURIComponent(qrCodeId)}&source=supplier_publish` });
+    } catch (err) {
+      wx.showToast({ title: err.message || "扫码失败", icon: "none" });
+    }
   },
 });

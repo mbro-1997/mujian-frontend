@@ -1,7 +1,7 @@
 <view class="container inventory-page" style="padding-bottom: 120rpx;">
   <view class="card" style="margin: 16rpx;">
-    <view class="card-header">待扫码入库道具</view>
-    <view class="card-subtitle">管理员先生成二维码，工厂在这里选择一件待录入道具并补全资料。</view>
+    <view class="card-header">{{isQrLockedMode ? '当前扫码入库道具' : '待扫码入库道具'}}</view>
+    <view class="card-subtitle">{{isQrLockedMode ? '本次只能录入当前小程序码绑定的道具，不能切换到其他未登记二维码。' : '管理员先生成二维码，工厂在这里选择一件待录入道具并补全资料。'}}</view>
 
     <view class="pending-list">
       <view
@@ -24,6 +24,18 @@
     <view class="card-subtitle">当前录入道具 ID：{{selectedPendingProp.id}}</view>
 
     <view class="form">
+      <view class="smart-import-card">
+        <view class="smart-title">智能录入</view>
+        <view class="smart-desc">粘贴 key:value 格式文本，键值对可用分号或回车分隔，图片仍需手动上传。</view>
+        <textarea
+          class="smart-textarea"
+          placeholder="示例：道具名称：导入道具；风格：现代；类型：舞台道具；尺寸：2m*1m；长：200；宽：100；高：80；材质：木质；是否阻燃：是；重量：20；运输建议：厢式货车；租金：50；押金：20"
+          value="{{smartText}}"
+          bindinput="updateSmartText"
+        />
+        <button class="smart-btn" bindtap="importSmartText">智能导入</button>
+      </view>
+
       <view class="form-item">
         <view class="form-label">道具名称</view>
         <input class="form-input" placeholder="请输入道具名称" value="{{formData.name}}" bindinput="updateFormData" data-field="name" />

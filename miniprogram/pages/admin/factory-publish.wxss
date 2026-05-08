@@ -2,92 +2,320 @@ page {
   background: #070b16;
 }
 
-.container {
+.publish-page {
   min-height: 100vh;
-  padding: 20rpx 24rpx calc(48rpx + env(safe-area-inset-bottom));
+  padding: 20rpx 24rpx calc(150rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background:
-    radial-gradient(circle at 18% 0%, rgba(34, 211, 238, 0.12), transparent 34%),
-    radial-gradient(circle at 100% 16%, rgba(56, 189, 248, 0.08), transparent 28%),
+    radial-gradient(circle at 20% 0%, rgba(34, 211, 238, 0.13), transparent 34%),
+    radial-gradient(circle at 100% 18%, rgba(56, 189, 248, 0.08), transparent 28%),
     #070b16;
+}
+
+.page-title {
+  margin: 4rpx 0 22rpx;
+  color: #f8fafc;
+  font-size: 34rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.section-block {
+  margin-top: 32rpx;
+}
+
+.section-title {
+  margin-bottom: 16rpx;
+  color: #f8fafc;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.action-card,
+.metric-card,
+.status-card,
+.revenue-card,
+.panel-card {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1rpx solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.22);
+  box-sizing: border-box;
+  backdrop-filter: blur(14px);
 }
 
 .action-card {
   min-height: 180rpx;
-  background: rgba(15, 23, 42, 0.88);
-  border: 1rpx solid rgba(125, 211, 252, 0.22);
   border-radius: 28rpx;
-  padding: 28rpx;
-  margin: 0 0 24rpx !important;
-  box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.22);
+  border-color: rgba(125, 211, 252, 0.22);
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.action-left {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.scan-icon {
+  position: relative;
+  width: 56rpx;
+  height: 56rpx;
+  flex: 0 0 56rpx;
+  border-radius: 50%;
+  background: rgba(34, 211, 238, 0.12);
+  border: 1rpx solid rgba(34, 211, 238, 0.34);
+}
+
+.scan-dot {
+  position: absolute;
+  left: 17rpx;
+  top: 17rpx;
+  width: 22rpx;
+  height: 22rpx;
+  border: 4rpx solid #22d3ee;
+  border-radius: 6rpx;
   box-sizing: border-box;
-  backdrop-filter: blur(14px);
+}
+
+.scan-line {
+  position: absolute;
+  left: 14rpx;
+  right: 14rpx;
+  top: 28rpx;
+  height: 3rpx;
+  border-radius: 999rpx;
+  background: #22d3ee;
+  box-shadow: 0 0 16rpx rgba(34, 211, 238, 0.48);
+}
+
+.action-copy {
+  min-width: 0;
 }
 
 .action-title {
   color: #f8fafc;
   font-size: 32rpx;
   font-weight: 600;
+  line-height: 1.35;
 }
 
 .action-subtitle {
   margin-top: 8rpx;
   color: #94a3b8;
   font-size: 24rpx;
+  line-height: 1.35;
 }
 
-.dashboard-grid {
+.scan-btn {
+  flex: 0 0 auto;
+  min-width: 164rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  padding: 0 30rpx;
+  border-radius: 999rpx;
+  background: #22d3ee;
+  color: #03111a;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.scan-btn::after,
+.more-btn::after {
+  border: none;
+}
+
+.core-grid,
+.order-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20rpx;
-  margin: 0 !important;
 }
 
 .metric-card {
+  position: relative;
   min-height: 148rpx;
   border-radius: 24rpx;
   padding: 24rpx;
-  border: 1rpx solid rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.88);
-  box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.22);
-  box-sizing: border-box;
-  backdrop-filter: blur(14px);
 }
 
-.metric-label {
+.metric-card-large {
+  min-height: 170rpx;
+}
+
+.metric-label,
+.status-label {
   color: rgba(226, 232, 240, 0.72);
   font-size: 24rpx;
   font-weight: 500;
+  line-height: 1.35;
 }
 
-.metric-value {
+.metric-card-large .metric-label {
+  font-size: 26rpx;
+}
+
+.metric-value,
+.status-value {
   margin-top: 12rpx;
   color: #f8fafc;
-  font-size: 46rpx;
+  font-size: 48rpx;
   font-weight: 700;
   line-height: 1.1;
+}
+
+.metric-card-large .metric-value {
+  font-size: 52rpx;
+}
+
+.metric-brand {
+  color: #67e8f9;
+}
+
+.metric-total {
+  color: #f8fafc;
+}
+
+.metric-warning {
+  color: #fbbf24;
 }
 
 .metric-desc {
   margin-top: 10rpx;
   color: #64748b;
   font-size: 22rpx;
+  font-weight: 400;
+  line-height: 1.35;
 }
 
-.metric-cyan .metric-value,
-.metric-teal .metric-value,
-.metric-main .metric-value {
-  color: #67e8f9;
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16rpx;
 }
 
-.metric-orange .metric-value {
+.status-card {
+  min-height: 128rpx;
+  border-radius: 22rpx;
+  padding: 20rpx;
+}
+
+.status-mark {
+  width: 32rpx;
+  height: 6rpx;
+  border-radius: 999rpx;
+  margin-bottom: 16rpx;
+}
+
+.status-warning {
+  background: #fbbf24;
+}
+
+.status-muted {
+  background: #94a3b8;
+}
+
+.status-brand {
+  background: #38bdf8;
+}
+
+.status-value {
+  margin-top: 8rpx;
+  font-size: 36rpx;
+}
+
+.order-alert {
+  border-color: rgba(251, 191, 36, 0.22);
+}
+
+.pending-tag {
+  position: absolute;
+  right: 20rpx;
+  top: 20rpx;
+  height: 38rpx;
+  line-height: 38rpx;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  background: rgba(251, 191, 36, 0.14);
   color: #fbbf24;
+  font-size: 20rpx;
+  font-weight: 600;
 }
 
-.metric-purple .metric-value {
-  color: #c4b5fd;
+.revenue-card {
+  min-height: 162rpx;
+  border-radius: 24rpx;
+  padding: 26rpx 24rpx;
+  border-color: rgba(34, 211, 238, 0.18);
 }
 
-.metric-green .metric-value {
-  color: #34d399;
+.revenue-grid {
+  margin-top: 20rpx;
+}
+
+.section-card {
+  min-height: 460rpx;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.preview-scroll {
+  height: 320rpx;
+  border-radius: 18rpx;
+  border: 1rpx solid rgba(148, 163, 184, 0.16);
+  background: rgba(30, 41, 59, 0.42);
+  padding: 12rpx 16rpx;
+  box-sizing: border-box;
+}
+
+.empty-panel {
+  height: 320rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 18rpx;
+  border: 1rpx solid rgba(148, 163, 184, 0.16);
+  background: rgba(30, 41, 59, 0.42);
+  color: #64748b;
+  font-size: 24rpx;
+}
+
+.preview-item {
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid rgba(148, 163, 184, 0.14);
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
+.preview-main {
+  color: #f8fafc;
+  font-size: 27rpx;
+  font-weight: 600;
+}
+
+.preview-sub {
+  margin-top: 6rpx;
+  color: #94a3b8;
+  font-size: 23rpx;
+  line-height: 1.4;
+}
+
+.more-btn {
+  margin-top: 16rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  border-radius: 999rpx;
+  background: #22d3ee;
+  color: #03111a;
+  font-size: 26rpx;
+  font-weight: 700;
 }

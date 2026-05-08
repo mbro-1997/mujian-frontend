@@ -16,6 +16,13 @@
 
   <block wx:if="{{isAdmin}}">
     <view class="card section-card">
+      <view class="menu-item" bindtap="viewCreditLogs">
+        <text>我的信用分</text>
+        <text class="arrow">></text>
+      </view>
+    </view>
+
+    <view class="card section-card">
       <view class="section-title">管理快捷入口</view>
       <view class="admin-action-row">
         <button class="admin-action-btn" bindtap="goAdminOrders">订单</button>
@@ -41,8 +48,13 @@
 
   <block wx:else>
     <view class="card section-card">
-      <view class="menu-item" bindtap="viewOrders">
+      <view class="menu-item" bindtap="viewOrders" wx:if="{{isDemander}}">
         <text>我的订单</text>
+        <text class="arrow">></text>
+      </view>
+
+      <view class="menu-item" bindtap="viewCreditLogs">
+        <text>我的信用分</text>
         <text class="arrow">></text>
       </view>
 

@@ -1,0 +1,158 @@
+page {
+  background: #070b16;
+}
+
+.credit-page {
+  min-height: 100vh;
+  padding: 24rpx 24rpx calc(120rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(34, 211, 238, 0.12), transparent 34%),
+    radial-gradient(circle at 100% 18%, rgba(56, 189, 248, 0.08), transparent 28%),
+    #070b16;
+  color: #f8fafc;
+}
+
+.score-card,
+.log-card,
+.empty-card {
+  border-radius: 26rpx;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1rpx solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+}
+
+.score-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24rpx;
+  padding: 30rpx;
+  border-color: rgba(34, 211, 238, 0.24);
+}
+
+.score-label {
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.score-desc {
+  margin-top: 10rpx;
+  color: #94a3b8;
+  font-size: 23rpx;
+  line-height: 1.45;
+}
+
+.score-value {
+  min-width: 150rpx;
+  text-align: right;
+  color: #67e8f9;
+  font-size: 62rpx;
+  font-weight: 800;
+}
+
+.section-title {
+  margin: 30rpx 0 16rpx;
+  color: #f8fafc;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.log-card {
+  padding: 24rpx;
+}
+
+.log-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.log-title {
+  color: #f8fafc;
+  font-size: 27rpx;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.log-type {
+  margin-top: 8rpx;
+  color: #94a3b8;
+  font-size: 23rpx;
+}
+
+.delta {
+  flex: 0 0 auto;
+  min-width: 88rpx;
+  height: 54rpx;
+  line-height: 54rpx;
+  text-align: center;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.delta.positive {
+  background: rgba(52, 211, 153, 0.14);
+  color: #34d399;
+}
+
+.delta.negative {
+  background: rgba(251, 113, 133, 0.14);
+  color: #fb7185;
+}
+
+.delta.neutral {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+}
+
+.log-meta {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 18rpx;
+  color: #cbd5e1;
+  font-size: 23rpx;
+}
+
+.log-time {
+  margin-top: 10rpx;
+  color: #64748b;
+  font-size: 22rpx;
+}
+
+.empty-card {
+  min-height: 460rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40rpx;
+  text-align: center;
+}
+
+.empty-title {
+  color: #94a3b8;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.empty-desc,
+.loading {
+  margin-top: 12rpx;
+  color: #64748b;
+  font-size: 23rpx;
+  line-height: 1.5;
+}
+
+.loading {
+  text-align: center;
+  padding: 30rpx 0;
+}

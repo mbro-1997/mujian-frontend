@@ -4,10 +4,14 @@ const {
   rejectOrderByFactory,
   scanOutboundProp,
   scanReturnProp,
+  scanOutboundQrCode,
+  scanReturnQrCode,
   expireTimedOutOrders,
   submitOrderReview,
 } = require("../../services/order.service");
 const { loginAsRole } = require("../../services/user.service");
+const { resolveQrCode } = require("../../services/qrcode.service");
+const { scanQrCode } = require("../../utils/qr-scan");
 const { ORDER_STATUS } = require("../../constants/status");
 
 const STATUS_TABS = [
@@ -65,8 +69,34 @@ function statusClass(status) {
 function normalizeListOrder(order) {
   const isReturnStage = order.status === ORDER_STATUS.WAIT_REVIEW
     || (order.status === ORDER_STATUS.RENTING && Number(order.returnScannedCount || 0) > 0);
+  const total = Number(order.propCount || 0);
+  const outboundScannedCount = Number(order.outboundScannedCount || 0);
+  const returnScannedCount = Number(order.returnScannedCount || 0);
+  const canScanOutboundNow = !!order.canScanOutbound
+    && order.status === ORDER_STATUS.WAIT_PICKUP
+    && total > 0
+    && outboundScannedCount < total;
+  const canScanReturnNow = !!order.canScanReturn
+    && order.status === ORDER_STATUS.RENTING
+    && total > 0
+    && outboundScannedCount >= total
+    && returnScannedCount < total;
+  const showOutboundScan = order.status === ORDER_STATUS.WAIT_PICKUP
+    || order.status === ORDER_STATUS.RENTING
+    || outboundScannedCount > 0;
+  const showReturnScan = order.status === ORDER_STATUS.WAIT_PICKUP
+    || order.status === ORDER_STATUS.RENTING
+    || returnScannedCount > 0;
   return {
     ...order,
+    outboundScannedCount,
+    returnScannedCount,
+    canScanOutboundNow,
+    canScanReturnNow,
+    showOutboundScan,
+    showReturnScan,
+    outboundDisabledText: total > 0 && outboundScannedCount >= total ? "出库已完成" : "出库扫码",
+    returnDisabledText: outboundScannedCount < total ? "待全部出库" : "入库已完成",
     statusClass: statusClass(isReturnStage ? "wait_return" : order.status),
   };
 }
@@ -102,6 +132,8 @@ Page({
     showScanModal: false,
     scanMode: "outbound",
     currentOrder: null,
+    scanQrCodeId: "",
+    scanPropName: "",
     fromAdmin: false,
     showRejectModal: false,
     rejectOrderId: null,
@@ -421,21 +453,61 @@ Page({
     }
   },
 
-  openScanModal(e) {
+  async openScanModal(e) {
     const orderId = e.currentTarget.dataset.id;
     const mode = e.currentTarget.dataset.mode;
     const order = this.data.allOrders.find((item) => String(item.id) === String(orderId));
     if (!order) return;
+    if (mode === "outbound" && !order.canScanOutboundNow) {
+      wx.showToast({ title: order.outboundDisabledText || "当前不能出库扫码", icon: "none" });
+      return;
+    }
+    if (mode === "return" && !order.canScanReturnNow) {
+      wx.showToast({ title: order.returnDisabledText || "当前不能入库扫码", icon: "none" });
+      return;
+    }
 
-    this.setData({
-      showScanModal: true,
-      scanMode: mode,
-      currentOrder: order,
-    });
+    try {
+      const { qrCodeId } = await scanQrCode();
+      let scanPropName = "";
+      try {
+        const resolved = await resolveQrCode(qrCodeId);
+        scanPropName = resolved.propName || "";
+      } catch (err) {
+        scanPropName = "";
+      }
+      this.setData({
+        showScanModal: true,
+        scanMode: mode,
+        currentOrder: order,
+        scanQrCodeId: qrCodeId,
+        scanPropName,
+      });
+    } catch (err) {
+      wx.showToast({ title: err.message || "扫码失败", icon: "none" });
+    }
   },
 
   closeScanModal() {
-    this.setData({ showScanModal: false, currentOrder: null });
+    this.setData({ showScanModal: false, currentOrder: null, scanQrCodeId: "", scanPropName: "" });
+  },
+
+  async confirmScannedQr() {
+    const { currentOrder, scanMode, scanQrCodeId } = this.data;
+    if (!currentOrder || !scanQrCodeId) return;
+
+    try {
+      const updated = scanMode === "outbound"
+        ? await scanOutboundQrCode(currentOrder.id, scanQrCodeId)
+        : await scanReturnQrCode(currentOrder.id, scanQrCodeId);
+
+      this.closeScanModal();
+      await this.resetAndLoad();
+      wx.showToast({ title: scanMode === "outbound" ? "出库成功" : "归还成功", icon: "success" });
+      this.setData({ currentOrder: normalizeListOrder(updated) });
+    } catch (err) {
+      wx.showToast({ title: err.message || "扫码操作失败", icon: "none" });
+    }
   },
 
   async scanOneProp(e) {

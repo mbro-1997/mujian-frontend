@@ -12,65 +12,88 @@ page {
     #070b16;
 }
 
-.card {
+.hint-card,
+.card,
+.empty-list {
   background: rgba(15, 23, 42, 0.88);
   border: 1rpx solid rgba(148, 163, 184, 0.16);
   border-radius: 24rpx;
+  box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.22);
+  box-sizing: border-box;
+}
+
+.hint-card {
+  margin-bottom: 20rpx;
+  padding: 20rpx 24rpx;
+  color: #94a3b8;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.card {
   padding: 24rpx;
   margin-bottom: 20rpx;
   color: #f8fafc;
-  box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.22);
-  box-sizing: border-box;
-  backdrop-filter: blur(14px);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
 }
 
 .title {
+  flex: 1;
   color: #f8fafc;
   font-size: 30rpx;
-  font-weight: 600;
-  line-height: 1.35;
+  font-weight: 700;
+}
+
+.status {
+  height: 40rpx;
+  line-height: 40rpx;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  background: rgba(34, 211, 238, 0.12);
+  color: #22d3ee;
+  font-size: 21rpx;
+  font-weight: 700;
 }
 
 .line {
-  margin-top: 8rpx;
+  margin-top: 10rpx;
   color: #94a3b8;
   font-size: 24rpx;
-  line-height: 1.45;
 }
 
-.row {
-  margin-top: 18rpx;
+.review-row {
   display: flex;
   gap: 14rpx;
+  margin-top: 16rpx;
 }
 
-.btn {
+.review-chip {
   flex: 1;
-  height: 72rpx;
-  line-height: 72rpx;
-  padding: 0;
-  border-radius: 999rpx;
-  font-size: 26rpx;
-  font-weight: 700;
+  height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 16rpx;
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: #64748b;
+  background: rgba(30, 41, 59, 0.72);
+  font-size: 23rpx;
 }
 
-.btn::after {
-  border: none;
+.review-chip.done {
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.12);
 }
 
-.hide {
-  background: #22d3ee;
-  color: #03111a;
-}
-
-.del {
-  background: rgba(251, 113, 133, 0.14);
-  color: #fb7185;
-  border: 1rpx solid rgba(251, 113, 133, 0.22);
+.arrow {
+  margin-top: 16rpx;
+  color: #22d3ee;
+  font-size: 24rpx;
+  font-weight: 700;
 }
 
 .empty-list {
@@ -79,7 +102,5 @@ page {
   align-items: center;
   justify-content: center;
   color: #64748b;
-  border: 1rpx solid rgba(148, 163, 184, 0.16);
-  border-radius: 24rpx;
-  background: rgba(15, 23, 42, 0.72);
+  font-size: 25rpx;
 }

@@ -115,7 +115,7 @@ function normalizeUser(raw, role, account) {
     accountDescription: isRealWechat ? "真实微信 openid 绑定账号" : ((account && account.description) || ""),
     certification: raw.realnameVerified ? "已认证" : "未认证",
     studentCertification: raw.studentVerified ? "已认证" : "未认证",
-    credit: raw.realnameVerified ? 98 : 80,
+    credit: raw.creditScore != null ? raw.creditScore : (raw.realnameVerified ? 98 : 80),
     roleBindings,
     registerStatus: raw.registerStatus || (account && account.registerStatus) || "new",
     defaultEntry: raw.defaultEntry || "role_select",
@@ -327,6 +327,10 @@ async function getFactoryAuditStatus() {
   return request({ url: "/users/factory-audit-status" });
 }
 
+async function getCreditLogs() {
+  return request({ url: "/users/credit-logs" });
+}
+
 module.exports = {
   getUser,
   updateUser,
@@ -352,6 +356,7 @@ module.exports = {
   verifyFactoryInvite,
   submitFactoryApplication,
   getFactoryAuditStatus,
+  getCreditLogs,
   resolveEntryPath,
   shouldSetupProfile,
   REAL_WECHAT_ACCOUNT_KEY,

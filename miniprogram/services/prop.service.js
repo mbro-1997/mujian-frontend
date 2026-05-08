@@ -96,6 +96,7 @@ async function createProp(payload) {
       fireResistantOption: payload.fireResistantOption,
       weight: payload.weight,
       transportSuggestion: payload.transportSuggestion,
+      qrCodeId: payload.qrCodeId || "",
     },
   });
   return normalizeProp(data);
@@ -122,6 +123,7 @@ async function completePendingFill(id, payload) {
       fireResistantOption: payload.fireResistantOption,
       weight: payload.weight,
       transportSuggestion: payload.transportSuggestion,
+      qrCodeId: payload.qrCodeId || "",
     },
   });
   return normalizeProp(data);

@@ -8,14 +8,15 @@
 
   <view class="card" wx:for="{{list}}" wx:key="id">
     <view class="card-main">
-      <image
-        wx:if="{{item.qrImageFullUrl}}"
-        class="qr-image"
-        src="{{item.qrImageFullUrl}}"
-        mode="aspectFit"
-        data-url="{{item.qrImageFullUrl}}"
+      <view
+        wx:if="{{item.qrImageViewUrl}}"
+        class="qr-entry"
+        data-url="{{item.qrImageViewUrl}}"
         bindtap="previewQr"
-      />
+      >
+        <view class="qr-entry-icon">码</view>
+        <view class="qr-entry-text">查看图片</view>
+      </view>
       <view class="qr-missing" wx:else>图片遗失</view>
       <view class="info">
         <view class="title">{{item.name || '待登记道具'}}</view>
