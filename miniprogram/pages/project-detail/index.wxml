@@ -18,7 +18,7 @@
         <image src="{{item.image}}" class="cart-image" mode="aspectFill" />
         <view class="cart-main">
           <view class="cart-name {{currentProject.status === 'editing' && !item.orderable ? 'danger' : ''}}">{{item.name}}</view>
-          <view class="cart-meta">状态：{{item.statusText}}</view>
+          <view class="cart-meta">{{item.supplierName || '未绑定工厂'}} · {{item.statusText}}</view>
           <view class="cart-meta">¥{{item.price}}/天 · 押金 ¥{{item.deposit}}</view>
         </view>
         <button wx:if="{{currentProject.status === 'editing'}}" class="btn btn-secondary cart-remove" size="mini" bindtap="removeProjectProp" data-prop-id="{{item.id}}">移除</button>
@@ -71,6 +71,18 @@
         <view class="form-label">备注（有无特殊用途）</view>
         <textarea class="form-input textarea-input" placeholder="可填写特殊用途、运输时间、联系人等补充说明" value="{{specialRemark}}" bindinput="updateSpecialRemark" />
       </view>
+
+      <view class="split-section" wx:if="{{payInfo.supplierGroups.length}}">
+        <view class="split-title">将按 {{payInfo.supplierCount}} 家工厂拆分为独立订单</view>
+        <view class="split-card" wx:for="{{payInfo.supplierGroups}}" wx:key="supplierUserId">
+          <view class="split-card-head">
+            <text class="split-name">{{item.supplierName}}</text>
+            <text class="split-count">{{item.propCount}} 件道具</text>
+          </view>
+          <view class="split-meta">租金 ¥{{item.price}} · 押金 ¥{{item.deposit}} · 小计 ¥{{item.total}}</view>
+        </view>
+      </view>
+
       <view class="pay-row"><text>日租合计</text><text>¥{{payInfo.dailyRent}} × {{payInfo.rentalDays || 0}} 天</text></view>
       <view class="pay-row"><text>租金</text><text>¥{{payInfo.price}}</text></view>
       <view class="pay-row"><text>押金</text><text>¥{{payInfo.deposit}}</text></view>

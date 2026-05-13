@@ -50,13 +50,50 @@ function getTodayDateString() {
   return `${year}-${month}-${day}`;
 }
 
+function buildSupplierGroups(project, rentalDays = 0) {
+  const days = normalizeRentalDays(rentalDays);
+  const groups = {};
+  (project?.props || []).forEach((item) => {
+    const key = item.supplierUserId || "unknown";
+    if (!groups[key]) {
+      groups[key] = {
+        supplierUserId: key,
+        supplierName: item.supplierName || (item.supplierUserId ? `工厂 ${item.supplierUserId}` : "未绑定工厂"),
+        propCount: 0,
+        dailyRent: 0,
+        price: 0,
+        deposit: 0,
+        total: 0,
+      };
+    }
+    groups[key].propCount += 1;
+    groups[key].dailyRent += Number(item.price || 0);
+    groups[key].deposit += Number(item.deposit || 0);
+  });
+  return Object.keys(groups).map((key) => {
+    const group = groups[key];
+    group.price = group.dailyRent * days;
+    group.total = group.price + group.deposit;
+    return group;
+  });
+}
+
 function buildPayInfo(project, rentalDays = 0) {
-  const props = project.props || [];
+  const props = project?.props || [];
   const days = normalizeRentalDays(rentalDays);
   const dailyRent = props.reduce((sum, item) => sum + Number(item.price || 0), 0);
   const price = dailyRent * days;
   const deposit = props.reduce((sum, item) => sum + Number(item.deposit || 0), 0);
-  return { dailyRent, rentalDays: days, price, deposit, total: price + deposit };
+  const supplierGroups = buildSupplierGroups(project, days);
+  return {
+    dailyRent,
+    rentalDays: days,
+    price,
+    deposit,
+    total: price + deposit,
+    supplierGroups,
+    supplierCount: supplierGroups.length,
+  };
 }
 
 Page({
@@ -72,7 +109,15 @@ Page({
     contactAddress: "",
     useScene: "",
     specialRemark: "",
-    payInfo: { dailyRent: 0, rentalDays: 0, price: 0, deposit: 0, total: 0 },
+    payInfo: {
+      dailyRent: 0,
+      rentalDays: 0,
+      price: 0,
+      deposit: 0,
+      total: 0,
+      supplierGroups: [],
+      supplierCount: 0,
+    },
   },
 
   async onLoad(options) {
@@ -257,7 +302,7 @@ Page({
       return;
     }
     if (!rentalDays) {
-      wx.showToast({ title: "请填写租赁天数", icon: "none" });
+      wx.showToast({ title: "请选择有效租赁日期", icon: "none" });
       return;
     }
     if (!contactAddress) {
@@ -268,8 +313,20 @@ Page({
       wx.showToast({ title: "请填写使用场景", icon: "none" });
       return;
     }
+    const payInfo = buildPayInfo(project, rentalDays);
+    const confirmed = await new Promise((resolve) => {
+      wx.showModal({
+        title: "微信支付确认",
+        content: `本次将支付租金 ¥${payInfo.price} + 押金 ¥${payInfo.deposit}，合计 ¥${payInfo.total}。支付成功后将按工厂拆分为独立订单，分别等待工厂确认接单。`,
+        cancelText: "取消",
+        confirmText: "确认支付",
+        success: (res) => resolve(!!res.confirm),
+        fail: () => resolve(false),
+      });
+    });
+    if (!confirmed) return;
     try {
-      await createOrderFromProject(project.id, {
+      const payResult = await createOrderFromProject(project.id, {
         rentalStartDate: this.data.rentalStartDate,
         rentalEndDate: this.data.rentalEndDate,
         rentalDays,
@@ -277,9 +334,15 @@ Page({
         useScene,
         specialRemark,
       });
+      const splitOrderCount = payResult.splitOrderCount || payInfo.supplierCount || 1;
       this.setData({ showPayModal: false });
       await this.loadProject();
-      wx.showToast({ title: "支付成功，道具已锁定", icon: "success" });
+      wx.showModal({
+        title: "支付成功",
+        content: `已一次支付 ¥${payInfo.total}，其中租金 ¥${payInfo.price}、押金 ¥${payInfo.deposit}。系统已按 ${splitOrderCount} 家工厂拆分为 ${splitOrderCount} 个独立订单，后续接单、拒单、出库、归还、评价和仲裁均按独立订单处理；如某个工厂拒单，该订单金额将按原支付路径退款。`,
+        showCancel: false,
+        confirmText: "我知道了",
+      });
     } catch (err) {
       wx.showToast({ title: err.message || "下单失败", icon: "none" });
     }

@@ -132,6 +132,51 @@
   font-size: 24rpx;
 }
 
+.split-section {
+  margin: 18rpx 0;
+  padding: 18rpx;
+  border-radius: 18rpx;
+  border: 1rpx solid rgba(34, 211, 238, 0.18);
+  background: rgba(15, 23, 42, 0.62);
+}
+
+.split-title {
+  font-size: 24rpx;
+  font-weight: 800;
+  color: #e0f2fe;
+  margin-bottom: 12rpx;
+}
+
+.split-card {
+  padding: 14rpx;
+  border-radius: 14rpx;
+  background: rgba(30, 41, 59, 0.72);
+  margin-top: 10rpx;
+}
+
+.split-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16rpx;
+  align-items: center;
+}
+
+.split-name {
+  font-size: 24rpx;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.split-count,
+.split-meta {
+  font-size: 22rpx;
+  color: #94a3b8;
+}
+
+.split-meta {
+  margin-top: 8rpx;
+}
+
 .rental-days-input,
 .date-picker,
 .readonly-days {

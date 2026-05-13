@@ -1,0 +1,55 @@
+<view class="page" wx:if="{{detail}}">
+  <view class="card hero">
+    <view class="hero-head">
+      <view>
+        <view class="title">订单 {{detail.orderNo || detail.orderId}}</view>
+        <view class="sub">仲裁编号：{{detail.id}}</view>
+      </view>
+      <view class="status {{detail.status}}">{{detail.statusText}}</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">申请信息</view>
+    <view class="row"><text>发起人</text><text>{{detail.applicant || '-'}}</text></view>
+    <view class="row"><text>发起方</text><text>{{detail.applicantRoleText || '-'}}</text></view>
+    <view class="row"><text>申请节点</text><text>{{detail.applyStageText || '-'}}</text></view>
+    <view class="row"><text>申请金额</text><text class="money">¥{{detail.claimAmount}}</text></view>
+    <view class="row"><text>押金上限</text><text>¥{{detail.depositAmount}}</text></view>
+    <view class="row"><text>申请时间</text><text>{{detail.createdAt || '-'}}</text></view>
+    <view class="content">{{detail.content}}</view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">证明图片</view>
+    <view class="image-grid" wx:if="{{detail.evidenceImages && detail.evidenceImages.length}}">
+      <image wx:for="{{detail.evidenceImages}}" wx:key="*this" src="{{item}}" mode="aspectFill" class="evidence-img" data-url="{{item}}" bindtap="previewImage" />
+    </view>
+    <view class="empty-inline" wx:else>未上传证明图片</view>
+  </view>
+
+  <view class="card result-card" wx:if="{{detail.status !== 'pending'}}">
+    <view class="section-title">裁定结果</view>
+    <view class="result-type {{detail.resolutionType}}">{{detail.resolutionTypeText || detail.statusText}}</view>
+    <view class="content">{{detail.resolution || '-'}}</view>
+    <view class="row"><text>退款预留状态</text><text>{{detail.refundStatus || 'none'}}</text></view>
+    <view class="row"><text>裁定时间</text><text>{{detail.resolvedAt || '-'}}</text></view>
+  </view>
+
+  <view class="bottom-actions" wx:if="{{detail.status === 'pending'}}">
+    <view class="bottom-btn reject" data-approved="0" bindtap="openDecision">拒绝仲裁</view>
+    <view class="bottom-btn approve" data-approved="1" bindtap="openDecision">同意仲裁</view>
+  </view>
+
+  <view class="modal" wx:if="{{showDecisionModal}}">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-title">{{decisionApproved ? '同意仲裁' : '拒绝仲裁'}}</view>
+      <view class="modal-tip" wx:if="{{decisionApproved}}">同意后当前版本会预留退款处理状态，后续接入微信退款接口时从该记录发起退款。</view>
+      <textarea class="reason-input" placeholder="请输入裁定理由" value="{{decisionReason}}" bindinput="updateReason" />
+      <view class="modal-actions">
+        <view class="modal-btn secondary" bindtap="closeDecision">取消</view>
+        <view class="modal-btn primary" bindtap="submitDecision">确认裁定</view>
+      </view>
+    </view>
+  </view>
+</view>

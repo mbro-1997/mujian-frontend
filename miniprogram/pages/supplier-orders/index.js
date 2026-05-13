@@ -2,8 +2,6 @@ const {
   listOrders,
   confirmOrderByFactory,
   rejectOrderByFactory,
-  scanOutboundProp,
-  scanReturnProp,
   scanOutboundQrCode,
   scanReturnQrCode,
   expireTimedOutOrders,

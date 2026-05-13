@@ -78,6 +78,11 @@ page {
   color: #34d399;
 }
 
+.status.closed {
+  background: rgba(251, 113, 133, 0.14);
+  color: #fb7185;
+}
+
 .amount-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

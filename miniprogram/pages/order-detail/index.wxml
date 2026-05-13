@@ -54,6 +54,19 @@
     <view class="empty-card" wx:if="{{!order.props.length}}">暂无道具</view>
   </view>
 
+  <view class="card dispute-result-card" wx:if="{{order.disputes && order.disputes.length}}">
+    <view class="section-title">仲裁记录</view>
+    <view class="dispute-result-item" wx:for="{{order.disputes}}" wx:key="id">
+      <view class="dispute-result-head">
+        <view class="dispute-result-title">{{item.applicantRoleText || '发起方'}} · {{item.applyStageText || '订单节点'}}</view>
+        <view class="dispute-status {{item.status}}">{{item.statusText}}</view>
+      </view>
+      <view class="dispute-result-line">申请金额：¥{{item.claimAmount}}</view>
+      <view class="dispute-result-content">{{item.content}}</view>
+      <view wx:if="{{item.resolution}}" class="dispute-resolution">裁定结果：{{item.resolution}}</view>
+    </view>
+  </view>
+
   <view class="bottom-actions">
     <view class="scan-action-row" wx:if="{{isSupplier && (order.showOutboundScan || order.showReturnScan)}}">
       <view wx:if="{{order.showOutboundScan && order.canScanOutboundNow}}" class="bottom-btn scan-btn half" data-mode="outbound" bindtap="openScanModal">出库扫码</view>
@@ -116,7 +129,7 @@
   <view class="modal" wx:if="{{showDisputeModal}}">
     <view class="modal-content" catchtap="true">
       <view class="modal-title">订单仲裁申请</view>
-      <view class="dispute-tip">请写清楚争议原因、发生节点和期望处理方式。仲裁金额不能超过当前订单押金总额 ¥{{order.deposit}}。</view>
+      <view class="dispute-tip">请写清楚争议原因、发生节点和期望处理方式。{{disputeMaxText}}</view>
       <view class="form-item">
         <view class="form-label">仲裁原因</view>
         <textarea class="form-input review-textarea" placeholder="例如：归还时双方对道具破损责任存在争议" value="{{disputeReason}}" bindinput="updateDisputeReason" />

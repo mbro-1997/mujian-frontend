@@ -19,12 +19,44 @@ function normalizeOrderItem(item) {
   };
 }
 
+function normalizeDispute(item = {}) {
+  return {
+    id: item.id,
+    orderId: item.orderId,
+    orderNo: item.orderNo || item.orderId,
+    title: item.title || "订单仲裁",
+    content: item.content || "",
+    applicant: item.applicant || "",
+    applicantRole: item.applicantRole || "",
+    applicantRoleText: item.applicantRoleText || "",
+    applyStage: item.applyStage || "",
+    applyStageText: item.applyStageText || "",
+    claimAmount: Number(item.claimAmount || 0),
+    depositAmount: Number(item.depositAmount || 0),
+    evidenceUrls: item.evidenceUrls || "",
+    evidenceImages: item.evidenceImages || [],
+    status: item.status || "pending",
+    statusText: item.statusText || (item.status === "resolved" ? "已同意" : item.status === "closed" ? "已拒绝" : "待仲裁"),
+    createdAt: item.createdAt || "",
+    resolvedAt: item.resolvedAt || "",
+    resolution: item.resolution || "",
+    resolutionType: item.resolutionType || "",
+    resolutionTypeText: item.resolutionTypeText || "",
+    refundStatus: item.refundStatus || "none",
+  };
+}
+
 function normalizeOrder(item) {
   const props = (item.props || []).map(normalizeOrderItem);
   return {
     id: item.id,
     orderNo: item.orderNo,
     projectId: Number(item.projectId),
+    supplierUserId: item.supplierUserId || null,
+    supplierName: item.supplierName || (item.supplierUserId ? `工厂 ${item.supplierUserId}` : ""),
+    paymentId: item.paymentId || null,
+    paymentNo: item.paymentNo || "",
+    sourceProjectName: item.sourceProjectName || "",
     status: item.status,
     statusText: item.statusText || getOrderStatusText(item.status),
     statusClass: getOrderStatusClass(item.status),
@@ -55,6 +87,7 @@ function normalizeOrder(item) {
     canReview: !!item.canReview,
     canApplyDispute: !!item.canApplyDispute,
     disputeCount: Number(item.disputeCount || 0),
+    disputes: (item.disputes || []).map(normalizeDispute),
     demanderReviewed: !!item.demanderReviewed,
     supplierReviewed: !!item.supplierReviewed,
     confirmDeadlineAt: item.confirmDeadlineAt || null,
@@ -64,6 +97,23 @@ function normalizeOrder(item) {
     pickedUpAt: item.pickedUpAt || null,
     returnedAt: item.returnedAt || null,
     reviewedAt: item.reviewedAt || null,
+  };
+}
+
+function normalizePayResult(item = {}) {
+  return {
+    orderId: item.orderId || null,
+    orderIds: (item.orderIds || []).map((id) => Number(id)),
+    orders: (item.orders || []).map(normalizeOrder),
+    splitOrderCount: Number(item.splitOrderCount || (item.orders || []).length || 0),
+    projectName: item.projectName || "",
+    paymentId: item.paymentId || null,
+    paymentNo: item.paymentNo || "",
+    merchantOutTradeNo: item.merchantOutTradeNo || "",
+    prepayId: item.prepayId || "",
+    transactionId: item.transactionId || "",
+    payStatus: item.payStatus || "",
+    mock: !!item.mock,
   };
 }
 
@@ -80,8 +130,8 @@ async function getOrderById(id) {
 }
 
 async function createOrderFromProject(projectId, payload = {}) {
-  const created = await request({
-    url: "/orders",
+  const data = await request({
+    url: "/orders/checkout",
     method: "POST",
     data: {
       projectId: Number(projectId),
@@ -93,17 +143,7 @@ async function createOrderFromProject(projectId, payload = {}) {
       specialRemark: payload.specialRemark || "",
     },
   });
-
-  await request({
-    url: `/orders/${created.id}/pay`,
-    method: "POST",
-    data: {
-      openId: `demo-openid-${getSelectedRole()}`,
-      clientIp: "127.0.0.1",
-    },
-  });
-
-  return getOrderById(created.id);
+  return normalizePayResult(data);
 }
 
 async function confirmOrderByFactory(orderId) {
@@ -187,6 +227,11 @@ async function submitOrderDispute(orderId, disputePayload) {
   return normalizeOrder(data);
 }
 
+async function listMyDisputes() {
+  const data = await request({ url: "/orders/disputes" });
+  return (data || []).map(normalizeDispute);
+}
+
 async function expireTimedOutOrders() {
   return null;
 }
@@ -208,6 +253,9 @@ module.exports = {
   scanReturnQrCode,
   submitOrderReview,
   submitOrderDispute,
+  listMyDisputes,
   expireTimedOutOrders,
   normalizeOrder,
+  normalizePayResult,
+  normalizeDispute,
 };

@@ -40,6 +40,8 @@ function normalizeProp(item) {
     qrCodeId: item.qrCodeId || "",
     qrCodeUrl: item.qrCodeUrl || "",
     fillStatus: item.fillStatus || "filled",
+    supplierUserId: item.supplierUserId || null,
+    supplierName: item.supplierName || (item.supplierUserId ? `工厂 ${item.supplierUserId}` : "未绑定工厂"),
   };
 }
 

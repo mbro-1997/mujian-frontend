@@ -67,6 +67,18 @@ function getDisputes() {
   return request({ url: "/admin/disputes" });
 }
 
+function getDisputeDetail(id) {
+  return request({ url: `/admin/disputes/${id}` });
+}
+
+function decideDispute(id, approved, reason) {
+  return request({
+    url: `/admin/disputes/${id}/decision`,
+    method: "POST",
+    data: { approved: !!approved, reason },
+  });
+}
+
 function resolveDispute(id, resolution = "管理员裁定：双方各承担一半责任。") {
   return request({
     url: `/admin/disputes/${id}/resolve`,
@@ -148,6 +160,8 @@ module.exports = {
   getPropAuditDetail,
   reviewPropAudit,
   getDisputes,
+  getDisputeDetail,
+  decideDispute,
   resolveDispute,
   getReviews,
   hideReview,

@@ -94,6 +94,10 @@ Page({
     wx.navigateTo({ url: "/pages/credit-log/index" });
   },
 
+  viewMyDisputes() {
+    wx.navigateTo({ url: "/pages/dispute-list/index" });
+  },
+
   viewProjects() {
     if (this.data.isSupplier || this.data.isAdmin) {
       wx.showToast({ title: "当前角色没有方案模块", icon: "none" });

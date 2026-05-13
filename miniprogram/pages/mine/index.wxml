@@ -58,6 +58,11 @@
         <text class="arrow">></text>
       </view>
 
+      <view class="menu-item" bindtap="viewMyDisputes">
+        <text>我的仲裁</text>
+        <text class="arrow">></text>
+      </view>
+
       <view class="menu-item" bindtap="viewProjects" wx:if="{{isDemander}}">
         <text>我的方案</text>
         <text class="arrow">></text>

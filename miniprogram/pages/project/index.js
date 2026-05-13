@@ -13,11 +13,12 @@ const {
   expireTimedOutOrders,
   confirmOrderByFactory,
   rejectOrderByFactory,
-  scanOutboundProp,
-  scanReturnProp,
+  scanOutboundQrCode,
+  scanReturnQrCode,
 } = require("../../services/order.service");
 const { fetchUser, getSelectedRole } = require("../../services/user.service");
 const { getDisputes, resolveDispute } = require("../../services/admin.service");
+const { scanQrCode } = require("../../utils/qr-scan");
 const { ORDER_STATUS } = require("../../constants/status");
 
 const DISPUTE_STATUS_TEXT = {
@@ -881,17 +882,37 @@ Page({
     wx.navigateTo({ url: "/pages/demander-orders/index" });
   },
 
-  openSupplierScanModal(e) {
+  async openSupplierScanModal(e) {
     const orderId = e.currentTarget.dataset.id;
     const mode = e.currentTarget.dataset.mode;
     const order = this.data.orders.find((item) => String(item.id) === String(orderId));
     if (!order) return;
 
-    this.setData({
-      showSupplierScanModal: true,
-      supplierScanMode: mode,
-      supplierCurrentOrder: order,
-    });
+    try {
+      const { qrCodeId } = await scanQrCode();
+      const title = mode === "outbound" ? "确认出库" : "确认入库";
+      wx.showModal({
+        title,
+        content: `已识别小程序码：${qrCodeId}。确认后将校验订单、工厂归属和道具状态。`,
+        confirmText: title,
+        success: async (res) => {
+          if (!res.confirm) return;
+          try {
+            const updated =
+              mode === "outbound"
+                ? await scanOutboundQrCode(order.id, qrCodeId)
+                : await scanReturnQrCode(order.id, qrCodeId);
+            this.setData({ supplierCurrentOrder: updated });
+            await this.loadSupplierOrders();
+            wx.showToast({ title: mode === "outbound" ? "出库成功" : "入库成功", icon: "success" });
+          } catch (err) {
+            wx.showToast({ title: err.message || "扫码操作失败", icon: "none" });
+          }
+        },
+      });
+    } catch (err) {
+      wx.showToast({ title: err.message || "扫码失败", icon: "none" });
+    }
   },
 
   closeSupplierScanModal() {
@@ -901,50 +922,12 @@ Page({
     });
   },
 
-  async scanSupplierOneProp(e) {
-    const propId = Number(e.currentTarget.dataset.propId);
-    const { supplierCurrentOrder, supplierScanMode } = this.data;
-    if (!supplierCurrentOrder) return;
-
-    try {
-      const updated =
-        supplierScanMode === "outbound"
-          ? await scanOutboundProp(supplierCurrentOrder.id, propId)
-          : await scanReturnProp(supplierCurrentOrder.id, propId);
-
-      this.setData({ supplierCurrentOrder: updated });
-      await this.loadSupplierOrders();
-      wx.showToast({ title: "扫码成功", icon: "success" });
-    } catch (err) {
-      wx.showToast({ title: err.message || "扫码失败", icon: "none" });
-    }
+  scanSupplierOneProp() {
+    wx.showToast({ title: "请使用订单卡片的扫码入口", icon: "none" });
   },
 
-  async scanSupplierAllRemaining() {
-    const { supplierCurrentOrder, supplierScanMode } = this.data;
-    if (!supplierCurrentOrder) return;
-
-    let updated = supplierCurrentOrder;
-    const props = supplierCurrentOrder.props || [];
-
-    try {
-      for (const prop of props) {
-        const scanned =
-          supplierScanMode === "outbound" ? prop.outboundScanned : prop.returnScanned;
-        if (scanned) continue;
-
-        updated =
-          supplierScanMode === "outbound"
-            ? await scanOutboundProp(updated.id, prop.id)
-            : await scanReturnProp(updated.id, prop.id);
-      }
-
-      this.setData({ supplierCurrentOrder: updated });
-      await this.loadSupplierOrders();
-      wx.showToast({ title: "批量扫码完成", icon: "success" });
-    } catch (err) {
-      wx.showToast({ title: err.message || "批量扫码失败", icon: "none" });
-    }
+  scanSupplierAllRemaining() {
+    wx.showToast({ title: "出库和入库必须逐件真实扫码", icon: "none" });
   },
 
   exportPDF(e) {
