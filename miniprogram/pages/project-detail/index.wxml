@@ -18,6 +18,13 @@
         <image src="{{item.image}}" class="cart-image" mode="aspectFill" />
         <view class="cart-main">
           <view class="cart-name {{currentProject.status === 'editing' && !item.orderable ? 'danger' : ''}}">{{item.name}}</view>
+          <view class="cart-meta">数量 {{item.quantity || 1}} · 可租 {{item.availableStock || 0}} 件</view>
+          <view wx:if="{{currentProject.status === 'editing'}}" class="quantity-control">
+            <button class="qty-btn" size="mini" disabled="{{item.quantity <= 1}}" data-prop-id="{{item.id}}" data-delta="-1" catchtap="adjustPropQuantity">-</button>
+            <text>{{item.quantity || 1}}</text>
+            <button class="qty-btn" size="mini" disabled="{{item.quantity >= item.availableStock}}" data-prop-id="{{item.id}}" data-delta="1" catchtap="adjustPropQuantity">+</button>
+          </view>
+          <view wx:if="{{currentProject.status === 'editing' && item.quantity > item.availableStock}}" class="stock-danger">库存不足，请调整数量或移除</view>
           <view class="cart-meta">{{item.supplierName || '未绑定工厂'}} · {{item.statusText}}</view>
           <view class="cart-meta">¥{{item.price}}/天 · 押金 ¥{{item.deposit}}</view>
         </view>

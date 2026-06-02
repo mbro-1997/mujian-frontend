@@ -3,6 +3,7 @@ const {
   updateProject,
   addPropToProject,
   removePropFromProject,
+  updateProjectItemQuantity,
 } = require("../../services/project.service");
 const { createOrderFromProject } = require("../../services/order.service");
 
@@ -14,7 +15,10 @@ function rebuildProject(project) {
   if (!project) return null;
   const props = (project.props || []).map((item) => ({
     ...item,
-    orderable: item.orderable != null ? item.orderable : item.status === "idle",
+    quantity: Number(item.quantity || 1),
+    orderable: item.orderable != null
+      ? item.orderable
+      : !!item.canRent && Number(item.quantity || 1) <= Number(item.availableStock || 0),
   }));
   const unavailableCount = project.status === "editing"
     ? props.filter((item) => !item.orderable).length
@@ -66,9 +70,10 @@ function buildSupplierGroups(project, rentalDays = 0) {
         total: 0,
       };
     }
-    groups[key].propCount += 1;
-    groups[key].dailyRent += Number(item.price || 0);
-    groups[key].deposit += Number(item.deposit || 0);
+    const quantity = Number(item.quantity || 1);
+    groups[key].propCount += quantity;
+    groups[key].dailyRent += Number(item.price || 0) * quantity;
+    groups[key].deposit += Number(item.deposit || 0) * quantity;
   });
   return Object.keys(groups).map((key) => {
     const group = groups[key];
@@ -81,9 +86,9 @@ function buildSupplierGroups(project, rentalDays = 0) {
 function buildPayInfo(project, rentalDays = 0) {
   const props = project?.props || [];
   const days = normalizeRentalDays(rentalDays);
-  const dailyRent = props.reduce((sum, item) => sum + Number(item.price || 0), 0);
+  const dailyRent = props.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
   const price = dailyRent * days;
-  const deposit = props.reduce((sum, item) => sum + Number(item.deposit || 0), 0);
+  const deposit = props.reduce((sum, item) => sum + Number(item.deposit || 0) * Number(item.quantity || 1), 0);
   const supplierGroups = buildSupplierGroups(project, days);
   return {
     dailyRent,
@@ -164,6 +169,32 @@ Page({
     });
   },
 
+  adjustPropQuantity(e) {
+    if (!this.data.currentProject || this.data.currentProject.status !== "editing") {
+      wx.showToast({ title: "已下单方案不支持调整", icon: "none" });
+      return;
+    }
+    const propId = Number(e.currentTarget.dataset.propId);
+    const delta = Number(e.currentTarget.dataset.delta || 0);
+    const props = (this.data.currentProject.props || []).map((item) => {
+      if (Number(item.id) !== propId) return item;
+      const current = Number(item.quantity || 1);
+      const max = Number(item.availableStock || current);
+      const quantity = Math.max(1, Math.min(max, current + delta));
+      return {
+        ...item,
+        quantity,
+        orderable: !!item.canRent && quantity <= max,
+      };
+    });
+    this.setData({
+      currentProject: rebuildProject({
+        ...this.data.currentProject,
+        props,
+      }),
+    });
+  },
+
   async syncCurrentProject(showToast = true) {
     const { currentProject, originalProject } = this.data;
     if (!currentProject) return null;
@@ -185,7 +216,12 @@ Page({
 
       for (const item of currentProject.props || []) {
         if (!originalIds.has(Number(item.id))) {
-          next = await addPropToProject(next.id, item.id);
+          next = await addPropToProject(next.id, item.id, item.quantity);
+          continue;
+        }
+        const original = (originalProject?.props || []).find((prop) => Number(prop.id) === Number(item.id));
+        if (original && Number(original.quantity || 1) !== Number(item.quantity || 1)) {
+          next = await updateProjectItemQuantity(next.id, item.id, item.quantity);
         }
       }
 

@@ -213,6 +213,50 @@ page {
   color: #94a3b8;
 }
 
+.stock-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10rpx;
+  margin: 14rpx 0 12rpx;
+}
+
+.stock-chip {
+  min-width: 0;
+  padding: 12rpx 8rpx;
+  border-radius: 16rpx;
+  background: rgba(30, 41, 59, 0.72);
+  border: 1rpx solid rgba(148, 163, 184, 0.14);
+  text-align: center;
+}
+
+.stock-chip text {
+  display: block;
+  color: #64748b;
+  font-size: 20rpx;
+  line-height: 1.2;
+}
+
+.stock-chip strong {
+  display: block;
+  margin-top: 4rpx;
+  color: #f8fafc;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.stock-chip.available strong {
+  color: #67e8f9;
+}
+
+.stock-chip.locked strong {
+  color: #fbbf24;
+}
+
+.stock-chip.rented strong {
+  color: #fb7185;
+}
+
 .prop-status-row {
   margin-top: 12rpx;
   display: flex;

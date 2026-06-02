@@ -180,6 +180,16 @@
   padding: 0 18rpx;
 }
 
+.tile-add-btn.disabled {
+  opacity: 0.45;
+}
+
+.prop-tile-stock {
+  margin-top: 6rpx;
+  color: #94a3b8;
+  font-size: 22rpx;
+}
+
 .tile-add-btn::after {
   border: none;
 }

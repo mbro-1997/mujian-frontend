@@ -17,7 +17,7 @@ const {
   scanReturnQrCode,
 } = require("../../services/order.service");
 const { fetchUser, getSelectedRole } = require("../../services/user.service");
-const { getDisputes, resolveDispute } = require("../../services/admin.service");
+const { getDisputes } = require("../../services/admin.service");
 const { scanQrCode } = require("../../utils/qr-scan");
 const { ORDER_STATUS } = require("../../constants/status");
 
@@ -119,9 +119,9 @@ function getTodayDateString() {
 function buildPayInfo(project, rentalDays = 0) {
   const props = project.props || [];
   const days = normalizeRentalDays(rentalDays);
-  const dailyRent = props.reduce((sum, item) => sum + Number(item.price || 0), 0);
+  const dailyRent = props.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
   const price = dailyRent * days;
-  const deposit = props.reduce((sum, item) => sum + Number(item.deposit || 0), 0);
+  const deposit = props.reduce((sum, item) => sum + Number(item.deposit || 0) * Number(item.quantity || 1), 0);
   return { dailyRent, rentalDays: days, price, deposit, total: price + deposit };
 }
 
@@ -133,7 +133,10 @@ function rebuildDraftProject(project) {
   if (!project) return null;
   const props = (project.props || []).map((item) => ({
     ...item,
-    orderable: item.orderable != null ? item.orderable : item.status === "idle",
+    quantity: Number(item.quantity || 1),
+    orderable: item.orderable != null
+      ? item.orderable
+      : !!item.canRent && Number(item.quantity || 1) <= Number(item.availableStock || 0),
   }));
   const unavailableCount = props.filter((item) => !item.orderable).length;
   return {
@@ -398,13 +401,8 @@ Page({
 
   async resolveAdminDispute(e) {
     const id = e.currentTarget.dataset.id;
-    try {
-      const next = await resolveDispute(id, "管理员裁定：双方各承担 50% 责任（演示）");
-      this.setData({ disputes: withDisputeStatusText(next) });
-      wx.showToast({ title: "裁定完成", icon: "success" });
-    } catch (err) {
-      wx.showToast({ title: err.message || "裁定失败", icon: "none" });
-    }
+    if (!id) return;
+    wx.navigateTo({ url: `/pages/admin/dispute-detail/index?id=${id}` });
   },
 
   async viewProjectDetail(e) {
@@ -647,7 +645,7 @@ Page({
     }
 
     try {
-      await createOrderFromProject(projectId, {
+      const payResult = await createOrderFromProject(projectId, {
         rentalStartDate: this.data.rentalStartDate,
         rentalEndDate: this.data.rentalEndDate,
         rentalDays,
@@ -664,7 +662,13 @@ Page({
           originalProject: cloneProject(next),
         });
       }
-      wx.showToast({ title: "支付成功，道具已锁定", icon: "success" });
+      const splitOrderCount = payResult.splitOrderCount || (payResult.orders && payResult.orders.length) || 1;
+      wx.showModal({
+        title: "支付成功",
+        content: `系统已按 ${splitOrderCount} 家工厂拆分为 ${splitOrderCount} 个独立订单，后续接单、拒单、出库、归还、评价和仲裁均按独立订单处理。`,
+        showCancel: false,
+        confirmText: "我知道了",
+      });
     } catch (err) {
       wx.showToast({ title: err.message || "下单失败", icon: "none" });
     }

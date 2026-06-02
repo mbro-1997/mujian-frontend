@@ -37,14 +37,22 @@
   </view>
 
   <view class="bottom-actions" wx:if="{{detail.status === 'pending'}}">
-    <view class="bottom-btn reject" data-approved="0" bindtap="openDecision">拒绝仲裁</view>
-    <view class="bottom-btn approve" data-approved="1" bindtap="openDecision">同意仲裁</view>
+    <view class="bottom-btn reject" data-action="reject" bindtap="openDecision">驳回仲裁</view>
+    <view class="bottom-btn approve" wx:if="{{detail.applyStage === 'renting' && detail.applicantRole === 'demander'}}" data-action="approve_demander_compensation" bindtap="openDecision">支持用户补偿</view>
+    <view class="bottom-btn approve" wx:if="{{detail.applyStage === 'wait_review' && detail.applicantRole === 'supplier'}}" data-action="approve_supplier_compensation" bindtap="openDecision">支持工厂补偿</view>
   </view>
 
   <view class="modal" wx:if="{{showDecisionModal}}">
     <view class="modal-content" catchtap="true">
-      <view class="modal-title">{{decisionApproved ? '同意仲裁' : '拒绝仲裁'}}</view>
-      <view class="modal-tip" wx:if="{{decisionApproved}}">同意后当前版本会预留退款处理状态，后续接入微信退款接口时从该记录发起退款。</view>
+      <view class="modal-title">{{decisionActionType === 'reject' ? '驳回仲裁' : '支持补偿'}}</view>
+      <view class="modal-tip" wx:if="{{decisionActionType !== 'reject'}}">裁定成立后，资金影响会进入订单最终结算，不在租赁中阶段直接结束订单。</view>
+      <view class="amount-field" wx:if="{{decisionActionType !== 'reject'}}">
+        <text class="amount-label">裁定金额</text>
+        <view class="amount-input-wrap">
+          <input class="amount-input" type="digit" placeholder="请输入裁定金额" value="{{decisionAmount}}" bindinput="updateDecisionAmount" />
+          <text class="amount-unit">元</text>
+        </view>
+      </view>
       <textarea class="reason-input" placeholder="请输入裁定理由" value="{{decisionReason}}" bindinput="updateReason" />
       <view class="modal-actions">
         <view class="modal-btn secondary" bindtap="closeDecision">取消</view>

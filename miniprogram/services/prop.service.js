@@ -41,7 +41,57 @@ function normalizeProp(item) {
     qrCodeUrl: item.qrCodeUrl || "",
     fillStatus: item.fillStatus || "filled",
     supplierUserId: item.supplierUserId || null,
+    quantity: Number(item.quantity || 1),
+    assetTotalStock: Number(item.assetTotalStock || item.totalStock || 0),
+    totalStock: Number(item.totalStock || 0),
+    availableStock: Number(item.availableStock || 0),
+    lockedStock: Number(item.lockedStock || 0),
+    rentedStock: Number(item.rentedStock || 0),
+    repairingStock: Number(item.repairingStock || 0),
+    lostStock: Number(item.lostStock || 0),
+    scrappedStock: Number(item.scrappedStock || 0),
+    canRent: !!item.canRent,
     supplierName: item.supplierName || (item.supplierUserId ? `工厂 ${item.supplierUserId}` : "未绑定工厂"),
+  };
+}
+
+function normalizePropInstance(item = {}) {
+  return {
+    id: Number(item.id),
+    propId: Number(item.propId),
+    instanceNo: item.instanceNo || "",
+    qrCodeId: item.qrCodeId || "",
+    instanceStatus: item.instanceStatus || "",
+    instanceStatusText: item.instanceStatusText || item.instanceStatus || "",
+    currentOrderId: item.currentOrderId || null,
+    currentOrderNo: item.currentOrderNo || "",
+    statusRemark: item.statusRemark || "",
+    statusChangedAt: item.statusChangedAt || "",
+    statusChangedBy: item.statusChangedBy || null,
+    canMarkRepairing: !!item.canMarkRepairing,
+    canMarkLost: !!item.canMarkLost,
+    canMarkScrapped: !!item.canMarkScrapped,
+    canRestoreIdle: !!item.canRestoreIdle,
+    canScrapFromRepairing: !!item.canScrapFromRepairing,
+  };
+}
+
+function normalizePropInstanceStatusLog(item = {}) {
+  return {
+    id: Number(item.id),
+    propInstanceId: Number(item.propInstanceId),
+    propId: Number(item.propId),
+    instanceNo: item.instanceNo || "",
+    qrCodeId: item.qrCodeId || "",
+    fromStatus: item.fromStatus || "",
+    fromStatusText: item.fromStatusText || item.fromStatus || "",
+    toStatus: item.toStatus || "",
+    toStatusText: item.toStatusText || item.toStatus || "",
+    reason: item.reason || "",
+    operatorUserId: item.operatorUserId || null,
+    operatorRole: item.operatorRole || "",
+    relatedOrderId: item.relatedOrderId || null,
+    createdAt: item.createdAt || "",
   };
 }
 
@@ -140,6 +190,25 @@ async function updatePropStatus(id, status) {
   return normalizeProp(data);
 }
 
+async function listPropInstances(propId) {
+  const data = await request({ url: `/factory/props/${propId}/instances` });
+  return (data || []).map(normalizePropInstance);
+}
+
+async function updatePropInstanceStatus(instanceId, targetStatus, reason) {
+  const data = await request({
+    url: `/factory/prop-instances/${instanceId}/status`,
+    method: "POST",
+    data: { targetStatus, reason },
+  });
+  return normalizePropInstance(data);
+}
+
+async function listPropInstanceStatusLogs(instanceId) {
+  const data = await request({ url: `/factory/prop-instances/${instanceId}/status-logs` });
+  return (data || []).map(normalizePropInstanceStatusLog);
+}
+
 module.exports = {
   listProps,
   listWarehouseProps,
@@ -149,5 +218,10 @@ module.exports = {
   createProp,
   completePendingFill,
   updatePropStatus,
+  listPropInstances,
+  updatePropInstanceStatus,
+  listPropInstanceStatusLogs,
   normalizeProp,
+  normalizePropInstance,
+  normalizePropInstanceStatusLog,
 };

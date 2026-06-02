@@ -5,7 +5,7 @@ const { normalizeProp } = require("./prop.service");
 function normalizeProject(item) {
   const props = (item.props || []).map(normalizeProp).map((prop) => ({
     ...prop,
-    orderable: prop.status === "idle",
+    orderable: prop.canRent && Number(prop.quantity || 1) <= Number(prop.availableStock || 0),
   }));
   const unavailableCount = Number(
     item.unavailableCount != null
@@ -69,20 +69,20 @@ async function updateProject(project) {
   return normalizeProject(data);
 }
 
-async function addPropToEditingProject(propId) {
+async function addPropToEditingProject(propId, quantity = 1) {
   const data = await request({
     url: "/projects/editing/items",
     method: "POST",
-    data: { propId: Number(propId) },
+    data: { propId: Number(propId), quantity: Number(quantity || 1) },
   });
   return normalizeProject(data);
 }
 
-async function addPropToProject(projectId, propId) {
+async function addPropToProject(projectId, propId, quantity = 1) {
   const data = await request({
     url: `/projects/${projectId}/items`,
     method: "POST",
-    data: { propId: Number(propId) },
+    data: { propId: Number(propId), quantity: Number(quantity || 1) },
   });
   return normalizeProject(data);
 }
@@ -91,6 +91,15 @@ async function removePropFromProject(projectId, propId) {
   const data = await request({
     url: `/projects/${projectId}/items/${propId}`,
     method: "DELETE",
+  });
+  return normalizeProject(data);
+}
+
+async function updateProjectItemQuantity(projectId, propId, quantity) {
+  const data = await request({
+    url: `/projects/${projectId}/items/${propId}`,
+    method: "PUT",
+    data: { propId: Number(propId), quantity: Number(quantity || 1) },
   });
   return normalizeProject(data);
 }
@@ -107,6 +116,7 @@ module.exports = {
   addPropToEditingProject,
   addPropToProject,
   removePropFromProject,
+  updateProjectItemQuantity,
   markProjectOrdered,
   normalizeProject,
 };

@@ -15,7 +15,7 @@
         <view class="dispute-line">关联订单：{{item.orderId}}</view>
         <view class="dispute-line">申请时间：{{item.createdAt}}</view>
         <view class="dispute-line" wx:if="{{item.resolution}}">裁定结果：{{item.resolution}}</view>
-        <button wx:if="{{item.status === 'pending'}}" class="btn btn-primary dispute-btn" data-id="{{item.id}}" bindtap="resolveAdminDispute">确认裁定</button>
+        <button wx:if="{{item.status === 'pending'}}" class="btn btn-primary dispute-btn" data-id="{{item.id}}" bindtap="resolveAdminDispute">查看并裁定</button>
       </view>
       <view class="card empty-card" wx:if="{{!disputes.length}}">暂无待处理纠纷</view>
     </view>

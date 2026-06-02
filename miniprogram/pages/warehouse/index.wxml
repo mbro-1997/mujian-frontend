@@ -90,11 +90,22 @@
             <view class="prop-name">{{item.name}}</view>
             <view class="prop-meta"><text>尺寸: {{item.size}}</text><text>材质: {{item.material}}</text></view>
             <view class="prop-price"><text class="price">¥{{item.price}}/天</text><text class="deposit">押金: ¥{{item.deposit}}</text></view>
+            <view class="stock-grid">
+              <view class="stock-chip"><text>总库存</text><strong>{{item.totalStock || 0}}</strong></view>
+              <view class="stock-chip available"><text>可租</text><strong>{{item.availableStock || 0}}</strong></view>
+              <view class="stock-chip locked"><text>锁定</text><strong>{{item.lockedStock || 0}}</strong></view>
+              <view class="stock-chip rented"><text>租赁中</text><strong>{{item.rentedStock || 0}}</strong></view>
+              <view class="stock-chip"><text>资产</text><strong>{{item.assetTotalStock || 0}}</strong></view>
+              <view class="stock-chip"><text>维修</text><strong>{{item.repairingStock || 0}}</strong></view>
+              <view class="stock-chip"><text>丢失</text><strong>{{item.lostStock || 0}}</strong></view>
+              <view class="stock-chip"><text>报废</text><strong>{{item.scrappedStock || 0}}</strong></view>
+            </view>
             <view class="prop-status-row">
               <view class="status-tag {{item.statusClass}}">{{item.statusText}}</view>
               <view class="prop-action-wrap">
                 <button wx:if="{{item.canToggle}}" class="btn {{item.status === 'offline' ? 'btn-primary' : 'btn-secondary'}} prop-action-btn" size="mini" catchtap="toggleStatus" data-id="{{item.id}}">{{item.actionText}}</button>
                 <button wx:else class="btn btn-disabled prop-action-btn" size="mini" disabled>{{item.actionDisabledText}}</button>
+                <button class="btn btn-secondary prop-action-btn" size="mini" catchtap="goManageInstances" data-id="{{item.id}}">管理实物</button>
               </view>
             </view>
           </view>

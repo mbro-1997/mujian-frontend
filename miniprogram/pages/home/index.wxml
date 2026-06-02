@@ -45,9 +45,10 @@
       <image src="{{item.image}}" class="img prop-tile-img" mode="aspectFill" />
       <view class="prop-tile-body">
         <view class="prop-tile-name">{{item.name}}</view>
+        <view class="prop-tile-stock">{{item.availableStock > 0 ? '可租 ' + item.availableStock + ' 件' : '暂无库存'}}</view>
         <view class="prop-tile-foot">
           <text class="prop-tile-price">¥{{item.price}}/天</text>
-          <button class="tile-add-btn" size="mini" catchtap="addToProject" data-id="{{item.id}}">加入方案</button>
+          <button class="tile-add-btn {{!item.canRent ? 'disabled' : ''}}" size="mini" disabled="{{!item.canRent}}" catchtap="addToProject" data-id="{{item.id}}">加入方案</button>
         </view>
       </view>
     </view>

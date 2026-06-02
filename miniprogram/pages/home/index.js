@@ -124,11 +124,11 @@ Page({
     }
 
     if (activeFilter === "renting") {
-      filtered = filtered.filter((item) => item.status === PROP_STATUS.RENTING);
+      filtered = filtered.filter((item) => Number(item.rentedStock || 0) > 0);
     }
 
     if (activeFilter === "locked") {
-      filtered = filtered.filter((item) => item.status === PROP_STATUS.LOCKED);
+      filtered = filtered.filter((item) => Number(item.lockedStock || 0) > 0);
     }
 
     if (selectedStyle !== "全部") {
@@ -149,6 +149,12 @@ Page({
 
   async addToProject(e) {
     const propId = Number(e.currentTarget.dataset.id);
+    const prop = this.data.filteredProps.find((item) => Number(item.id) === propId)
+      || this.data.props.find((item) => Number(item.id) === propId);
+    if (!prop || !prop.canRent) {
+      wx.showToast({ title: "当前道具暂无可租库存", icon: "none" });
+      return;
+    }
 
     try {
       const projects = (await listProjects()).filter((item) => item.status === "editing");

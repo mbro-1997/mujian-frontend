@@ -17,15 +17,17 @@ const STATUS_TABS = [
 
 function buildWarehouseItem(item) {
   const isAuditPending = item.auditStatus === "pending";
-  const isLocked = item.status === PROP_STATUS.LOCKED || item.status === PROP_STATUS.RENTING;
-  const canToggle = !isAuditPending && !isLocked;
+  const lockedStock = Number(item.lockedStock || 0);
+  const rentedStock = Number(item.rentedStock || 0);
+  const hasActiveInstance = lockedStock > 0 || rentedStock > 0;
+  const canToggle = !isAuditPending && !hasActiveInstance;
   const actionText = item.status === PROP_STATUS.OFFLINE ? "上架" : "下架";
   return {
     ...item,
     statusText: isAuditPending ? "待审核" : item.statusText,
     canToggle,
     actionText,
-    actionDisabledText: isAuditPending ? "审核中" : "不可操作",
+    actionDisabledText: isAuditPending ? "审核中" : "有出租实物",
   };
 }
 
@@ -93,6 +95,9 @@ Page({
     if (activeStatus === "all") return true;
     if (activeStatus === "audit_pending") return item.auditStatus === "pending";
     if (item.auditStatus === "pending") return false;
+    if (activeStatus === PROP_STATUS.LOCKED) return Number(item.lockedStock || 0) > 0;
+    if (activeStatus === PROP_STATUS.RENTING) return Number(item.rentedStock || 0) > 0;
+    if (activeStatus === "repairing") return Number(item.repairingStock || 0) > 0;
     return item.status === activeStatus;
   },
 
@@ -164,5 +169,10 @@ Page({
   viewPropDetail(e) {
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({ url: `/pages/prop-detail/index?id=${id}` });
+  },
+
+  goManageInstances(e) {
+    const id = e.currentTarget.dataset.id;
+    wx.navigateTo({ url: `/pages/prop-instances/index?propId=${id}&fromAdmin=${this.data.fromAdmin ? "1" : "0"}` });
   },
 });

@@ -2,6 +2,10 @@ const {
   getOrderById,
   submitOrderReview,
   submitOrderDispute,
+  getDisputeReasons,
+  uploadDisputeEvidence,
+  cancelOrder,
+  cancelAfterConfirmByFactory,
   scanOutboundQrCode,
   scanReturnQrCode,
 } = require("../../services/order.service");
@@ -154,6 +158,12 @@ Page({
     reviewCounterpartyScore: 5,
     reviewContent: "",
     showDisputeModal: false,
+    disputeReasons: [],
+    disputeReasonIndex: -1,
+    disputeReasonCode: "",
+    disputeReasonLabel: "",
+    disputeRequireAmount: false,
+    disputeRequireImages: false,
     disputeReason: "",
     disputeAmount: "",
     disputeImages: [],
@@ -215,6 +225,47 @@ Page({
     });
   },
 
+  cancelOrder() {
+    const order = this.data.order;
+    if (!order || !order.canCancel) return;
+    const start = order.rentalStartDate || "租赁开始日";
+    wx.showModal({
+      title: "取消订单",
+      content: `出库前可取消。系统将按距离 ${start} 的时间自动计算扣费：48小时外全额退，24-48小时扣租赁费30%，24小时内扣租赁费60%，押金全退。是否继续？`,
+      confirmText: "确认取消",
+      success: async (res) => {
+        if (!res.confirm) return;
+        try {
+          const updated = await cancelOrder(order.id);
+          this.setData({ order: { ...updated, ...buildScanState(updated) }, rejected: updated.status === ORDER_STATUS.CANCELLED_MANUAL });
+          wx.showToast({ title: "订单已取消", icon: "success" });
+        } catch (err) {
+          wx.showToast({ title: err.message || "取消失败", icon: "none" });
+        }
+      },
+    });
+  },
+
+  cancelAfterConfirm() {
+    const order = this.data.order;
+    if (!order || !order.canSupplierCancelAfterConfirm) return;
+    wx.showModal({
+      title: "申请取消",
+      content: "订单已确认接单，取消将全额退还租赁方款项，并记录为工厂履约异常。是否继续？",
+      confirmText: "继续取消",
+      success: async (res) => {
+        if (!res.confirm) return;
+        try {
+          const updated = await cancelAfterConfirmByFactory(order.id);
+          this.setData({ order: { ...updated, ...buildScanState(updated) }, rejected: updated.status === ORDER_STATUS.CANCELLED_MANUAL });
+          wx.showToast({ title: "已取消订单", icon: "success" });
+        } catch (err) {
+          wx.showToast({ title: err.message || "取消失败", icon: "none" });
+        }
+      },
+    });
+  },
+
   async openScanModal(e) {
     const mode = e.currentTarget.dataset.mode;
     const order = this.data.order;
@@ -272,14 +323,29 @@ Page({
     this.setData({ showReviewModal: false, reviewPropScore: 5, reviewCounterpartyScore: 5, reviewContent: "" });
   },
 
-  openDisputeModal() {
+  async openDisputeModal() {
     const order = this.data.order;
     if (!order || !order.canApplyDispute) {
       wx.showToast({ title: "当前订单节点不能发起仲裁", icon: "none" });
       return;
     }
+    const role = getSelectedRole();
+    let reasons = [];
+    try {
+      reasons = await getDisputeReasons(order.status, role);
+    } catch (err) {
+      wx.showToast({ title: err.message || "加载仲裁问题类型失败", icon: "none" });
+      return;
+    }
+    const firstReason = reasons[0] || {};
     this.setData({
       showDisputeModal: true,
+      disputeReasons: reasons,
+      disputeReasonIndex: reasons.length ? 0 : -1,
+      disputeReasonCode: firstReason.reasonCode || "",
+      disputeReasonLabel: firstReason.reasonLabel || "",
+      disputeRequireAmount: Number(firstReason.requireAmount || 0) === 1,
+      disputeRequireImages: Number(firstReason.requireImages || 0) === 1,
       disputeReason: "",
       disputeAmount: "",
       disputeImages: [],
@@ -290,7 +356,31 @@ Page({
   },
 
   closeDisputeModal() {
-    this.setData({ showDisputeModal: false, disputeReason: "", disputeAmount: "", disputeImages: [], disputeMaxText: "" });
+    this.setData({
+      showDisputeModal: false,
+      disputeReasons: [],
+      disputeReasonIndex: -1,
+      disputeReasonCode: "",
+      disputeReasonLabel: "",
+      disputeRequireAmount: false,
+      disputeRequireImages: false,
+      disputeReason: "",
+      disputeAmount: "",
+      disputeImages: [],
+      disputeMaxText: "",
+    });
+  },
+
+  updateDisputeReasonType(e) {
+    const index = Number(e.detail.value);
+    const selected = this.data.disputeReasons[index] || {};
+    this.setData({
+      disputeReasonIndex: index,
+      disputeReasonCode: selected.reasonCode || "",
+      disputeReasonLabel: selected.reasonLabel || "",
+      disputeRequireAmount: Number(selected.requireAmount || 0) === 1,
+      disputeRequireImages: Number(selected.requireImages || 0) === 1,
+    });
   },
 
   updateDisputeReason(e) {
@@ -384,6 +474,10 @@ Page({
     const claimAmount = Number(this.data.disputeAmount || 0);
     const isSupplier = getSelectedRole() === "supplier";
     const maxClaimAmount = isSupplier ? Number(order.deposit || 0) : Number(order.price || 0);
+    if (!this.data.disputeReasonCode) {
+      wx.showToast({ title: "请选择仲裁问题类型", icon: "none" });
+      return;
+    }
     if (!reason) {
       wx.showToast({ title: "请填写仲裁原因", icon: "none" });
       return;
@@ -396,11 +490,24 @@ Page({
       wx.showToast({ title: isSupplier ? "工厂索赔金额不能超过押金" : "租赁方索赔金额不能超过实际费用", icon: "none" });
       return;
     }
+    if (this.data.disputeRequireAmount && claimAmount <= 0) {
+      wx.showToast({ title: "请填写仲裁金额", icon: "none" });
+      return;
+    }
+    if (this.data.disputeRequireImages && !this.data.disputeImages.length) {
+      wx.showToast({ title: "请上传仲裁证据图片", icon: "none" });
+      return;
+    }
     try {
+      const uploadedUrls = [];
+      for (const imagePath of this.data.disputeImages) {
+        uploadedUrls.push(await uploadDisputeEvidence(imagePath));
+      }
       const updated = await submitOrderDispute(order.id, {
         reason,
+        reasonCode: this.data.disputeReasonCode,
         claimAmount,
-        evidenceUrls: this.data.disputeImages.join(","),
+        evidenceUrls: uploadedUrls.join(","),
       });
       this.closeDisputeModal();
       this.setData({ order: { ...updated, ...buildScanState(updated) } });

@@ -41,13 +41,14 @@
           <text class="prop-price">¥{{item.price}}/天</text>
           <text class="prop-deposit">押金 ¥{{item.deposit}}</text>
         </view>
+        <view class="prop-quantity-row">数量 x {{item.quantity || 1}}</view>
         <view class="prop-meta-row">
           <text>{{item.size || item.type || '规格未填写'}}</text>
           <text>{{item.material || '材质未填写'}}</text>
         </view>
         <view class="prop-scan-row">
-          <text class="{{item.outboundScanned ? 'scan-done' : 'scan-wait'}}">出库{{item.outboundScanned ? '已扫' : '未扫'}}</text>
-          <text class="{{item.returnScanned ? 'scan-done' : 'scan-wait'}}">归还{{item.returnScanned ? '已扫' : '未扫'}}</text>
+          <text class="{{item.outboundScanned ? 'scan-done' : 'scan-wait'}}">出库 {{item.outboundScannedCount || 0}}/{{item.quantity || 1}}</text>
+          <text class="{{item.returnScanned ? 'scan-done' : 'scan-wait'}}">归还 {{item.returnScannedCount || 0}}/{{item.quantity || 1}}</text>
         </view>
       </view>
     </view>
@@ -68,6 +69,9 @@
   </view>
 
   <view class="bottom-actions">
+    <view wx:if="{{!isSupplier && order.canCancel}}" class="bottom-btn danger full" bindtap="cancelOrder">取消订单</view>
+    <view wx:if="{{isSupplier && order.canSupplierCancelAfterConfirm}}" class="bottom-btn danger full" bindtap="cancelAfterConfirm">申请取消</view>
+    <button wx:if="{{order.canContactService}}" class="bottom-btn subtle full contact-btn" open-type="contact">联系客服</button>
     <view class="scan-action-row" wx:if="{{isSupplier && (order.showOutboundScan || order.showReturnScan)}}">
       <view wx:if="{{order.showOutboundScan && order.canScanOutboundNow}}" class="bottom-btn scan-btn half" data-mode="outbound" bindtap="openScanModal">出库扫码</view>
       <view wx:if="{{order.showOutboundScan && !order.canScanOutboundNow}}" class="bottom-btn disabled half">{{order.outboundDisabledText}}</view>
@@ -81,6 +85,12 @@
 
   <view class="modal" wx:if="{{showScanModal}}">
     <view class="modal-content" catchtap="true">
+      <view class="form-item" wx:if="{{showDisputeModal}}">
+        <view class="form-label">仲裁问题类型</view>
+        <picker mode="selector" range="{{disputeReasons}}" range-key="reasonLabel" value="{{disputeReasonIndex}}" bindchange="updateDisputeReasonType">
+          <view class="form-input picker-input">{{disputeReasonLabel || '请选择仲裁问题类型'}}</view>
+        </picker>
+      </view>
       <view class="modal-title">{{scanMode === 'outbound' ? '确认出库扫码' : '确认入库扫码'}}</view>
       <view class="scan-order-id">订单号：{{order.orderNo || order.id}}</view>
       <view class="scan-order-id" wx:if="{{scanMode === 'outbound'}}">出库进度：{{order.outboundScannedCount}} / {{order.propCount}}</view>
@@ -128,6 +138,12 @@
 
   <view class="modal" wx:if="{{showDisputeModal}}">
     <view class="modal-content" catchtap="true">
+      <view class="form-item">
+        <view class="form-label">仲裁问题类型</view>
+        <picker mode="selector" range="{{disputeReasons}}" range-key="reasonLabel" value="{{disputeReasonIndex}}" bindchange="updateDisputeReasonType">
+          <view class="form-input picker-input">{{disputeReasonLabel || '请选择仲裁问题类型'}}</view>
+        </picker>
+      </view>
       <view class="modal-title">订单仲裁申请</view>
       <view class="dispute-tip">请写清楚争议原因、发生节点和期望处理方式。{{disputeMaxText}}</view>
       <view class="form-item">

@@ -70,6 +70,36 @@
   margin-top: 8rpx;
 }
 
+.stock-line {
+  margin-top: 12rpx;
+  color: #94a3b8;
+  font-size: 24rpx;
+}
+
+.quantity-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20rpx;
+  margin-bottom: 18rpx;
+}
+
+.qty-btn {
+  width: 72rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  padding: 0;
+  border-radius: 999rpx;
+}
+
+.qty-value {
+  min-width: 80rpx;
+  text-align: center;
+  color: #f8fafc;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
 .picker-modal {
   max-height: 900rpx;
 }

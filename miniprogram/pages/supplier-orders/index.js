@@ -99,6 +99,14 @@ function normalizeListOrder(order) {
   };
 }
 
+function remainingScanCount(prop, mode) {
+  const quantity = Number(prop.quantity || 1);
+  const scanned = mode === "outbound"
+    ? Number(prop.outboundScannedCount || 0)
+    : Number(prop.returnScannedCount || 0);
+  return Math.max(0, quantity - scanned);
+}
+
 Page({
   searchTimer: null,
   skipNextRefresh: false,
@@ -508,15 +516,20 @@ Page({
     }
   },
 
-  async scanOneProp(e) {
-    const propId = Number(e.currentTarget.dataset.propId);
+  async scanOneProp() {
     const { currentOrder, scanMode } = this.data;
     if (!currentOrder) return;
 
     try {
+      const result = await scanQrCode();
+      const scanQrCodeId = result.qrCodeId || result.scene || result.rawData;
+      if (!scanQrCodeId) {
+        wx.showToast({ title: "未识别到道具码", icon: "none" });
+        return;
+      }
       const updated = scanMode === "outbound"
-        ? await scanOutboundProp(currentOrder.id, propId)
-        : await scanReturnProp(currentOrder.id, propId);
+        ? await scanOutboundQrCode(currentOrder.id, scanQrCodeId)
+        : await scanReturnQrCode(currentOrder.id, scanQrCodeId);
 
       this.setData({ currentOrder: normalizeListOrder(updated) });
       await this.resetAndLoad();
@@ -535,12 +548,17 @@ Page({
 
     try {
       for (const prop of props) {
-        const scanned = scanMode === "outbound" ? prop.outboundScanned : prop.returnScanned;
-        if (scanned) continue;
-
-        updated = scanMode === "outbound"
-          ? await scanOutboundProp(updated.id, prop.id)
-          : await scanReturnProp(updated.id, prop.id);
+        const remaining = remainingScanCount(prop, scanMode);
+        for (let i = 0; i < remaining; i += 1) {
+          const result = await scanQrCode();
+          const scanQrCodeId = result.qrCodeId || result.scene || result.rawData;
+          if (!scanQrCodeId) {
+            throw new Error("未识别到道具码");
+          }
+          updated = scanMode === "outbound"
+            ? await scanOutboundQrCode(updated.id, scanQrCodeId)
+            : await scanReturnQrCode(updated.id, scanQrCodeId);
+        }
       }
 
       this.setData({ currentOrder: normalizeListOrder(updated) });

@@ -30,18 +30,17 @@ Page({
       }
       const [props, orders] = await Promise.all([require("../../services/prop.service").listWarehouseProps(), listOrders("supplier")]);
 
-      const totalProps = props.length;
-      const idleProps = props.filter((item) => item.status === PROP_STATUS.IDLE).length;
-      const lockedProps = props.filter((item) => item.status === PROP_STATUS.LOCKED).length;
-      const rentingProps = props.filter((item) => item.status === PROP_STATUS.RENTING).length;
+      const totalProps = props.reduce((sum, item) => sum + Number(item.totalStock || 0), 0);
+      const idleProps = props.reduce((sum, item) => sum + Number(item.availableStock || 0), 0);
+      const lockedProps = props.reduce((sum, item) => sum + Number(item.lockedStock || 0), 0);
+      const rentingProps = props.reduce((sum, item) => sum + Number(item.rentedStock || 0), 0);
       const offlineProps = props.filter((item) => item.status === PROP_STATUS.OFFLINE).length;
 
       const utilizationRate = totalProps ? `${Math.round((rentingProps / totalProps) * 100)}%` : "0%";
       const dailyRevenue = props
-        .filter((item) => item.status === PROP_STATUS.RENTING)
-        .reduce((sum, item) => sum + Number(item.price || 0), 0);
-      const totalDeposit = props.reduce((sum, item) => sum + Number(item.deposit || 0), 0);
-      const avgRentPrice = totalProps ? Math.round(props.reduce((sum, item) => sum + Number(item.price || 0), 0) / totalProps) : 0;
+        .reduce((sum, item) => sum + Number(item.price || 0) * Number(item.rentedStock || 0), 0);
+      const totalDeposit = props.reduce((sum, item) => sum + Number(item.deposit || 0) * Number(item.totalStock || 0), 0);
+      const avgRentPrice = props.length ? Math.round(props.reduce((sum, item) => sum + Number(item.price || 0), 0) / props.length) : 0;
       const pendingConfirmOrders = orders.filter((item) => item.status === ORDER_STATUS.PENDING_FACTORY_CONFIRM).length;
 
       this.setData({

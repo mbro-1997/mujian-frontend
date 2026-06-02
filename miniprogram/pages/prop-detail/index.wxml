@@ -14,6 +14,7 @@
       <text class="deposit">押金：¥{{prop.deposit}}</text>
     </view>
     <view class="status-tag {{statusClass}}">{{prop.statusText}}</view>
+    <view class="stock-line">{{prop.availableStock > 0 ? '可租库存：' + prop.availableStock + ' 件' : '暂无可租库存'}}</view>
   </view>
 
   <view class="card" style="margin: 16rpx;">
@@ -32,7 +33,12 @@
   </view>
 
   <view class="action-buttons" style="margin: 16rpx;">
-    <button wx:if="{{isDemander}}" class="btn btn-primary" style="width: 100%; margin-bottom: 12rpx;" bindtap="addToProject">加入方案</button>
+    <view wx:if="{{isDemander}}" class="quantity-row">
+      <button class="qty-btn" disabled="{{quantity <= 1}}" bindtap="decreaseQuantity">-</button>
+      <view class="qty-value">{{quantity}}</view>
+      <button class="qty-btn" disabled="{{quantity >= prop.availableStock}}" bindtap="increaseQuantity">+</button>
+    </view>
+    <button wx:if="{{isDemander}}" class="btn btn-primary {{!prop.canRent ? 'btn-disabled' : ''}}" disabled="{{!prop.canRent}}" style="width: 100%; margin-bottom: 12rpx;" bindtap="addToProject">加入方案</button>
     <button wx:if="{{isDemander}}" class="btn btn-secondary" style="width: 100%;" bindtap="contactSupplier">联系供应商</button>
 
     <button wx:if="{{isSupplier}}" class="btn btn-primary" style="width: 100%; margin-bottom: 12rpx;" bindtap="editProp">编辑道具</button>

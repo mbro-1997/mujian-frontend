@@ -1,0 +1,140 @@
+page {
+  background: #070b16;
+  color: #f8fafc;
+}
+
+.page {
+  padding: 24rpx;
+  padding-bottom: 80rpx;
+}
+
+.summary-card,
+.instance-card,
+.log-panel,
+.empty-panel {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1rpx solid rgba(148, 163, 184, 0.16);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.title {
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.desc,
+.instance-sub,
+.instance-row,
+.log-meta,
+.log-reason {
+  color: #94a3b8;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.instance-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+  align-items: flex-start;
+}
+
+.instance-title {
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.status-pill {
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  background: rgba(148, 163, 184, 0.14);
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+
+.status-idle {
+  background: rgba(52, 211, 153, 0.14);
+  color: #34d399;
+}
+
+.status-locked {
+  background: rgba(251, 191, 36, 0.14);
+  color: #fbbf24;
+}
+
+.status-renting {
+  background: rgba(34, 211, 238, 0.14);
+  color: #22d3ee;
+}
+
+.status-repairing {
+  background: rgba(129, 140, 248, 0.14);
+  color: #a5b4fc;
+}
+
+.status-lost,
+.status-scrapped {
+  background: rgba(251, 113, 133, 0.14);
+  color: #fb7185;
+}
+
+.hint {
+  margin-top: 16rpx;
+  padding: 14rpx 18rpx;
+  border-radius: 16rpx;
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  font-size: 24rpx;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  margin-top: 20rpx;
+}
+
+.action-btn {
+  margin: 0;
+  height: 64rpx;
+  line-height: 64rpx;
+  border-radius: 999rpx;
+  padding: 0 24rpx;
+  background: rgba(34, 211, 238, 0.12);
+  color: #22d3ee;
+  font-size: 24rpx;
+}
+
+.action-btn.primary {
+  background: #22d3ee;
+  color: #03111a;
+}
+
+.action-btn.danger {
+  background: rgba(251, 113, 133, 0.14);
+  color: #fb7185;
+}
+
+.action-btn.ghost {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+}
+
+.log-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  margin-bottom: 12rpx;
+}
+
+.log-item {
+  padding: 16rpx 0;
+  border-top: 1rpx solid rgba(148, 163, 184, 0.14);
+}
+
+.log-main {
+  font-size: 26rpx;
+  color: #f8fafc;
+}

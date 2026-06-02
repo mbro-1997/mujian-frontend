@@ -1,4 +1,5 @@
 const { listPendingFillProps, completePendingFill } = require("../../services/prop.service");
+const { uploadImage, isPersistedImageUrl } = require("../../services/file.service");
 const {
   PROP_STYLE_OPTIONS,
   PROP_TYPE_OPTIONS,
@@ -81,11 +82,20 @@ Page({
   },
 
   async loadPendingProps() {
+    if (this.data.isQrLockedMode) {
+      const currentPendingProp = {
+        id: this.data.routePropId,
+        qrCodeId: this.data.routeQrCodeId,
+        name: `道具 ${this.data.routePropId}`,
+        imageUrl: "",
+      };
+      this.setData({ pendingProps: [currentPendingProp] });
+      this.preselectRouteProp([currentPendingProp]);
+      return;
+    }
     try {
       const pendingProps = await listPendingFillProps();
-      const visiblePendingProps = this.data.isQrLockedMode
-        ? pendingProps.filter((item) => item.id === this.data.routePropId)
-        : pendingProps;
+      const visiblePendingProps = pendingProps;
       this.setData({ pendingProps: visiblePendingProps });
       this.preselectRouteProp(visiblePendingProps);
     } catch (err) {
@@ -291,6 +301,10 @@ Page({
     }
 
     try {
+      const images = [];
+      for (const imagePath of formData.images) {
+        images.push(isPersistedImageUrl(imagePath) ? imagePath : await uploadImage(imagePath, "prop"));
+      }
       await completePendingFill(selectedPendingProp.id, {
         name: formData.name.trim(),
         style: formData.style,
@@ -305,8 +319,8 @@ Page({
         transportSuggestion: formData.transportSuggestion.trim(),
         price: Number(formData.price),
         deposit: Number(formData.deposit),
-        imageUrl: formData.images[0] || "/images/stage-prop-real.jpg",
-        images: formData.images,
+        imageUrl: images[0] || "/images/stage-prop-real.jpg",
+        images,
         qrCodeId: this.data.routeQrCodeId,
       });
 

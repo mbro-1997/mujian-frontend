@@ -5,7 +5,8 @@ Page({
     id: null,
     detail: null,
     showDecisionModal: false,
-    decisionApproved: true,
+    decisionActionType: "reject",
+    decisionAmount: "",
     decisionReason: "",
   },
 
@@ -29,16 +30,21 @@ Page({
   },
 
   openDecision(e) {
-    const approved = e.currentTarget.dataset.approved === "1";
+    const actionType = e.currentTarget.dataset.action || "reject";
     this.setData({
       showDecisionModal: true,
-      decisionApproved: approved,
-      decisionReason: approved ? "同意仲裁申请，后续进入押金退款处理流程。" : "",
+      decisionActionType: actionType,
+      decisionAmount: "",
+      decisionReason: actionType === "reject" ? "" : "管理员裁定：仲裁成立，相关金额进入结算处理。",
     });
   },
 
   closeDecision() {
-    this.setData({ showDecisionModal: false, decisionReason: "" });
+    this.setData({ showDecisionModal: false, decisionAmount: "", decisionReason: "" });
+  },
+
+  updateDecisionAmount(e) {
+    this.setData({ decisionAmount: e.detail.value || "" });
   },
 
   updateReason(e) {
@@ -51,8 +57,14 @@ Page({
       wx.showToast({ title: "请填写裁定理由", icon: "none" });
       return;
     }
+    const actionType = this.data.decisionActionType;
+    const decisionAmount = actionType === "reject" ? 0 : Number(this.data.decisionAmount);
+    if (actionType !== "reject" && (!Number.isFinite(decisionAmount) || decisionAmount <= 0)) {
+      wx.showToast({ title: "请填写大于 0 的裁定金额", icon: "none" });
+      return;
+    }
     try {
-      await decideDispute(this.data.id, this.data.decisionApproved, reason);
+      await decideDispute(this.data.id, actionType, reason, decisionAmount);
       this.closeDecision();
       await this.loadDetail();
       wx.showToast({ title: "裁定完成", icon: "success" });

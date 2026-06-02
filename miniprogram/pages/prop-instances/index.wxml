@@ -1,0 +1,41 @@
+<view class="page">
+  <view class="summary-card">
+    <view class="title">管理实物</view>
+    <view class="desc">SN 状态必须落到具体二维码实物，维修、丢失、报废都会写入状态日志。</view>
+  </view>
+
+  <view wx:if="{{!instances.length && !loading}}" class="empty-panel">暂无实物数据</view>
+
+  <view class="instance-card" wx:for="{{instances}}" wx:key="id">
+    <view class="instance-head">
+      <view>
+        <view class="instance-title">{{item.instanceNo || '未填写实物编号'}}</view>
+        <view class="instance-sub">二维码：{{item.qrCodeId}}</view>
+      </view>
+      <view class="status-pill status-{{item.instanceStatus}}">{{item.instanceStatusText}}</view>
+    </view>
+    <view class="instance-row">当前订单：{{item.currentOrderNo || item.currentOrderId || '无'}}</view>
+    <view class="instance-row">备注：{{item.statusRemark || '无'}}</view>
+    <view class="instance-row">最近变更：{{item.statusChangedAt || '暂无'}}</view>
+
+    <view class="hint" wx:if="{{item.statusHint}}">{{item.statusHint}}</view>
+
+    <view class="action-row">
+      <button wx:if="{{item.canMarkRepairing}}" class="action-btn" data-id="{{item.id}}" data-status="repairing" data-text="标记维修" bindtap="changeStatus">标记维修</button>
+      <button wx:if="{{item.canMarkLost}}" class="action-btn danger" data-id="{{item.id}}" data-status="lost" data-text="标记丢失" bindtap="changeStatus">标记丢失</button>
+      <button wx:if="{{item.canMarkScrapped}}" class="action-btn danger" data-id="{{item.id}}" data-status="scrapped" data-text="标记报废" bindtap="changeStatus">标记报废</button>
+      <button wx:if="{{item.canRestoreIdle}}" class="action-btn primary" data-id="{{item.id}}" data-status="idle" data-text="恢复空闲" bindtap="changeStatus">恢复空闲</button>
+      <button wx:if="{{item.canScrapFromRepairing}}" class="action-btn danger" data-id="{{item.id}}" data-status="scrapped" data-text="标记报废" bindtap="changeStatus">标记报废</button>
+      <button class="action-btn ghost" data-id="{{item.id}}" bindtap="loadLogs">查看日志</button>
+    </view>
+  </view>
+
+  <view class="log-panel" wx:if="{{logs.length}}">
+    <view class="log-title">状态日志</view>
+    <view class="log-item" wx:for="{{logs}}" wx:key="id">
+      <view class="log-main">{{item.fromStatusText || '初始'}} → {{item.toStatusText}}</view>
+      <view class="log-meta">{{item.createdAt}} · {{item.operatorRole}} #{{item.operatorUserId}}</view>
+      <view class="log-reason">{{item.reason || '无原因'}}</view>
+    </view>
+  </view>
+</view>

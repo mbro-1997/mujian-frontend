@@ -7,6 +7,7 @@ const {
 const { request } = require("./http");
 const { getSelectedRole } = require("./user.service");
 const { normalizeProp } = require("./prop.service");
+const { uploadImage } = require("./file.service");
 
 function normalizeOrderItem(item) {
   const prop = normalizeProp(item);
@@ -14,6 +15,9 @@ function normalizeOrderItem(item) {
     ...prop,
     statusText: item.statusText || getPropStatusText(item.status),
     statusClass: getPropStatusClass(item.status),
+    quantity: Number(item.quantity || prop.quantity || 1),
+    outboundScannedCount: Number(item.outboundScannedCount || 0),
+    returnScannedCount: Number(item.returnScannedCount || 0),
     outboundScanned: !!item.outboundScanned,
     returnScanned: !!item.returnScanned,
   };
@@ -31,8 +35,13 @@ function normalizeDispute(item = {}) {
     applicantRoleText: item.applicantRoleText || "",
     applyStage: item.applyStage || "",
     applyStageText: item.applyStageText || "",
+    reasonCode: item.reasonCode || "",
+    reasonLabel: item.reasonLabel || "",
     claimAmount: Number(item.claimAmount || 0),
+    adminDecisionAmount: Number(item.adminDecisionAmount || 0),
     depositAmount: Number(item.depositAmount || 0),
+    fundEffectStatus: item.fundEffectStatus || "none",
+    adminActionType: item.adminActionType || "",
     evidenceUrls: item.evidenceUrls || "",
     evidenceImages: item.evidenceImages || [],
     status: item.status || "pending",
@@ -48,6 +57,7 @@ function normalizeDispute(item = {}) {
 
 function normalizeOrder(item) {
   const props = (item.props || []).map(normalizeOrderItem);
+  const propQuantityTotal = props.reduce((sum, prop) => sum + Number(prop.quantity || 1), 0);
   return {
     id: item.id,
     orderNo: item.orderNo,
@@ -68,6 +78,7 @@ function normalizeOrder(item) {
     useScene: item.useScene || "",
     specialRemark: item.specialRemark || "",
     cancelReason: item.cancelReason || "",
+    cancelType: item.cancelType || "",
     demanderName: item.demanderName || "",
     demanderPhone: item.demanderPhone || "",
     demanderIdentity: item.demanderIdentity || "",
@@ -77,7 +88,7 @@ function normalizeOrder(item) {
     date: item.date || "",
     propIds: (item.propIds || []).map((id) => Number(id)),
     props,
-    propCount: Number(item.propCount || props.length),
+    propCount: Number(item.propCount || propQuantityTotal || props.length),
     outboundScannedCount: Number(item.outboundScannedCount || 0),
     returnScannedCount: Number(item.returnScannedCount || 0),
     canFactoryConfirm: !!item.canFactoryConfirm,
@@ -86,6 +97,9 @@ function normalizeOrder(item) {
     canScanReturn: !!item.canScanReturn,
     canReview: !!item.canReview,
     canApplyDispute: !!item.canApplyDispute,
+    canCancel: !!item.canCancel,
+    canSupplierCancelAfterConfirm: !!item.canSupplierCancelAfterConfirm,
+    canContactService: !!item.canContactService,
     disputeCount: Number(item.disputeCount || 0),
     disputes: (item.disputes || []).map(normalizeDispute),
     demanderReviewed: !!item.demanderReviewed,
@@ -220,6 +234,7 @@ async function submitOrderDispute(orderId, disputePayload) {
     method: "POST",
     data: {
       reason: disputePayload.reason || "",
+      reasonCode: disputePayload.reasonCode || "",
       claimAmount: Number(disputePayload.claimAmount || 0),
       evidenceUrls: disputePayload.evidenceUrls || "",
     },
@@ -227,6 +242,64 @@ async function submitOrderDispute(orderId, disputePayload) {
   return normalizeOrder(data);
 }
 
+async function cancelOrder(orderId) {
+  const data = await request({
+    url: `/orders/${orderId}/cancel`,
+    method: "POST",
+  });
+  return normalizeOrder(data);
+}
+
+async function cancelAfterConfirmByFactory(orderId) {
+  const data = await request({
+    url: `/factory/orders/${orderId}/cancel-after-confirm`,
+    method: "POST",
+  });
+  return normalizeOrder(data);
+}
+
+async function getDisputeReasons(stage, role) {
+  const data = await request({
+    url: `/dispute-reasons?stage=${encodeURIComponent(stage)}&role=${encodeURIComponent(role)}`,
+  });
+  return data || [];
+}
+
+async function uploadDisputeEvidence(filePath) {
+  return uploadImage(filePath, "dispute");
+}
+
+/*
+async function unusedLegacyUploadDisputeEvidenceDead(filePath) {
+  return new Promise((resolve, reject) => {
+    const token = getItem(KEYS.AUTH_TOKEN, "");
+    wx.uploadFile({
+      url: `${API_BASE_URL}/files/images`,
+      filePath,
+      name: "file",
+      header: token ? { Authorization: `Bearer ${token}` } : {},
+      success(res) {
+        let payload = {};
+        try {
+          payload = JSON.parse(res.data || "{}");
+        } catch (err) {
+          reject(new Error("上传响应解析失败"));
+          return;
+        }
+        if (res.statusCode >= 200 && res.statusCode < 300 && payload.code === 0) {
+          resolve(toAbsoluteFileUrl(payload.data?.url || ""));
+          return;
+        }
+        reject(new Error(payload.message || `上传失败(${res.statusCode})`));
+      },
+      fail(err) {
+        reject(new Error(err.errMsg || "上传仲裁证据失败"));
+      },
+    });
+  });
+}
+
+*/
 async function listMyDisputes() {
   const data = await request({ url: "/orders/disputes" });
   return (data || []).map(normalizeDispute);
@@ -253,6 +326,10 @@ module.exports = {
   scanReturnQrCode,
   submitOrderReview,
   submitOrderDispute,
+  cancelOrder,
+  cancelAfterConfirmByFactory,
+  getDisputeReasons,
+  uploadDisputeEvidence,
   listMyDisputes,
   expireTimedOutOrders,
   normalizeOrder,

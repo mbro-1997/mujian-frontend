@@ -35,6 +35,7 @@
     "pages/mine/index",
     "pages/settings/index",
     "pages/prop-detail/index",
+    "pages/prop-instances/index",
     "pages/warehouse/index",
     "pages/inventory/index",
     "pages/supplier-orders/index"

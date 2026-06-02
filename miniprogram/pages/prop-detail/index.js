@@ -13,6 +13,7 @@ Page({
     pickerProjects: [],
     showCreateProjectModal: false,
     createProjectName: "",
+    quantity: 1,
   },
 
   async onLoad(options) {
@@ -45,6 +46,7 @@ Page({
 
       this.setData({
         prop,
+        quantity: prop.availableStock > 0 ? 1 : 0,
         statusClass: prop.statusClass || getPropStatusClass(prop.status),
       });
     } catch (err) {
@@ -54,8 +56,12 @@ Page({
   },
 
   async addToProject() {
-    const { prop } = this.data;
+    const { prop, quantity } = this.data;
     if (!prop) return;
+    if (!prop.canRent || quantity < 1) {
+      wx.showToast({ title: "当前道具暂无可租库存", icon: "none" });
+      return;
+    }
 
     try {
       const projects = (await listProjects()).filter((item) => item.status === "editing");
@@ -66,6 +72,17 @@ Page({
     } catch (err) {
       wx.showToast({ title: err.message || "加载方案失败", icon: "none" });
     }
+  },
+
+  decreaseQuantity() {
+    const next = Math.max(1, Number(this.data.quantity || 1) - 1);
+    this.setData({ quantity: next });
+  },
+
+  increaseQuantity() {
+    const max = Number(this.data.prop?.availableStock || 0);
+    const next = Math.min(max, Number(this.data.quantity || 1) + 1);
+    this.setData({ quantity: next });
   },
 
   closeProjectPicker() {
@@ -81,7 +98,7 @@ Page({
     if (!prop || !projectId) return;
 
     try {
-      await addPropToProject(projectId, prop.id);
+      await addPropToProject(projectId, prop.id, this.data.quantity);
       this.closeProjectPicker();
       wx.showToast({ title: "已加入方案", icon: "success" });
     } catch (err) {
@@ -112,7 +129,7 @@ Page({
 
     try {
       const project = await createProject({ name });
-      await addPropToProject(project.id, prop.id);
+      await addPropToProject(project.id, prop.id, this.data.quantity);
       this.closeCreateProjectModal();
       this.closeProjectPicker();
       wx.showToast({ title: "方案已创建并加入道具", icon: "success" });
@@ -138,8 +155,8 @@ Page({
       return;
     }
 
-    if (prop.status === PROP_STATUS.RENTING || prop.status === PROP_STATUS.LOCKED) {
-      wx.showToast({ title: "当前状态不可上下架", icon: "none" });
+    if (Number(prop.lockedStock || 0) > 0 || Number(prop.rentedStock || 0) > 0) {
+      wx.showToast({ title: "存在锁定或租赁中实物，不能上下架", icon: "none" });
       return;
     }
 

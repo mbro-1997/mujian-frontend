@@ -1,4 +1,5 @@
 const { submitFactoryApplication } = require("../../services/user.service");
+const { uploadImage, isPersistedImageUrl } = require("../../services/file.service");
 
 Page({
   data: {
@@ -52,7 +53,11 @@ Page({
 
     this.setData({ loading: true });
     try {
-      await submitFactoryApplication(form);
+      const payload = { ...form };
+      if (!isPersistedImageUrl(payload.businessLicenseUrl)) {
+        payload.businessLicenseUrl = await uploadImage(payload.businessLicenseUrl, "factory-license");
+      }
+      await submitFactoryApplication(payload);
       wx.reLaunch({ url: "/pages/factory-audit-status/index" });
     } catch (err) {
       wx.showToast({ title: err.message || "提交申请失败", icon: "none" });
