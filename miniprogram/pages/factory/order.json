@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "工厂订单详情",
+  "usingComponents": {
+    "public-prop-image": "/components/public-prop-image/index"
+  }
+}

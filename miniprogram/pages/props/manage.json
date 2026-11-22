@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "我的道具",
+  "usingComponents": {
+    "prop-fields": "/components/prop-fields/index",
+    "prop-grid": "/components/prop-grid/index"
+  }
+}

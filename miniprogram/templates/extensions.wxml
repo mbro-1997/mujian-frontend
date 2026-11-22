@@ -1,0 +1,27 @@
+<template name="extensions">
+  <view class="trade">
+    <view wx:if="{{message}}" class="feedback">{{message}}<button bindtap="load">刷新</button></view>
+    <view wx:if="{{!items.length && !detail && !message}}" class="section">{{busy?'正在读取…':'暂无延期申请'}}</view>
+    <view wx:for="{{items}}" wx:key="id" class="section">
+      <view class="row"><text>{{item.orderNo}}</text><text class="badge">{{item.label}}</text></view>
+      <view>延期 {{item.extraDays}} 天 · 租金 ¥{{item.amount}}</view>
+      <button disabled="{{busy || pending}}" data-id="{{item.id}}" bindtap="open">查看延期申请</button>
+    </view>
+    <view wx:if="{{total>15}}" class="section"><button bindtap="changePage" data-step="-1" disabled="{{busy || pending || page===1}}">上一页</button><button bindtap="changePage" data-step="1" disabled="{{busy || pending || page*15>=total}}">下一页</button></view>
+    <view wx:if="{{detail}}" class="section">
+      <view class="heading">{{detail.label}}</view><view>{{detail.originalDueDate}} 延至 {{detail.requestedDueDate}}</view>
+      <view>延期租金 ¥{{detail.amount}}</view>
+      <view wx:if="{{detail.deadline}}">工厂处理截止 {{detail.deadline}}</view>
+      <view wx:if="{{detail.remark}}">申请说明　{{detail.remark}}</view>
+      <view wx:if="{{detail.reason}}">处理原因　{{detail.reason}}</view>
+      <view wx:if="{{detail.refundLabel}}">{{detail.refundLabel}}</view>
+      <button wx:if="{{pending}}" bindtap="act" disabled="{{busy}}">查询原操作</button>
+      <block wx:else>
+        <button wx:if="{{detail.actions.pay}}" class="primary" bindtap="act" data-action="pay" disabled="{{busy}}">支付延期租金</button>
+        <button wx:if="{{detail.actions.cancel}}" bindtap="act" data-action="cancel" disabled="{{busy}}">取消延期并退款</button>
+        <button wx:if="{{detail.actions.approve}}" class="primary" bindtap="act" data-action="approve" disabled="{{busy}}">同意延期</button>
+        <block wx:if="{{detail.actions.reject}}"><input placeholder="填写拒绝原因" maxlength="255" value="{{reason}}" bindinput="reason" disabled="{{busy}}"/><button bindtap="act" data-action="reject" disabled="{{busy}}">拒绝延期</button></block>
+      </block>
+    </view>
+  </view>
+</template>

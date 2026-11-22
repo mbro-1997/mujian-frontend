@@ -1,0 +1,6 @@
+@import "../../styles/custom.wxss";
+
+.template-page{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+.template-footer{position:fixed;bottom:0;left:0;right:0;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:white;border-top:1px solid #eee}
+.template-footer button{flex:1;margin:0;text-align:center}.template-footer .primary{background:#111827;color:#ffe100}
+@import "../../styles/renter-surfaces.wxss";

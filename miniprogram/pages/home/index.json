@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "首页",
+  "usingComponents": {
+    "prop-grid": "/components/prop-grid/index",
+    "login-sheet": "/components/login-sheet/index",
+    "coupon-offers": "/components/coupon-offers/index",
+    "scheme-picker": "/components/scheme-picker/index"
+  },
+  "enablePullDownRefresh": true
+}

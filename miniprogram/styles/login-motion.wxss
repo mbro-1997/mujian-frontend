@@ -1,0 +1,1 @@
+.overlay .sheet{animation:login-sheet-enter 280ms cubic-bezier(.2,.8,.2,1) both}.overlay .mask{animation:login-mask-enter 280ms ease-out both}@keyframes login-sheet-enter{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes login-mask-enter{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.overlay .sheet,.overlay .mask{animation:none}}

@@ -1,0 +1,28 @@
+<view class="mask" bindtap="close" catchtouchmove="noop"></view>
+<view class="sheet" aria-role="dialog" aria-label="加入方案">
+  <view class="head"><text>加入方案</text><button class="close" bindtap="close" disabled="{{saving}}" aria-label="关闭">×</button></view>
+  <view class="desc">{{target?'确认本次加入的数量':'请选择要加入的方案，也可以直接新建方案。'}}</view>
+  <view class="summary">
+    <view class="thumb"><public-prop-image wx:if="{{prop.cover}}" image="{{prop.cover}}" sku-id="{{prop.id}}" lazy="{{false}}" active="{{true}}"/><text wx:else class="no-img">暂无图片</text></view>
+    <view class="copy"><view class="name">{{prop.name}}</view><view class="meta">¥{{prop.price}}/天 · {{prop.category}}</view></view>
+  </view>
+  <block wx:if="{{target}}">
+    <view class="target"><view class="copy"><view class="name">{{target.name}}</view><text class="meta">已加入 {{existing}} 件</text></view></view>
+    <view class="count"><text>本次加入</text><view class="stepper">
+      <button disabled="{{busy || recovery || amount <= 1}}" bindtap="step" data-delta="-1" aria-label="减少一件">−</button>
+      <input type="number" maxlength="10" value="{{amount}}" disabled="{{busy || recovery}}" bindinput="input" aria-label="本次加入数量" cursor-spacing="90"/>
+      <button disabled="{{busy || recovery || total >= 2147483647}}" bindtap="step" data-delta="1" aria-label="增加一件">＋</button>
+    </view></view>
+    <view class="meta result">{{total?'加入后共 '+total+' 件':'请输入有效的正整数数量'}}</view>
+  </block>
+  <scroll-view wx:elif="{{rows.length}}" scroll-y class="list">
+    <view wx:for="{{rows}}" wx:key="id" class="option"><view class="copy"><view class="name">{{item.name}}</view><view class="meta">{{item.quantityTotal}} 件道具 · 编辑中</view></view><button class="join" disabled="{{busy}}" data-id="{{item.id}}" bindtap="choose">加入</button></view>
+  </scroll-view>
+  <view wx:elif="{{!message}}" class="empty">{{busy?'正在读取方案…':'暂无编辑中的方案'}}</view>
+  <view wx:if="{{message}}" class="error">{{message}} <text wx:if="{{!target}}" bindtap="load">重新读取</text></view>
+  <view class="actions"><button class="secondary" disabled="{{saving}}" bindtap="back">{{target?'重新选择':'取消'}}</button>
+    <button wx:if="{{recovery}}" class="primary" disabled="{{busy}}" bindtap="recover">查询原加入结果</button>
+    <button wx:elif="{{target}}" class="primary" disabled="{{busy || !total}}" bindtap="submit">确认加入</button>
+    <button wx:else class="primary" disabled="{{busy || message || rows.length >= 10}}" bindtap="create">{{rows.length >= 10?'编辑中方案已满':'新建方案'}}</button>
+  </view>
+</view>

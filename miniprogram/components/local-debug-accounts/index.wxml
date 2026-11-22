@@ -1,0 +1,7 @@
+<view wx:if="{{visible}}" class="debug-accounts">
+  <view class="actions">
+    <button disabled="{{busy}}" data-role="demander" bindtap="choose">租赁方测试账号</button>
+    <button disabled="{{busy}}" data-role="supplier" bindtap="choose">工厂测试账号</button>
+  </view>
+  <view wx:if="{{message}}" class="message">{{message}}</view>
+</view>

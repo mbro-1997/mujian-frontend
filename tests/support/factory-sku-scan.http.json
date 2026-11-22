@@ -1,0 +1,133 @@
+{
+  "source": "2026-11-16 dev2 工作区；隔离工厂、真实 HTTP/MySQL/Redis；微信制码与存储测试适配器；仅保留响应体、方法、路径、状态，图片地址已脱敏。",
+  "backendJarSha256": "87b9b6b3816256cca13341eb0ed441b93ddc04e8a4b3e2eb960778e38ca2d580",
+  "responses": [
+    {
+      "method": "POST",
+      "path": "/api/me/prop-qr/resolve",
+      "status": 200,
+      "body": {
+        "code": "OK",
+        "message": "成功",
+        "data": {
+          "canConfirmLabel": false,
+          "canRetryImage": false,
+          "codeType": "wechat_mini_code",
+          "id": "cf5fd57fefdc42858488234e593e60ba",
+          "image": {
+            "expiresAt": "2026-11-16T15:19:25.620+08:00",
+            "url": "https://example.invalid/redacted/9ff6c7b444478b5b"
+          },
+          "imageStatus": "ready",
+          "instanceStatus": null,
+          "propName": "隔离道具ad14",
+          "qrCode": "da78abbdea9f4f63bcc33556d7d9ab1c",
+          "skuCode": "SKU-fc5edda1db9e4abe9a8daec86c8feb8a",
+          "skuId": "fc5edda1db9e4abe9a8daec86c8feb8a",
+          "snCode": null,
+          "snVersion": null,
+          "status": "bound",
+          "supersedesQrId": null,
+          "targetId": "fc5edda1db9e4abe9a8daec86c8feb8a",
+          "targetType": "SKU",
+          "version": 2
+        },
+        "traceId": "3c778100d53445bdbd16e6f690918fe0"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/factory-props/fc5edda1db9e4abe9a8daec86c8feb8a",
+      "status": 200,
+      "body": {
+        "code": "OK",
+        "message": "成功",
+        "data": {
+          "assetType": "B_CONSUMABLE",
+          "canAdjustInventory": true,
+          "canApplyDown": true,
+          "canApplyUp": false,
+          "canEditOptions": true,
+          "createdAt": "2026-11-16T15:17:25.620+08:00",
+          "currentQrId": "cf5fd57fefdc42858488234e593e60ba",
+          "factoryId": "251ead4ac8174edeb3fe1ffd5f6977e4",
+          "factoryName": "测试工厂4c96",
+          "fields": {
+            "dailyRentPriceFen": 10000,
+            "depositAmountFen": 0,
+            "fireResistantCode": "no",
+            "fireResistantLabel": "否",
+            "heightCm": "80.00",
+            "images": [
+              {
+                "locator": {
+                  "index": 0,
+                  "section": "current",
+                  "sourceId": "fc5edda1db9e4abe9a8daec86c8feb8a",
+                  "sourceType": "sku"
+                },
+                "preview": {
+                  "expiresAt": "2026-11-16T15:19:25.620+08:00",
+                  "url": "https://example.invalid/redacted/3307e28bf176b1da"
+                }
+              }
+            ],
+            "lengthCm": "100.00",
+            "materialDesc": "木质",
+            "packagingFactorBps": 12000,
+            "propName": "隔离道具ad14",
+            "remark": null,
+            "sizeDesc": "尺寸说明",
+            "styleCodes": [
+              "modern"
+            ],
+            "styleLabels": [
+              "现代"
+            ],
+            "transportSuggestion": "专车运输",
+            "typeCode": "stage_structure",
+            "typeLabel": "舞台结构件",
+            "weightKg": "10.00",
+            "widthCm": "50.00"
+          },
+          "fillStatus": "filled",
+          "id": "fc5edda1db9e4abe9a8daec86c8feb8a",
+          "inventorySummary": {
+            "availableQuantity": 5,
+            "totalQuantity": 5
+          },
+          "latestQrId": "cf5fd57fefdc42858488234e593e60ba",
+          "pendingApplicationId": null,
+          "skuCode": "SKU-fc5edda1db9e4abe9a8daec86c8feb8a",
+          "skuStatus": "online",
+          "updatedAt": "2026-11-16T15:17:25.620+08:00",
+          "version": 1
+        },
+        "traceId": "02fc735a4a104f35bc828f01b9823108"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/factory-props/fc5edda1db9e4abe9a8daec86c8feb8a/stock",
+      "status": 200,
+      "body": {
+        "code": "OK",
+        "message": "成功",
+        "data": {
+          "availableQuantity": 5,
+          "lastCountedAt": "2026-11-16T15:17:25.620+08:00",
+          "lastCountedBy": "52e790e03c3e457eb653e667d03a923a",
+          "lockedQuantity": 0,
+          "lostQuantity": 0,
+          "rentableBaseQuantity": 5,
+          "rentingQuantity": 0,
+          "scrappedQuantity": 0,
+          "skuId": "fc5edda1db9e4abe9a8daec86c8feb8a",
+          "totalQuantity": 5,
+          "updatedAt": "2026-11-16T15:17:25.620+08:00"
+        },
+        "traceId": "6ed1975e41fa4848a7cda93e3518001e"
+      }
+    }
+  ]
+}

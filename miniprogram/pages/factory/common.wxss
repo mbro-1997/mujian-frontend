@@ -1,0 +1,11 @@
+page{background:#f5f5f5;color:#202124}.factory-page{padding:32rpx 28rpx 64rpx}.hero{padding:24rpx 4rpx 32rpx}.heading{font-size:44rpx;font-weight:700;margin-bottom:16rpx}.eyebrow{font-size:24rpx;color:#8c7426;margin-bottom:12rpx}.muted,.note{color:#747474;font-size:25rpx;line-height:1.7}.note{margin:16rpx 0}.card{background:#fff;border-radius:24rpx;padding:28rpx;margin-bottom:24rpx}.section-title{font-size:32rpx;font-weight:600;margin-bottom:20rpx}.label{display:block;font-size:27rpx;font-weight:600;margin:24rpx 0 12rpx}input,textarea,.readonly{background:#f7f7f7;border-radius:12rpx;box-sizing:border-box;padding:20rpx;width:100%;font-size:28rpx}input{height:88rpx}textarea{height:160rpx}.readonly{color:#6c6c6c}.option{display:inline-flex;align-items:center;font-size:25rpx;margin:12rpx 20rpx 12rpx 0}.case{border-top:1rpx solid #eee;margin-top:24rpx;padding-top:8rpx}.image-row{display:flex;align-items:center;gap:12rpx;margin:12rpx 0}.image-row > image{width:110rpx;height:110rpx;border-radius:12rpx}button{margin-top:18rpx;font-size:28rpx;border-radius:14rpx}.primary{background:#ffe100;color:#111827;font-weight:600}.feedback{padding:24rpx;background:#fff2df;color:#925622;border-radius:16rpx;font-size:26rpx;line-height:1.6;margin:20rpx 0}.rule-link{color:#725900;font-weight:600}.row{font-size:27rpx;line-height:1.8;margin-bottom:12rpx}
+.factory-page{padding:16px 16px calc(32px + env(safe-area-inset-bottom));overflow-wrap:anywhere}
+.factory-page button{box-sizing:border-box;width:100%;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;min-height:44px}
+.factory-page button[disabled]{background:#e5e7eb;color:#9ca3af}
+.factory-page .card{border:1px solid #eee;border-radius:8px;padding:16px}
+.factory-page .image-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.factory-page .image-row button{flex:1 1 82px;width:auto;margin:0;padding:10px 8px;font-size:12px}
+.factory-page .image-row > image{flex:none;width:64px;height:64px}
+.factory-page .case input,.factory-page .case textarea{margin-bottom:10px}
+.factory-page .option{max-width:100%;align-items:flex-start;line-height:1.6}
+.factory-page checkbox{flex-shrink:0}

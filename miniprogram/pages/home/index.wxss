@@ -1,0 +1,2 @@
+@import "../../styles/catalog.wxss";
+@import "../../navigation/root.wxss";

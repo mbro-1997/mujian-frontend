@@ -1,0 +1,21 @@
+@import "../../styles/trading.wxss";
+.review-page{padding:12px 12px calc(88px + env(safe-area-inset-bottom))}
+.review-page .section{padding:12px;margin-bottom:10px;border-radius:8px}
+.review-page .heading{font-size:16px}
+.review-page .review-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.review-heading .heading{font-size:20px;min-width:0;overflow-wrap:anywhere}
+.review-heading .badge{flex-shrink:0;background:#111827;color:#ffe100}
+.review-page .muted{overflow-wrap:anywhere}
+.stars{display:flex;align-items:center}
+.stars .star{flex:0 1 36px;min-width:0;margin:0;padding:0;background:transparent;color:#111827;font-size:26px;line-height:44px;text-align:center}
+.stars .star::after,.review-tags button::after{border:0}
+.review-tags{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.review-tags button{display:block;width:100%;min-width:0;min-height:68px;padding:10px;text-align:left;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;white-space:normal}
+.review-tags button.selected{background:#fff8cf;border-color:#e0bc2b}
+.review-tags text{display:block;font-weight:700}
+.review-tags .tag-state{margin-top:4px;font-size:12px;color:#626d7b}
+.review-page .primary{background:#111827;color:#ffe100;text-align:center;border-radius:8px}
+.review-page.renter-review { min-height:100vh; padding-left:var(--mj-edge); padding-right:var(--mj-edge); color:var(--mj-ink); background:var(--mj-canvas); }
+.renter-review .section { border-color:var(--mj-line); border-radius:var(--mj-card); }
+.renter-review .review-tags button.selected { border-color:var(--mj-active-ink); background:var(--mj-active-bg); }
+.renter-review button.primary:not([disabled]) { background:var(--mj-accent); color:var(--mj-ink); }

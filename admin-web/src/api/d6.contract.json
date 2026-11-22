@@ -1,0 +1,5654 @@
+{
+  "components": {
+    "schemas": {
+      "Reply_AfterSalePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/AfterSalePage"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "AfterSalePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AfterSale"
+            },
+            "minItems": 0
+          },
+          "total": {
+            "$ref": "#/components/schemas/DecimalCount"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "AfterSale": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "orderId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "processing",
+              "waiting_factory",
+              "waiting_user",
+              "refund_processing",
+              "resolved",
+              "closed",
+              "cancelled"
+            ]
+          },
+          "deliveryId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "problem": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "minItems": 0
+          },
+          "requestedSolution": {
+            "type": "string",
+            "enum": [
+              "record_only",
+              "rework",
+              "partial_refund",
+              "full_refund",
+              "platform_intervention"
+            ]
+          },
+          "resolutionType": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "record_only",
+                  "rework",
+                  "partial_refund",
+                  "full_refund",
+                  "platform_intervention"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolutionNote": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "goodsRefundFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "freightRefundFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "goodsAvailableFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "freightAvailableFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "refundId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "replacementDeliveryId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issueType": {
+            "type": "string",
+            "enum": [
+              "spec_mismatch",
+              "quality_issue",
+              "transport_damage",
+              "quantity_mismatch",
+              "other"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "version",
+          "state",
+          "deliveryId",
+          "problem",
+          "evidence",
+          "requestedSolution",
+          "resolutionType",
+          "resolutionNote",
+          "goodsRefundFen",
+          "freightRefundFen",
+          "goodsAvailableFen",
+          "freightAvailableFen",
+          "refundId",
+          "replacementDeliveryId",
+          "issueType"
+        ]
+      },
+      "Id": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{12}4[0-9a-f]{3}[89ab][0-9a-f]{15}$",
+        "minLength": 32,
+        "maxLength": 32
+      },
+      "Version": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2147483647
+      },
+      "EvidenceRef": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "materialId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "image",
+              "file"
+            ]
+          }
+        },
+        "required": [
+          "materialId",
+          "name",
+          "type"
+        ]
+      },
+      "DecimalCount": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]*)$"
+      },
+      "Error_REQUEST_INVALID": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "INVALID_ARGUMENT"
+          },
+          "reasonCode": {
+            "const": "REQUEST_INVALID"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_LOGIN_REQUIRED": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "UNAUTHORIZED"
+          },
+          "reasonCode": {
+            "const": "LOGIN_REQUIRED"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_CLIENT_TYPE_MISMATCH": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "FORBIDDEN"
+          },
+          "reasonCode": {
+            "const": "CLIENT_TYPE_MISMATCH"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_PERMISSION_DENIED": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "FORBIDDEN"
+          },
+          "reasonCode": {
+            "const": "PERMISSION_DENIED"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_RESOURCE_NOT_FOUND": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "NOT_FOUND"
+          },
+          "reasonCode": {
+            "const": "RESOURCE_NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_TOO_MANY_REQUESTS": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "RATE_LIMITED"
+          },
+          "reasonCode": {
+            "const": "TOO_MANY_REQUESTS"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "retryAfterSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 86400
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId",
+          "retryAfterSeconds"
+        ]
+      },
+      "Error_UNEXPECTED_ERROR": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "INTERNAL_ERROR"
+          },
+          "reasonCode": {
+            "const": "UNEXPECTED_ERROR"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_DATABASE_UNAVAILABLE": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "SERVICE_UNAVAILABLE"
+          },
+          "reasonCode": {
+            "const": "DATABASE_UNAVAILABLE"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_SESSION_STORE_UNAVAILABLE": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "SERVICE_UNAVAILABLE"
+          },
+          "reasonCode": {
+            "const": "SESSION_STORE_UNAVAILABLE"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Reply_AfterSale": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/AfterSale"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Reply_ExtensionPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/ExtensionPage"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "ExtensionPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Extension"
+            },
+            "minItems": 0
+          },
+          "total": {
+            "$ref": "#/components/schemas/DecimalCount"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "Extension": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected",
+              "cancelled"
+            ]
+          },
+          "originalDate": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "requestedDate": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "minItems": 0
+          },
+          "decisionNote": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "orderId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "state",
+          "originalDate",
+          "requestedDate",
+          "reason",
+          "evidence",
+          "decisionNote",
+          "orderId"
+        ]
+      },
+      "Date": {
+        "type": "string",
+        "format": "date",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      "Reply_Extension": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/Extension"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "RequestId": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+        "minLength": 36,
+        "maxLength": 36
+      },
+      "Reply_Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/Receipt"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "requestId": {
+            "$ref": "#/components/schemas/RequestId"
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "custom_requirement",
+              "custom_quote",
+              "custom_order",
+              "custom_delivery_record",
+              "custom_order_extension_request",
+              "custom_after_sale_request",
+              "payment_order"
+            ]
+          },
+          "resourceId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "resourceVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "applied",
+              "replayed",
+              "recovered"
+            ]
+          },
+          "appliedAt": {
+            "$ref": "#/components/schemas/Time"
+          }
+        },
+        "required": [
+          "requestId",
+          "operation",
+          "resourceType",
+          "resourceId",
+          "resourceVersion",
+          "outcome",
+          "appliedAt"
+        ]
+      },
+      "Time": {
+        "type": "string",
+        "format": "date-time",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+08:00$"
+      },
+      "Error_ACCOUNT_ACTION_RESTRICTED": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "FORBIDDEN"
+          },
+          "reasonCode": {
+            "const": "ACCOUNT_ACTION_RESTRICTED"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_VERSION_CONFLICT": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "STATE_CONFLICT"
+          },
+          "reasonCode": {
+            "const": "VERSION_CONFLICT"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_IDEMPOTENCY_KEY_REUSED": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "STATE_CONFLICT"
+          },
+          "reasonCode": {
+            "const": "IDEMPOTENCY_KEY_REUSED"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_CUSTOM_STATE_CHANGED": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "STATE_CONFLICT"
+          },
+          "reasonCode": {
+            "const": "CUSTOM_STATE_CHANGED"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_CONTENT_TYPE_UNSUPPORTED": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "UNSUPPORTED_MEDIA_TYPE"
+          },
+          "reasonCode": {
+            "const": "CONTENT_TYPE_UNSUPPORTED"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "ExtensionDecision": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "rejected"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "decision",
+          "note"
+        ]
+      },
+      "Error_REFUND_ALLOCATION_EXCEEDED": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "STATE_CONFLICT"
+          },
+          "reasonCode": {
+            "const": "REFUND_ALLOCATION_EXCEEDED"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Resolution": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "resolutionType": {
+            "type": "string",
+            "enum": [
+              "record_only",
+              "rework",
+              "partial_refund",
+              "full_refund",
+              "platform_intervention"
+            ]
+          },
+          "goodsRefundFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "freightRefundFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "resolutionType",
+          "goodsRefundFen",
+          "freightRefundFen",
+          "reason"
+        ],
+        "description": "管理员决定返工时可同时分配部分商品、运费退款；全退须覆盖各科目全部剩余应退额。"
+      },
+      "Reply_ViewUrl": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/ViewUrl"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "ViewUrl": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "expiresAt": {
+            "$ref": "#/components/schemas/Time"
+          }
+        },
+        "required": [
+          "url",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "Reply_CaseContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/CaseContext"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "CaseContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "caseId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "caseVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "state": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CaseNote"
+            }
+          },
+          "factoryStatements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatementView"
+            }
+          }
+        },
+        "required": [
+          "caseId",
+          "caseVersion",
+          "state",
+          "notes",
+          "factoryStatements"
+        ]
+      },
+      "CaseNote": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "channel": {
+            "enum": [
+              "phone",
+              "wechat",
+              "offline",
+              "other"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "at": {
+            "$ref": "#/components/schemas/Time"
+          }
+        },
+        "required": [
+          "id",
+          "channel",
+          "summary",
+          "at"
+        ]
+      },
+      "StatementView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            }
+          },
+          "at": {
+            "$ref": "#/components/schemas/Time"
+          }
+        },
+        "required": [
+          "id",
+          "summary",
+          "evidence",
+          "at"
+        ]
+      },
+      "CrossDomainReply_Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/CrossDomainReceipt"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "CrossDomainReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "requestId": {
+            "$ref": "#/components/schemas/RequestId"
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "checkout_batch",
+              "rental_order",
+              "factory_wechat_account",
+              "transport_vehicle_tier",
+              "transport_pricing_rule",
+              "order_outbound_record",
+              "order_receipt_check",
+              "order_return_shipment",
+              "order_return_check",
+              "order_evidence_record",
+              "order_transport_expense_statement",
+              "admin_case_action",
+              "order_issue_report",
+              "order_extension_request",
+              "order_claim",
+              "arbitration_case",
+              "arbitration_decision",
+              "order_compensation_receivable",
+              "payment_order",
+              "custom_requirement",
+              "custom_quote",
+              "custom_order",
+              "custom_delivery_record",
+              "custom_order_extension_request",
+              "custom_after_sale_request"
+            ]
+          },
+          "resourceId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "resourceVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "applied",
+              "replayed",
+              "recovered"
+            ]
+          },
+          "appliedAt": {
+            "$ref": "#/components/schemas/Time"
+          }
+        },
+        "required": [
+          "requestId",
+          "operation",
+          "resourceType",
+          "resourceId",
+          "resourceVersion",
+          "outcome",
+          "appliedAt"
+        ]
+      },
+      "Error_METHOD_NOT_ALLOWED": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "METHOD_NOT_ALLOWED"
+          },
+          "reasonCode": {
+            "const": "METHOD_NOT_ALLOWED"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_ACCOUNT_CONTEXT_INCONSISTENT": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "DATA_INTEGRITY_ERROR"
+          },
+          "reasonCode": {
+            "const": "ACCOUNT_CONTEXT_INCONSISTENT"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Error_TRADE_DATA_INCONSISTENT": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "DATA_INTEGRITY_ERROR"
+          },
+          "reasonCode": {
+            "const": "TRADE_DATA_INCONSISTENT"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Reply_PaymentTrace": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/PaymentTrace"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "PaymentTrace": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "payment": {
+            "$ref": "#/components/schemas/Payment"
+          },
+          "batch": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Batch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "suborders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Suborder"
+            },
+            "maxItems": 50
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Refund"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryQuote"
+            },
+            "maxItems": 50
+          },
+          "couponUsageId": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scene": {
+            "type": "string",
+            "enum": [
+              "initial_order",
+              "extension_rent",
+              "compensation_supplement",
+              "custom_order_full_payment"
+            ]
+          },
+          "extensionId": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receivableId": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "customOrderId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "payment",
+          "batch",
+          "suborders",
+          "refunds",
+          "groups",
+          "couponUsageId",
+          "scene",
+          "extensionId",
+          "receivableId"
+        ]
+      },
+      "Payment": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "paymentNo": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paying",
+              "success",
+              "partial_received",
+              "failed",
+              "expired",
+              "closed"
+            ]
+          },
+          "payableFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "paidFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "refundedFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "expireAt": {
+            "$ref": "#/components/schemas/Time"
+          },
+          "paidAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastCheckedAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "paymentNo",
+          "status",
+          "payableFen",
+          "paidFen",
+          "refundedFen",
+          "expireAt",
+          "paidAt",
+          "lastCheckedAt"
+        ]
+      },
+      "Batch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "couponReturn": {
+            "$ref": "#/components/schemas/CouponReturn"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "batchNo": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "checklistId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending_payment",
+              "paid",
+              "payment_exception",
+              "refund_processing",
+              "refunded_closed",
+              "expired",
+              "closed"
+            ]
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "amounts": {
+            "$ref": "#/components/schemas/Amounts"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/Payment"
+          },
+          "orderIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            },
+            "maxItems": 50
+          },
+          "refundIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            },
+            "maxItems": 50
+          },
+          "recoveryMode": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "recover_orders",
+                  "refund_batch"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nextAction": {
+            "type": "string",
+            "enum": [
+              "pay",
+              "wait",
+              "view_orders",
+              "return_checklist",
+              "view_refunds"
+            ]
+          },
+          "canContinuePay": {
+            "type": "boolean"
+          },
+          "canCancelPayment": {
+            "type": "boolean"
+          },
+          "holdExpireAt": {
+            "$ref": "#/components/schemas/Time"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Time"
+          }
+        },
+        "required": [
+          "couponReturn",
+          "id",
+          "batchNo",
+          "checklistId",
+          "status",
+          "version",
+          "amounts",
+          "payment",
+          "orderIds",
+          "refundIds",
+          "recoveryMode",
+          "nextAction",
+          "canContinuePay",
+          "canCancelPayment",
+          "holdExpireAt",
+          "createdAt"
+        ]
+      },
+      "CouponReturn": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "none",
+              "not_returned",
+              "returned"
+            ]
+          },
+          "userCouponId": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "returnedAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "validUntil": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "userCouponId",
+          "returnedAt",
+          "validUntil"
+        ]
+      },
+      "Amounts": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "rentOriginalFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "couponDiscountFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "rentCashFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "depositFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "freightFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "totalFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "rentOriginalFen",
+          "couponDiscountFen",
+          "rentCashFen",
+          "depositFen",
+          "freightFen",
+          "totalFen"
+        ]
+      },
+      "Suborder": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "factoryId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "orderId": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paymentStatus": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paying",
+              "success",
+              "failed",
+              "expired",
+              "closed"
+            ]
+          },
+          "fundsStatus": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid_frozen",
+              "partially_refunded",
+              "fully_refunded",
+              "sharing",
+              "settled",
+              "closed"
+            ]
+          },
+          "payableFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "paidFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "refundedFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "channelTradeNo": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "channelTransactionId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paidAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "freezeExpireAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "freezeAlertStatus": {
+            "type": "string",
+            "enum": [
+              "none",
+              "open",
+              "resolved"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "factoryId",
+          "orderId",
+          "paymentStatus",
+          "fundsStatus",
+          "payableFen",
+          "paidFen",
+          "refundedFen",
+          "channelTradeNo",
+          "channelTransactionId",
+          "paidAt",
+          "freezeExpireAt",
+          "freezeAlertStatus"
+        ]
+      },
+      "Refund": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "couponReturn": {
+            "$ref": "#/components/schemas/CouponReturn"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "refundNo": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "businessType": {
+            "type": "string",
+            "enum": [
+              "rental_order",
+              "checkout_batch",
+              "custom_order"
+            ]
+          },
+          "businessId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "paymentId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "suborderId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "user_cancel_before_accept",
+              "user_cancel_rule",
+              "factory_manual_reject",
+              "factory_timeout_reject",
+              "unformed_batch_refund",
+              "extension_rejected",
+              "extension_cancelled",
+              "deposit_release",
+              "freight_pool_release",
+              "freight_cancel_release",
+              "arbitration_refund",
+              "customer_service_refund",
+              "platform_adjustment"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "success",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "rentFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "depositFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "freightFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "totalFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "reason": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestedAt": {
+            "$ref": "#/components/schemas/Time"
+          },
+          "successAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "failureReasonCode": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "goodsFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "couponReturn",
+          "id",
+          "refundNo",
+          "businessType",
+          "businessId",
+          "paymentId",
+          "suborderId",
+          "type",
+          "status",
+          "rentFen",
+          "depositFen",
+          "freightFen",
+          "totalFen",
+          "reason",
+          "requestedAt",
+          "successAt",
+          "failureReasonCode"
+        ]
+      },
+      "FactoryQuote": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "factoryId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "factoryName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TradeItem"
+            }
+          },
+          "amounts": {
+            "$ref": "#/components/schemas/Amounts"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/RoutePrice"
+          },
+          "return": {
+            "$ref": "#/components/schemas/RoutePrice"
+          },
+          "buyerRemark": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "factoryId",
+          "factoryName",
+          "items",
+          "amounts",
+          "outbound",
+          "return",
+          "buyerRemark"
+        ]
+      },
+      "TradeItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "snapshotItemId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "sourceItemId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "skuId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "image": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "assetType": {
+            "type": "string",
+            "enum": [
+              "A_ASSET",
+              "B_CONSUMABLE"
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "dailyRentFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "rentOriginalFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "couponDiscountFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "rentCashFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "depositFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "transportRequirement": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "snapshotItemId",
+          "sourceItemId",
+          "skuId",
+          "name",
+          "image",
+          "assetType",
+          "quantity",
+          "dailyRentFen",
+          "rentOriginalFen",
+          "couponDiscountFen",
+          "rentCashFen",
+          "depositFen",
+          "transportRequirement"
+        ]
+      },
+      "Image": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 4096
+          },
+          "expiresAt": {
+            "$ref": "#/components/schemas/Time"
+          },
+          "cacheKey": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "url",
+          "expiresAt",
+          "cacheKey"
+        ]
+      },
+      "RoutePrice": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "serviceMode": {
+            "type": "string",
+            "enum": [
+              "factory_delivery",
+              "factory_assisted_call",
+              "self_pickup",
+              "user_return",
+              "factory_pickup"
+            ]
+          },
+          "chargeMode": {
+            "type": "string",
+            "enum": [
+              "freight_pool",
+              "cod",
+              "none"
+            ]
+          },
+          "vehicleTierId": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "vehicleTierName": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "distanceMeter": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pricingRuleId": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ruleVersion": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "guideMinFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "guideMaxFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "prepaidFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "calculatedAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "serviceMode",
+          "chargeMode",
+          "vehicleTierId",
+          "vehicleTierName",
+          "distanceMeter",
+          "pricingRuleId",
+          "ruleVersion",
+          "guideMinFen",
+          "guideMaxFen",
+          "prepaidFen",
+          "calculatedAt"
+        ]
+      },
+      "Error_PAYMENT_DATA_INCONSISTENT": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "DATA_INTEGRITY_ERROR"
+          },
+          "reasonCode": {
+            "const": "PAYMENT_DATA_INCONSISTENT"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "reasonCode",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "Reply_RefundPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/RefundPage"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "RefundPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Refund"
+            }
+          },
+          "total": {
+            "$ref": "#/components/schemas/DecimalCount"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "Reply_RefundTrace": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/RefundTrace"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "RefundTrace": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "refund": {
+            "$ref": "#/components/schemas/Refund"
+          },
+          "channelOutRefundNo": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "channelRefundId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastCheckedAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attemptCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "refund",
+          "channelOutRefundNo",
+          "channelRefundId",
+          "lastCheckedAt",
+          "attemptCount"
+        ]
+      },
+      "Reply_SettlementItemPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "data": {
+            "$ref": "#/components/schemas/SettlementItemPage"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ]
+      },
+      "SettlementItemPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SettlementItem"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "$ref": "#/components/schemas/DecimalCount"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "SettlementItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "orderId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "orderNo": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "initialRentFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "couponDiscountFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "extensionRentFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "rentRefundedFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "rentAdjustmentFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "rentBaseFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "commissionRateBps": {
+            "const": 2000
+          },
+          "commissionFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "factoryRentFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "depositCompensationFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "excessCompensationFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "freightApprovedFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "freightRefundedFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "freightSettleFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "factorySettleFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "included",
+              "settled",
+              "adjusted",
+              "cancelled"
+            ]
+          },
+          "overdueRentFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "overdueCommissionFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "goodsPaidFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "goodsRefundedFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "goodsBaseFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "factoryGoodsFen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "orderNo",
+          "initialRentFen",
+          "couponDiscountFen",
+          "extensionRentFen",
+          "rentRefundedFen",
+          "rentAdjustmentFen",
+          "rentBaseFen",
+          "commissionRateBps",
+          "commissionFen",
+          "factoryRentFen",
+          "depositCompensationFen",
+          "excessCompensationFen",
+          "freightApprovedFen",
+          "freightRefundedFen",
+          "freightSettleFen",
+          "factorySettleFen",
+          "status",
+          "overdueRentFen",
+          "overdueCommissionFen"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/api/admin/custom-after-sales": {
+      "get": {
+        "operationId": "listAdminAfterSale",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "x-role": "admin",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "submitted",
+                "processing",
+                "waiting_factory",
+                "waiting_user",
+                "refund_processing",
+                "resolved",
+                "closed",
+                "cancelled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_AfterSalePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-permission": "admin:custom:after-sale-read"
+      }
+    },
+    "/api/admin/custom-after-sales/{id}": {
+      "get": {
+        "operationId": "getAdminAfterSale",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "x-role": "admin",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_AfterSale"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-permission": "admin:custom:after-sale-read"
+      }
+    },
+    "/api/admin/custom-extensions": {
+      "get": {
+        "operationId": "listAdminExtension",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "x-role": "admin",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "submitted",
+                "approved",
+                "rejected",
+                "cancelled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_ExtensionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-permission": "admin:custom:extension-read"
+      }
+    },
+    "/api/admin/custom-extensions/{id}": {
+      "get": {
+        "operationId": "getAdminExtension",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "x-role": "admin",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_Extension"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-permission": "admin:custom:extension-read"
+      }
+    },
+    "/api/admin/custom-extensions/{id}/decision": {
+      "post": {
+        "operationId": "decideCustomExtension",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "x-role": "admin",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/RequestId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_ACTION_RESTRICTED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_VERSION_CONFLICT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_IDEMPOTENCY_KEY_REUSED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_CUSTOM_STATE_CHANGED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CONTENT_TYPE_UNSUPPORTED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtensionDecision"
+              }
+            }
+          }
+        },
+        "x-permission": "admin:custom:extension-review"
+      }
+    },
+    "/api/admin/custom-after-sales/{id}/resolution": {
+      "post": {
+        "operationId": "resolveCustomAfterSale",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "x-role": "admin",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/RequestId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_ACTION_RESTRICTED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_VERSION_CONFLICT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_IDEMPOTENCY_KEY_REUSED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_CUSTOM_STATE_CHANGED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_REFUND_ALLOCATION_EXCEEDED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CONTENT_TYPE_UNSUPPORTED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Resolution"
+              }
+            }
+          }
+        },
+        "x-permission": "admin:custom:after-sale-resolve",
+        "x-conditional-permissions": {
+          "positiveRefundOrFullRefund": "admin:custom:refund-approve"
+        }
+      }
+    },
+    "/api/admin/custom-requirements/{id}/materials/{materialId}/view": {
+      "get": {
+        "operationId": "viewAdminRequirementsMaterial",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "x-role": "admin",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "name": "materialId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_ViewUrl"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "按实际关联的售后或延期案件复核对应读取权限和材料归属。",
+        "x-permission-by-source": {
+          "after_sale": "admin:custom:after-sale-read",
+          "extension": "admin:custom:extension-read"
+        }
+      }
+    },
+    "/api/admin/custom-orders/{id}/materials/{materialId}/view": {
+      "get": {
+        "operationId": "viewAdminOrdersMaterial",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "x-role": "admin",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "name": "materialId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_ViewUrl"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "按实际关联的售后或延期案件复核对应读取权限和材料归属。",
+        "x-permission-by-source": {
+          "after_sale": "admin:custom:after-sale-read",
+          "extension": "admin:custom:extension-read"
+        }
+      }
+    },
+    "/api/admin/custom-extensions/{id}/case": {
+      "get": {
+        "operationId": "adminCustomExtensionCase",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "x-role": "admin",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_CaseContext"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-permission": "admin:custom:extension-read"
+      }
+    },
+    "/api/admin/custom-after-sales/{id}/case": {
+      "get": {
+        "operationId": "adminCustomSaleCase",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "x-role": "admin",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_CaseContext"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按统一响应读取",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-permission": "admin:custom:after-sale-read"
+      }
+    },
+    "/api/admin/trading-operations/by-request/{requestId}": {
+      "get": {
+        "operationId": "adminTradingOperation",
+        "summary": "adminTradingOperation",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/RequestId"
+            }
+          }
+        ],
+        "x-role": "admin",
+        "x-permission": "admin:trade:operation:read",
+        "x-source": "04",
+        "x-pages": [],
+        "x-idempotent-write": false,
+        "x-errors": [
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "ACCOUNT_CONTEXT_INCONSISTENT"
+          },
+          {
+            "http": 403,
+            "code": "FORBIDDEN",
+            "reasonCode": "CLIENT_TYPE_MISMATCH"
+          },
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "DATABASE_UNAVAILABLE"
+          },
+          {
+            "http": 401,
+            "code": "UNAUTHORIZED",
+            "reasonCode": "LOGIN_REQUIRED"
+          },
+          {
+            "http": 405,
+            "code": "METHOD_NOT_ALLOWED",
+            "reasonCode": "METHOD_NOT_ALLOWED"
+          },
+          {
+            "http": 403,
+            "code": "FORBIDDEN",
+            "reasonCode": "PERMISSION_DENIED"
+          },
+          {
+            "http": 400,
+            "code": "INVALID_ARGUMENT",
+            "reasonCode": "REQUEST_INVALID"
+          },
+          {
+            "http": 404,
+            "code": "NOT_FOUND",
+            "reasonCode": "RESOURCE_NOT_FOUND"
+          },
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "SESSION_STORE_UNAVAILABLE"
+          },
+          {
+            "http": 429,
+            "code": "RATE_LIMITED",
+            "reasonCode": "TOO_MANY_REQUESTS"
+          },
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "TRADE_DATA_INCONSISTENT"
+          },
+          {
+            "http": 500,
+            "code": "INTERNAL_ERROR",
+            "reasonCode": "UNEXPECTED_ERROR"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；处理中状态不代表资金已完成",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrossDomainReply_Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_TRADE_DATA_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-supersedes": "D3-B same path GET; original fields preserved, D4 projection added",
+        "x-batch": "A",
+        "x-d5-scope": "沿用原接口；仅 D5 新投影、证据用途、回执对象或风险案件引用"
+      }
+    },
+    "/api/admin/payments/{id}": {
+      "get": {
+        "operationId": "adminPayment",
+        "summary": "adminPayment",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "x-role": "admin",
+        "x-permission": "admin:trade:payment:read",
+        "x-source": "04",
+        "x-pages": [
+          "08:payment-detail",
+          "08:coupon-allocation-audit"
+        ],
+        "x-idempotent-write": false,
+        "x-errors": [
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "ACCOUNT_CONTEXT_INCONSISTENT"
+          },
+          {
+            "http": 403,
+            "code": "FORBIDDEN",
+            "reasonCode": "CLIENT_TYPE_MISMATCH"
+          },
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "DATABASE_UNAVAILABLE"
+          },
+          {
+            "http": 401,
+            "code": "UNAUTHORIZED",
+            "reasonCode": "LOGIN_REQUIRED"
+          },
+          {
+            "http": 405,
+            "code": "METHOD_NOT_ALLOWED",
+            "reasonCode": "METHOD_NOT_ALLOWED"
+          },
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "PAYMENT_DATA_INCONSISTENT"
+          },
+          {
+            "http": 403,
+            "code": "FORBIDDEN",
+            "reasonCode": "PERMISSION_DENIED"
+          },
+          {
+            "http": 400,
+            "code": "INVALID_ARGUMENT",
+            "reasonCode": "REQUEST_INVALID"
+          },
+          {
+            "http": 404,
+            "code": "NOT_FOUND",
+            "reasonCode": "RESOURCE_NOT_FOUND"
+          },
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "SESSION_STORE_UNAVAILABLE"
+          },
+          {
+            "http": 429,
+            "code": "RATE_LIMITED",
+            "reasonCode": "TOO_MANY_REQUESTS"
+          },
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "TRADE_DATA_INCONSISTENT"
+          },
+          {
+            "http": 500,
+            "code": "INTERNAL_ERROR",
+            "reasonCode": "UNEXPECTED_ERROR"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；处理中状态不代表资金已完成",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_PaymentTrace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PAYMENT_DATA_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_TRADE_DATA_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-d5-scope": "延伸 D3 原单资金追溯，是否到账以原子单为准"
+      }
+    },
+    "/api/admin/refunds": {
+      "get": {
+        "operationId": "adminRefunds",
+        "summary": "adminRefunds",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "processing",
+                "success",
+                "failed",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "businessType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "rental_order",
+                "checkout_batch",
+                "custom_order"
+              ]
+            }
+          },
+          {
+            "name": "factoryId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "x-role": "admin",
+        "x-permission": "admin:trade:refund:read",
+        "x-source": "04",
+        "x-pages": [
+          "08:refund-exception-list"
+        ],
+        "x-idempotent-write": false,
+        "x-errors": [
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "ACCOUNT_CONTEXT_INCONSISTENT"
+          },
+          {
+            "http": 403,
+            "code": "FORBIDDEN",
+            "reasonCode": "CLIENT_TYPE_MISMATCH"
+          },
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "DATABASE_UNAVAILABLE"
+          },
+          {
+            "http": 401,
+            "code": "UNAUTHORIZED",
+            "reasonCode": "LOGIN_REQUIRED"
+          },
+          {
+            "http": 405,
+            "code": "METHOD_NOT_ALLOWED",
+            "reasonCode": "METHOD_NOT_ALLOWED"
+          },
+          {
+            "http": 403,
+            "code": "FORBIDDEN",
+            "reasonCode": "PERMISSION_DENIED"
+          },
+          {
+            "http": 400,
+            "code": "INVALID_ARGUMENT",
+            "reasonCode": "REQUEST_INVALID"
+          },
+          {
+            "http": 404,
+            "code": "NOT_FOUND",
+            "reasonCode": "RESOURCE_NOT_FOUND"
+          },
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "SESSION_STORE_UNAVAILABLE"
+          },
+          {
+            "http": 429,
+            "code": "RATE_LIMITED",
+            "reasonCode": "TOO_MANY_REQUESTS"
+          },
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "TRADE_DATA_INCONSISTENT"
+          },
+          {
+            "http": 500,
+            "code": "INTERNAL_ERROR",
+            "reasonCode": "UNEXPECTED_ERROR"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；处理中状态不代表资金已完成",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_RefundPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_TRADE_DATA_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-d5-scope": "延伸 D3 原单资金追溯，是否到账以原子单为准"
+      }
+    },
+    "/api/admin/refunds/{id}": {
+      "get": {
+        "operationId": "adminRefund",
+        "summary": "adminRefund",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "x-role": "admin",
+        "x-permission": "admin:trade:refund:read",
+        "x-source": "04",
+        "x-pages": [
+          "08:refund-detail",
+          "08:unformed-refund-detail"
+        ],
+        "x-idempotent-write": false,
+        "x-errors": [
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "ACCOUNT_CONTEXT_INCONSISTENT"
+          },
+          {
+            "http": 403,
+            "code": "FORBIDDEN",
+            "reasonCode": "CLIENT_TYPE_MISMATCH"
+          },
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "DATABASE_UNAVAILABLE"
+          },
+          {
+            "http": 401,
+            "code": "UNAUTHORIZED",
+            "reasonCode": "LOGIN_REQUIRED"
+          },
+          {
+            "http": 405,
+            "code": "METHOD_NOT_ALLOWED",
+            "reasonCode": "METHOD_NOT_ALLOWED"
+          },
+          {
+            "http": 403,
+            "code": "FORBIDDEN",
+            "reasonCode": "PERMISSION_DENIED"
+          },
+          {
+            "http": 400,
+            "code": "INVALID_ARGUMENT",
+            "reasonCode": "REQUEST_INVALID"
+          },
+          {
+            "http": 404,
+            "code": "NOT_FOUND",
+            "reasonCode": "RESOURCE_NOT_FOUND"
+          },
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "SESSION_STORE_UNAVAILABLE"
+          },
+          {
+            "http": 429,
+            "code": "RATE_LIMITED",
+            "reasonCode": "TOO_MANY_REQUESTS"
+          },
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "TRADE_DATA_INCONSISTENT"
+          },
+          {
+            "http": 500,
+            "code": "INTERNAL_ERROR",
+            "reasonCode": "UNEXPECTED_ERROR"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；处理中状态不代表资金已完成",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_RefundTrace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_TRADE_DATA_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "失败data=null；错误不证明事务回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-d5-scope": "延伸 D3 原单资金追溯，是否到账以原子单为准"
+      }
+    },
+    "/api/admin/settlements/{batchId}/items": {
+      "get": {
+        "operationId": "adminSettlementItems",
+        "summary": "adminSettlementItems",
+        "security": [
+          {
+            "AdminBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "x-role": "admin",
+        "x-permission": "admin:settlement:read",
+        "x-batch": "B",
+        "x-pages": [
+          "04:factory-settlement-detail",
+          "08:settlement-detail"
+        ],
+        "x-idempotent-write": false,
+        "x-errors": [
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "ACCOUNT_CONTEXT_INCONSISTENT"
+          },
+          {
+            "http": 403,
+            "code": "FORBIDDEN",
+            "reasonCode": "CLIENT_TYPE_MISMATCH"
+          },
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "DATABASE_UNAVAILABLE"
+          },
+          {
+            "http": 401,
+            "code": "UNAUTHORIZED",
+            "reasonCode": "LOGIN_REQUIRED"
+          },
+          {
+            "http": 405,
+            "code": "METHOD_NOT_ALLOWED",
+            "reasonCode": "METHOD_NOT_ALLOWED"
+          },
+          {
+            "http": 403,
+            "code": "FORBIDDEN",
+            "reasonCode": "PERMISSION_DENIED"
+          },
+          {
+            "http": 400,
+            "code": "INVALID_ARGUMENT",
+            "reasonCode": "REQUEST_INVALID"
+          },
+          {
+            "http": 404,
+            "code": "NOT_FOUND",
+            "reasonCode": "RESOURCE_NOT_FOUND"
+          },
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "SESSION_STORE_UNAVAILABLE"
+          },
+          {
+            "http": 429,
+            "code": "RATE_LIMITED",
+            "reasonCode": "TOO_MANY_REQUESTS"
+          },
+          {
+            "http": 500,
+            "code": "INTERNAL_ERROR",
+            "reasonCode": "UNEXPECTED_ERROR"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；资金进度以真实事实为准",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reply_SettlementItemPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "失败data=null；不表示事务必已回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "失败data=null；不表示事务必已回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "失败data=null；不表示事务必已回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "失败data=null；不表示事务必已回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "失败data=null；不表示事务必已回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "失败data=null；不表示事务必已回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 10
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "失败data=null；不表示事务必已回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "失败data=null；不表示事务必已回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

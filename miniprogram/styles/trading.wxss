@@ -1,0 +1,21 @@
+.trade{padding:12px 12px calc(104px + env(safe-area-inset-bottom));}.trade .section{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;margin-bottom:12px}.trade .hero{background:linear-gradient(135deg,#fff7cc,#fff)}.trade .heading{font-size:18px;font-weight:900;margin-bottom:8px}.trade .row{display:flex;justify-content:space-between;gap:12px;margin:11px 0;line-height:1.6}.trade .row>view:first-child{min-width:0}.trade .label{color:#6b7280}.trade .badge{background:#fff0a6;border-radius:16px;padding:4px 9px;font-size:12px;white-space:nowrap}.trade .notice{background:#fff9db;padding:12px;margin:12px 0;line-height:1.7;border-radius:8px}.trade .muted{font-size:12px;line-height:1.7}.trade .amount{font-size:28px;font-weight:950}.trade .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.trade .toolbar button{padding:8px 12px;border-radius:18px;background:#fff;font-size:12px}.trade .toolbar .selected{background:#ffe100}.trade .item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0}.trade .picture{width:68px;height:68px;flex-shrink:0;overflow:hidden;border-radius:8px}.trade .item-body{flex:1;min-width:0}.trade .item-title{font-weight:800;margin-bottom:5px}.trade input,.trade textarea{width:100%;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px;box-sizing:border-box}.trade textarea{height:84px}.trade .choice{padding:12px;border:1px solid #e5e7eb;border-radius:8px;margin:8px 0;line-height:1.6}.trade .choice.selected{background:#fff9db;border-color:#e1c000}.trade .choice.disabled{opacity:.55}.trade .footer{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #eee;display:flex;align-items:center;gap:12px;z-index:10}.trade .footer button{flex:1}.trade .feedback{margin:0 0 12px;overflow-wrap:anywhere}.trade .feedback button{margin-top:8px}.trade .coupon{display:flex;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:12px}.trade .coupon-value{width:104px;flex-shrink:0;background:#111827;color:#ffe100;padding:22px 6px;text-align:center;font-size:25px;font-weight:900}.trade .coupon-info{padding:12px;flex:1;min-width:0}.trade .saving{background:#111827;color:#ffe100;padding:16px;border-radius:8px;font-size:22px;font-weight:900;margin-bottom:12px}.trade .reason{color:#9d231c;margin:8px 0}.trade .blank{padding:36px 16px;color:#6b7280;text-align:center}.trade .link{color:#6f5800;text-decoration:underline}.trade .sheet{background:#fff;border:1px solid #d9bd23;padding:16px;border-radius:10px;margin:12px 0}.trade .sheet button{margin-top:12px}.trade .separator{border-top:1px solid #eee;margin:12px 0}.trade .strong{font-weight:900}
+/* 两端订单标题可收缩换行，状态保持可见；仅订单搜索覆盖原生 input 默认高度。 */
+.trade .order-heading{align-items:flex-start}.trade .order-title{flex:1;min-width:0;overflow-wrap:anywhere;word-break:break-all}.trade .order-heading .badge{flex-shrink:0}.trade .order-number{overflow-wrap:anywhere;word-break:break-all}.trade .order-search{height:44px;line-height:24px;padding:9px 10px;font-size:14px}
+.trade .dispute-tabs button {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 4px;
+  white-space: nowrap;
+}
+.trade .dispute-record {
+  width: 100%;
+  margin: 4px 0;
+  padding: 12px;
+  text-align: left;
+  white-space: normal;
+}
+
+.trade .progress-step{border-left:3px solid #e2c332;padding:2px 12px;margin:12px 0;line-height:1.6;overflow-wrap:anywhere}.trade .back-to-list{width:auto;margin:0 0 12px;padding:5px 10px;font-size:13px}
+
+.trade .row>text,.trade .row>view{min-width:0;overflow-wrap:anywhere}.trade .row>text:first-child{flex-shrink:0}.trade .row>text:last-child{text-align:right}.trade .footer button{min-width:0;min-height:44px;padding:8px 12px;border-radius:8px;line-height:1.3}.trade input{min-height:44px}.trade textarea{min-height:84px}
+.trade .toolbar button{width:auto;min-width:0;flex:0 0 auto;margin:0}

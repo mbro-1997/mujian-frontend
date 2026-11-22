@@ -1,0 +1,2 @@
+@import "../../styles/custom.wxss";
+@import "../../styles/renter-surfaces.wxss";

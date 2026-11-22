@@ -1,0 +1,28 @@
+<view class="planning planning-detail scheme-detail"><view class="error" wx:if="{{message}}">{{message}}<button wx:if="{{!pdfMessage}}" bindtap="recover">查询原操作结果</button><button wx:if="{{!pdfMessage}}" bindtap="refresh">重新读取</button></view><button wx:if="{{canRestoreDraft}}" disabled="{{busy}}" bindtap="restoreDraft">恢复上次输入</button><view wx:if="{{!detail && !message}}" class="empty">{{busy?'正在读取…':'暂无可查看的内容'}}</view><block wx:if="{{detail}}"><view class="card"><view class="row">
+  <view wx:if="{{detail.actions.canEdit}}" class="title">方案资料</view>
+  <view wx:else class="title">{{detail.name}}</view>
+  <text class="badge {{detail.status==='editing'?'current':''}}">{{detail.statusLabel}}</text>
+</view>
+<block wx:if="{{detail.actions.canEdit}}">
+  <view class="detail-label">方案名称</view><input class="detail-name" value="{{name}}" maxlength="128" data-field="name" bindinput="field"/>
+  <view class="detail-label">方案简介</view>
+  <textarea class="detail-description" value="{{description}}" maxlength="1000" data-field="description" bindinput="field" placeholder="选填"/>
+</block><view wx:elif="{{detail.description}}" class="muted">{{detail.description}}</view><view class="detail-metrics"><view class="pl-metric"><text>道具</text>{{detail.quantityTotal}} 件</view><view class="pl-metric"><text>预估日租</text>{{hidePrice?'******':'¥'+detail.daily}}</view></view><view class="detail-price"><view><view class="detail-label">对外价格：{{hidePrice?'隐藏':'显示'}}</view><view class="muted">分享方案和导出 PDF 时使用此设置。</view></view>
+  <switch checked="{{hidePrice}}" bindchange="togglePrice" disabled="{{busy}}" aria-label="隐藏对外价格" color="#ffe100"/></view></view><view class="card"><view class="title">道具列表</view><view class="item" wx:for="{{items}}" wx:key="id"><view class="item-main"><view class="picture"><public-prop-image image="{{item.display.image}}" resource-type="scheme" resource-id="{{id}}" resource-version="{{detail.contentVersion||detail.version}}" bindinaccessible="inaccessible"/></view><view class="item-body"><view class="title">{{item.display.name}}</view><view class="muted">{{item.display.typeLabel}} · {{item.stylesText}}</view><view wx:if="{{item.availability.isRentable}}" class="success">可租</view><view class="unavailable" wx:if="{{item.availability && !item.availability.isRentable}}">不可租 / 数量不足 · 当前上限 {{item.availability.maxRentableQuantity}}</view><view wx:if="{{!detail.actions.canEdit}}" class="muted">数量 {{item.quantity}} · {{item.remark}}</view></view><view class="item-rent">{{hidePrice?'***':'¥'+item.rent+'/天'}}</view></view><block wx:if="{{detail.actions.canEdit}}"><view class="item-tools"><view class="quantity"><button data-index="{{index}}" data-delta="-1" bindtap="step" disabled="{{item.quantity<=1}}">−</button><input type="number" value="{{item.quantity}}" data-index="{{index}}" data-field="quantity" bindinput="itemField"/><button data-index="{{index}}" data-delta="1" bindtap="step">+</button></view><button data-index="{{index}}" data-delta="-1" bindtap="move" disabled="{{index===0}}">上移</button><button data-index="{{index}}" data-delta="1" bindtap="move" disabled="{{index===items.length-1}}">下移</button><button class="danger" data-index="{{index}}" bindtap="remove">删除</button></view><view class="field"><input value="{{item.remark}}" maxlength="255" placeholder="备注（选填）" data-index="{{index}}" data-field="remark" bindinput="itemField"/></view></block></view><view wx:if="{{!items.length && !message}}" class="empty">暂无道具，请从首页选择加入。</view></view><view class="scheme-tools">
+  <button wx:if="{{detail.actions.canExport}}" bindtap="export" disabled="{{busy}}" loading="{{exportingId===id}}">{{exportingId===id?'正在导出':'导出 PDF'}}</button>
+  <button wx:if="{{detail.actions.canShare}}" bindtap="share" disabled="{{busy}}">分享</button>
+  <button wx:if="{{detail.actions.canCreateChecklist}}" class="to-checklist" bindtap="createChecklist">从方案创建清单</button>
+</view>
+<view class="footer scheme-dock" wx:if="{{detail.actions.canEdit || detail.actions.canArchive}}">
+  <button wx:if="{{detail.actions.canArchive}}" class="pl-action" bindtap="archive" disabled="{{busy}}">归档</button>
+  <button wx:if="{{detail.actions.canEdit}}" class="pl-action pl-main" bindtap="save" disabled="{{busy}}">保存</button>
+</view>
+<block wx:if="{{shareReady}}">
+  <view class="scheme-scrim" bindtap="closeShare"/>
+  <view class="scheme-sheet" role="dialog" aria-label="分享方案">
+    <view class="scheme-sheet-title"><text>分享方案</text><button bindtap="closeShare" aria-label="收起分享面板">×</button></view>
+    <view class="muted">{{hidePrice?'不含价格':'含价格'}} · 链接自签发起 7 天有效</view>
+    <button open-type="share" class="pl-action pl-main">发送给朋友</button>
+    <button bindtap="copyShareLink" class="pl-action">复制链接</button>
+  </view>
+</block></block></view>

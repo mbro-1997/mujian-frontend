@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "配送与结算",
+  "usingComponents": {
+    "public-prop-image": "/components/public-prop-image/index"
+  }
+}

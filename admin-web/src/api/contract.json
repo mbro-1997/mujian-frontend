@@ -1,0 +1,4016 @@
+{
+  "components": {
+    "securitySchemes": {
+      "AdminCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-mj_admin",
+        "description": "服务端Redis会话。获取CSRF时允许匿名临时会话；其他接口必须认证。"
+      },
+      "CsrfHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token"
+      },
+      "MiniBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "opaque session credential",
+        "description": "非JWT；会话clientType必须为miniapp。"
+      }
+    },
+    "schemas": {
+      "Id": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{12}4[0-9a-f]{3}[89ab][0-9a-f]{15}$",
+        "minLength": 32,
+        "maxLength": 32
+      },
+      "PermissionCode": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "^(admin:[a-z0-9-]+:[a-z0-9-]+|admin:trade:(order:read|payment:read|refund:read|merchant:read|merchant:sync|transport:manage|operation:read)|admin:fulfillment:(return:read|return:close|risk:read|expense:read|expense:review))$"
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 64,
+            "pattern": "^[a-z0-9_.-]+$",
+            "description": "客户端trim并转小写；服务端同规则归一化后验证。"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 72,
+            "writeOnly": true,
+            "description": "服务端另校验UTF-8不超过72字节；不得trim或记录。"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "CsrfSuccess": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "csrfToken": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "csrfToken"
+            ],
+            "additionalProperties": false
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "LoginSuccess": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              }
+            },
+            "required": [
+              "userId"
+            ],
+            "additionalProperties": false
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "LogoutSuccess": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "AdminMeSuccess": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "adminAccountId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "username": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "roleCode": {
+                      "const": "platform_admin"
+                    },
+                    "roleName": {
+                      "type": "string",
+                      "maxLength": 64
+                    }
+                  },
+                  "required": [
+                    "roleCode",
+                    "roleName"
+                  ],
+                  "additionalProperties": false
+                },
+                "uniqueItems": true
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PermissionCode"
+                },
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "userId",
+              "adminAccountId",
+              "username",
+              "nickname",
+              "roles",
+              "permissions"
+            ],
+            "additionalProperties": false
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "MenuNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "parentId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "menuName": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "menuType": {
+            "enum": [
+              "directory",
+              "menu",
+              "button"
+            ]
+          },
+          "permissionCode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PermissionCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "routePath": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "componentPath": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "iconName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 64
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "sortNo": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MenuNode"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "parentId",
+          "menuName",
+          "menuType",
+          "permissionCode",
+          "routePath",
+          "componentPath",
+          "iconName",
+          "visible",
+          "enabled",
+          "sortNo",
+          "children"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "menuType": {
+                  "const": "button"
+                }
+              },
+              "required": [
+                "menuType"
+              ]
+            },
+            "then": {
+              "properties": {
+                "permissionCode": {
+                  "$ref": "#/components/schemas/PermissionCode"
+                },
+                "routePath": {
+                  "type": "null"
+                },
+                "componentPath": {
+                  "type": "null"
+                },
+                "children": {
+                  "maxItems": 0
+                }
+              }
+            }
+          }
+        ]
+      },
+      "MenusSuccess": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MenuNode"
+            }
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "MiniContext": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "active"
+              },
+              "roleCode": {
+                "const": null
+              },
+              "registrationStage": {
+                "const": "new"
+              },
+              "accessMode": {
+                "const": "normal"
+              },
+              "nextAction": {
+                "const": "SELECT_IDENTITY"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "active"
+              },
+              "roleCode": {
+                "const": "demander"
+              },
+              "registrationStage": {
+                "const": "demander_bound"
+              },
+              "accessMode": {
+                "const": "normal"
+              },
+              "nextAction": {
+                "const": "ENTER_DEMANDER_HOME"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "active"
+              },
+              "roleCode": {
+                "const": null
+              },
+              "registrationStage": {
+                "const": "factory_invite_locked"
+              },
+              "accessMode": {
+                "const": "normal"
+              },
+              "nextAction": {
+                "const": "COMPLETE_FACTORY_PROFILE"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "active"
+              },
+              "roleCode": {
+                "const": null
+              },
+              "registrationStage": {
+                "const": "factory_pending"
+              },
+              "accessMode": {
+                "const": "normal"
+              },
+              "nextAction": {
+                "const": "WAIT_FACTORY_REVIEW"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "active"
+              },
+              "roleCode": {
+                "const": null
+              },
+              "registrationStage": {
+                "const": "factory_rejected"
+              },
+              "accessMode": {
+                "const": "normal"
+              },
+              "nextAction": {
+                "const": "REVISE_FACTORY_APPLICATION"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "active"
+              },
+              "roleCode": {
+                "const": "supplier"
+              },
+              "registrationStage": {
+                "const": "factory_bound"
+              },
+              "accessMode": {
+                "const": "normal"
+              },
+              "nextAction": {
+                "const": "ENTER_FACTORY_HOME"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "disabled"
+              },
+              "roleCode": {
+                "const": null
+              },
+              "registrationStage": {
+                "const": "new"
+              },
+              "accessMode": {
+                "const": "restricted"
+              },
+              "nextAction": {
+                "const": "ENTER_RESTRICTED_HOME"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "disabled"
+              },
+              "roleCode": {
+                "const": "demander"
+              },
+              "registrationStage": {
+                "const": "demander_bound"
+              },
+              "accessMode": {
+                "const": "restricted"
+              },
+              "nextAction": {
+                "const": "ENTER_RESTRICTED_HOME"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "disabled"
+              },
+              "roleCode": {
+                "const": null
+              },
+              "registrationStage": {
+                "const": "factory_invite_locked"
+              },
+              "accessMode": {
+                "const": "restricted"
+              },
+              "nextAction": {
+                "const": "ENTER_RESTRICTED_HOME"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "disabled"
+              },
+              "roleCode": {
+                "const": null
+              },
+              "registrationStage": {
+                "const": "factory_pending"
+              },
+              "accessMode": {
+                "const": "restricted"
+              },
+              "nextAction": {
+                "const": "ENTER_RESTRICTED_HOME"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "disabled"
+              },
+              "roleCode": {
+                "const": null
+              },
+              "registrationStage": {
+                "const": "factory_rejected"
+              },
+              "accessMode": {
+                "const": "restricted"
+              },
+              "nextAction": {
+                "const": "ENTER_RESTRICTED_HOME"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "nickname": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "userStatus": {
+                "const": "disabled"
+              },
+              "roleCode": {
+                "const": "supplier"
+              },
+              "registrationStage": {
+                "const": "factory_bound"
+              },
+              "accessMode": {
+                "const": "restricted"
+              },
+              "nextAction": {
+                "const": "ENTER_RESTRICTED_HOME"
+              }
+            },
+            "required": [
+              "userId",
+              "nickname",
+              "userStatus",
+              "roleCode",
+              "registrationStage",
+              "accessMode",
+              "nextAction"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ContextSuccess": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "$ref": "#/components/schemas/MiniContext"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_REQUEST_INVALID": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "INVALID_ARGUMENT"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "REQUEST_INVALID"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "message": {
+                  "type": "string",
+                  "maxLength": 200
+                }
+              },
+              "required": [
+                "field",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_LOGIN_REQUIRED": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "UNAUTHORIZED"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "LOGIN_REQUIRED"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_CREDENTIALS_INVALID": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "UNAUTHORIZED"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "CREDENTIALS_INVALID"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_PERMISSION_DENIED": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "FORBIDDEN"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "PERMISSION_DENIED"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_CSRF_INVALID": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "FORBIDDEN"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "CSRF_INVALID"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_ACCOUNT_ACTION_RESTRICTED": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "FORBIDDEN"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "ACCOUNT_ACTION_RESTRICTED"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_CLIENT_TYPE_MISMATCH": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "FORBIDDEN"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "CLIENT_TYPE_MISMATCH"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_RESOURCE_NOT_FOUND": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "RESOURCE_NOT_FOUND"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_METHOD_NOT_ALLOWED": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "METHOD_NOT_ALLOWED"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "METHOD_NOT_ALLOWED"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_TOO_MANY_REQUESTS": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "RATE_LIMITED"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "TOO_MANY_REQUESTS"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_ACCOUNT_CONTEXT_INCONSISTENT": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "DATA_INTEGRITY_ERROR"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "ACCOUNT_CONTEXT_INCONSISTENT"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_UNEXPECTED_ERROR": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "INTERNAL_ERROR"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "UNEXPECTED_ERROR"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_SESSION_STORE_UNAVAILABLE": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "SERVICE_UNAVAILABLE"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "SESSION_STORE_UNAVAILABLE"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Error_DATABASE_UNAVAILABLE": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "SERVICE_UNAVAILABLE"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "data": {
+            "type": "null"
+          },
+          "reasonCode": {
+            "const": "DATABASE_UNAVAILABLE"
+          },
+          "traceId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "reasonCode",
+          "traceId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "paths": {
+    "/api/admin/auth/csrf": {
+      "get": {
+        "operationId": "getAdminCsrf",
+        "summary": "取得CSRF令牌",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "成功；不据此推断未来业务资格。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfSuccess"
+                },
+                "example": {
+                  "code": "OK",
+                  "message": "成功",
+                  "data": {
+                    "csrfToken": "example-csrf-token-not-a-real-credential"
+                  },
+                  "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                },
+                "examples": {
+                  "REQUEST_INVALID": {
+                    "value": {
+                      "code": "INVALID_ARGUMENT",
+                      "message": "修正字段或请求格式，保留非敏感输入",
+                      "data": null,
+                      "reasonCode": "REQUEST_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "description": "该路径允许的HTTP方法"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "METHOD_NOT_ALLOWED": {
+                    "value": {
+                      "code": "METHOD_NOT_ALLOWED",
+                      "message": "客户端调用错误，不回退为写接口",
+                      "data": null,
+                      "reasonCode": "METHOD_NOT_ALLOWED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                },
+                "examples": {
+                  "UNEXPECTED_ERROR": {
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "message": "展示失败或结果待确认，不认定事务已回滚",
+                      "data": null,
+                      "reasonCode": "UNEXPECTED_ERROR",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                },
+                "examples": {
+                  "SESSION_STORE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不信任本地缓存身份",
+                      "data": null,
+                      "reasonCode": "SESSION_STORE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    }
+                  ]
+                },
+                "examples": {
+                  "CLIENT_TYPE_MISMATCH": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "清理本端错误凭据，不切换协议绕过",
+                      "data": null,
+                      "reasonCode": "CLIENT_TYPE_MISMATCH",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-implementation-status": "design-only",
+        "x-business-side-effects": "无MySQL业务写入；认证会话/日志按接口行为处理",
+        "description": "同源；无认证时临时会话10分钟。已登录会话只取令牌，不重置身份或由此续期。返回令牌须与框架CSRF处理器使用的编码一致。"
+      }
+    },
+    "/api/admin/auth/login": {
+      "post": {
+        "operationId": "loginAdmin",
+        "summary": "管理员登录",
+        "security": [
+          {
+            "AdminCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；不据此推断未来业务资格。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginSuccess"
+                },
+                "example": {
+                  "code": "OK",
+                  "message": "成功",
+                  "data": {
+                    "userId": "a0000000000040008000000000000001"
+                  },
+                  "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                },
+                "examples": {
+                  "REQUEST_INVALID": {
+                    "value": {
+                      "code": "INVALID_ARGUMENT",
+                      "message": "修正字段或请求格式，保留非敏感输入",
+                      "data": null,
+                      "reasonCode": "REQUEST_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CREDENTIALS_INVALID"
+                    }
+                  ]
+                },
+                "examples": {
+                  "CREDENTIALS_INVALID": {
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "提示账号或密码错误，不透露账号是否存在",
+                      "data": null,
+                      "reasonCode": "CREDENTIALS_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CSRF_INVALID"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_ACTION_RESTRICTED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    }
+                  ]
+                },
+                "examples": {
+                  "CSRF_INVALID": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "重新取CSRF，提示重新操作，不自动重放写请求",
+                      "data": null,
+                      "reasonCode": "CSRF_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "ACCOUNT_ACTION_RESTRICTED": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "提示账号不可执行此操作，保留支持入口",
+                      "data": null,
+                      "reasonCode": "ACCOUNT_ACTION_RESTRICTED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "PERMISSION_DENIED": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "账号未获得有效管理角色，请联系管理员",
+                      "data": null,
+                      "reasonCode": "PERMISSION_DENIED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "CLIENT_TYPE_MISMATCH": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "清理本端错误凭据，不切换协议绕过",
+                      "data": null,
+                      "reasonCode": "CLIENT_TYPE_MISMATCH",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "description": "该路径允许的HTTP方法"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "METHOD_NOT_ALLOWED": {
+                    "value": {
+                      "code": "METHOD_NOT_ALLOWED",
+                      "message": "客户端调用错误，不回退为写接口",
+                      "data": null,
+                      "reasonCode": "METHOD_NOT_ALLOWED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Retry-After": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                },
+                "description": "秒数"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                },
+                "examples": {
+                  "TOO_MANY_REQUESTS": {
+                    "value": {
+                      "code": "RATE_LIMITED",
+                      "message": "按Retry-After等待，不循环重试",
+                      "data": null,
+                      "reasonCode": "TOO_MANY_REQUESTS",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                },
+                "examples": {
+                  "ACCOUNT_CONTEXT_INCONSISTENT": {
+                    "value": {
+                      "code": "DATA_INTEGRITY_ERROR",
+                      "message": "不猜进入页面，提示联系支持并记录追踪号",
+                      "data": null,
+                      "reasonCode": "ACCOUNT_CONTEXT_INCONSISTENT",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "UNEXPECTED_ERROR": {
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "message": "展示失败或结果待确认，不认定事务已回滚",
+                      "data": null,
+                      "reasonCode": "UNEXPECTED_ERROR",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    }
+                  ]
+                },
+                "examples": {
+                  "SESSION_STORE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不信任本地缓存身份",
+                      "data": null,
+                      "reasonCode": "SESSION_STORE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "DATABASE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不用缓存权限降级",
+                      "data": null,
+                      "reasonCode": "DATABASE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-implementation-status": "design-only",
+        "x-business-side-effects": "更新admin_account.last_login_at；创建Redis会话，无跨库原子提交保证",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "example": {
+                "username": "demo.admin",
+                "password": "example-only-not-a-real-password"
+              }
+            }
+          }
+        },
+        "description": "先取得临时会话与CSRF；未知账号和密码错误同为401 CREDENTIALS_INVALID；正确密码但管理账号禁用为403。成功轮换会话ID和CSRF；前端再取一次CSRF后执行后续POST。"
+      }
+    },
+    "/api/admin/me": {
+      "get": {
+        "operationId": "getAdminMe",
+        "summary": "当前管理员与有效权限",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；不据此推断未来业务资格。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMeSuccess"
+                },
+                "example": {
+                  "code": "OK",
+                  "message": "成功",
+                  "data": {
+                    "userId": "a0000000000040008000000000000001",
+                    "adminAccountId": "a0000000000040008000000000000002",
+                    "username": "demo.admin",
+                    "nickname": "演示管理员",
+                    "roles": [
+                      {
+                        "roleCode": "platform_admin",
+                        "roleName": "平台管理员"
+                      }
+                    ],
+                    "permissions": [
+                      "admin:menu:manage"
+                    ]
+                  },
+                  "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                },
+                "examples": {
+                  "REQUEST_INVALID": {
+                    "value": {
+                      "code": "INVALID_ARGUMENT",
+                      "message": "修正字段或请求格式，保留非敏感输入",
+                      "data": null,
+                      "reasonCode": "REQUEST_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "LOGIN_REQUIRED": {
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "清理本端登录态，回到登录入口并保留安全返回路径",
+                      "data": null,
+                      "reasonCode": "LOGIN_REQUIRED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_ACTION_RESTRICTED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    }
+                  ]
+                },
+                "examples": {
+                  "PERMISSION_DENIED": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "显示无权限，不自动重登或重试",
+                      "data": null,
+                      "reasonCode": "PERMISSION_DENIED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "ACCOUNT_ACTION_RESTRICTED": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "提示账号不可执行此操作，保留支持入口",
+                      "data": null,
+                      "reasonCode": "ACCOUNT_ACTION_RESTRICTED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "CLIENT_TYPE_MISMATCH": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "清理本端错误凭据，不切换协议绕过",
+                      "data": null,
+                      "reasonCode": "CLIENT_TYPE_MISMATCH",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "description": "该路径允许的HTTP方法"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "METHOD_NOT_ALLOWED": {
+                    "value": {
+                      "code": "METHOD_NOT_ALLOWED",
+                      "message": "客户端调用错误，不回退为写接口",
+                      "data": null,
+                      "reasonCode": "METHOD_NOT_ALLOWED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                },
+                "examples": {
+                  "ACCOUNT_CONTEXT_INCONSISTENT": {
+                    "value": {
+                      "code": "DATA_INTEGRITY_ERROR",
+                      "message": "不猜进入页面，提示联系支持并记录追踪号",
+                      "data": null,
+                      "reasonCode": "ACCOUNT_CONTEXT_INCONSISTENT",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "UNEXPECTED_ERROR": {
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "message": "展示失败或结果待确认，不认定事务已回滚",
+                      "data": null,
+                      "reasonCode": "UNEXPECTED_ERROR",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    }
+                  ]
+                },
+                "examples": {
+                  "SESSION_STORE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不信任本地缓存身份",
+                      "data": null,
+                      "reasonCode": "SESSION_STORE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "DATABASE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不用缓存权限降级",
+                      "data": null,
+                      "reasonCode": "DATABASE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-implementation-status": "design-only",
+        "x-business-side-effects": "无MySQL业务写入；认证会话/日志按接口行为处理",
+        "parameters": [
+          {
+            "name": "X-Session-Activity",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "interactive",
+                "background"
+              ],
+              "default": "background"
+            },
+            "description": "公共客户端封装设置；真实前台操作标interactive。后台轮询不得续期；不是授权证明。"
+          }
+        ]
+      }
+    },
+    "/api/admin/menus": {
+      "get": {
+        "operationId": "getAdminMenus",
+        "summary": "本人导航菜单树",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；不据此推断未来业务资格。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenusSuccess"
+                },
+                "example": {
+                  "code": "OK",
+                  "message": "成功",
+                  "data": [
+                    {
+                      "id": "62132b6e3e5f4bb9bf5cc0b6c9904dbd",
+                      "parentId": null,
+                      "menuName": "系统管理",
+                      "menuType": "directory",
+                      "permissionCode": null,
+                      "routePath": null,
+                      "componentPath": null,
+                      "iconName": null,
+                      "visible": true,
+                      "enabled": true,
+                      "sortNo": 10,
+                      "children": [
+                        {
+                          "id": "d01c25de0fe44841babaf183bf3ff8b8",
+                          "parentId": "62132b6e3e5f4bb9bf5cc0b6c9904dbd",
+                          "menuName": "菜单管理",
+                          "menuType": "menu",
+                          "permissionCode": "admin:menu:manage",
+                          "routePath": "/system/menus",
+                          "componentPath": "system/MenuReadOnly",
+                          "iconName": null,
+                          "visible": true,
+                          "enabled": true,
+                          "sortNo": 10,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ],
+                  "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                },
+                "examples": {
+                  "REQUEST_INVALID": {
+                    "value": {
+                      "code": "INVALID_ARGUMENT",
+                      "message": "修正字段或请求格式，保留非敏感输入",
+                      "data": null,
+                      "reasonCode": "REQUEST_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "LOGIN_REQUIRED": {
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "清理本端登录态，回到登录入口并保留安全返回路径",
+                      "data": null,
+                      "reasonCode": "LOGIN_REQUIRED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_ACTION_RESTRICTED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    }
+                  ]
+                },
+                "examples": {
+                  "PERMISSION_DENIED": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "显示无权限，不自动重登或重试",
+                      "data": null,
+                      "reasonCode": "PERMISSION_DENIED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "ACCOUNT_ACTION_RESTRICTED": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "提示账号不可执行此操作，保留支持入口",
+                      "data": null,
+                      "reasonCode": "ACCOUNT_ACTION_RESTRICTED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "CLIENT_TYPE_MISMATCH": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "清理本端错误凭据，不切换协议绕过",
+                      "data": null,
+                      "reasonCode": "CLIENT_TYPE_MISMATCH",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "description": "该路径允许的HTTP方法"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "METHOD_NOT_ALLOWED": {
+                    "value": {
+                      "code": "METHOD_NOT_ALLOWED",
+                      "message": "客户端调用错误，不回退为写接口",
+                      "data": null,
+                      "reasonCode": "METHOD_NOT_ALLOWED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                },
+                "examples": {
+                  "ACCOUNT_CONTEXT_INCONSISTENT": {
+                    "value": {
+                      "code": "DATA_INTEGRITY_ERROR",
+                      "message": "不猜进入页面，提示联系支持并记录追踪号",
+                      "data": null,
+                      "reasonCode": "ACCOUNT_CONTEXT_INCONSISTENT",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "UNEXPECTED_ERROR": {
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "message": "展示失败或结果待确认，不认定事务已回滚",
+                      "data": null,
+                      "reasonCode": "UNEXPECTED_ERROR",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    }
+                  ]
+                },
+                "examples": {
+                  "SESSION_STORE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不信任本地缓存身份",
+                      "data": null,
+                      "reasonCode": "SESSION_STORE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "DATABASE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不用缓存权限降级",
+                      "data": null,
+                      "reasonCode": "DATABASE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-implementation-status": "design-only",
+        "x-business-side-effects": "无MySQL业务写入；认证会话/日志按接口行为处理",
+        "parameters": [
+          {
+            "name": "X-Session-Activity",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "interactive",
+                "background"
+              ],
+              "default": "background"
+            },
+            "description": "公共客户端封装设置；真实前台操作标interactive。后台轮询不得续期；不是授权证明。"
+          }
+        ]
+      }
+    },
+    "/api/admin/system/menus": {
+      "get": {
+        "operationId": "getAdminSystemMenus",
+        "summary": "菜单管理只读树",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；不据此推断未来业务资格。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenusSuccess"
+                },
+                "example": {
+                  "code": "OK",
+                  "message": "成功",
+                  "data": [
+                    {
+                      "id": "62132b6e3e5f4bb9bf5cc0b6c9904dbd",
+                      "parentId": null,
+                      "menuName": "系统管理",
+                      "menuType": "directory",
+                      "permissionCode": null,
+                      "routePath": null,
+                      "componentPath": null,
+                      "iconName": null,
+                      "visible": true,
+                      "enabled": true,
+                      "sortNo": 10,
+                      "children": [
+                        {
+                          "id": "d01c25de0fe44841babaf183bf3ff8b8",
+                          "parentId": "62132b6e3e5f4bb9bf5cc0b6c9904dbd",
+                          "menuName": "菜单管理",
+                          "menuType": "menu",
+                          "permissionCode": "admin:menu:manage",
+                          "routePath": "/system/menus",
+                          "componentPath": "system/MenuReadOnly",
+                          "iconName": null,
+                          "visible": true,
+                          "enabled": true,
+                          "sortNo": 10,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ],
+                  "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                },
+                "examples": {
+                  "REQUEST_INVALID": {
+                    "value": {
+                      "code": "INVALID_ARGUMENT",
+                      "message": "修正字段或请求格式，保留非敏感输入",
+                      "data": null,
+                      "reasonCode": "REQUEST_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "LOGIN_REQUIRED": {
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "清理本端登录态，回到登录入口并保留安全返回路径",
+                      "data": null,
+                      "reasonCode": "LOGIN_REQUIRED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_ACTION_RESTRICTED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    }
+                  ]
+                },
+                "examples": {
+                  "PERMISSION_DENIED": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "显示无权限，不自动重登或重试",
+                      "data": null,
+                      "reasonCode": "PERMISSION_DENIED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "ACCOUNT_ACTION_RESTRICTED": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "提示账号不可执行此操作，保留支持入口",
+                      "data": null,
+                      "reasonCode": "ACCOUNT_ACTION_RESTRICTED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "CLIENT_TYPE_MISMATCH": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "清理本端错误凭据，不切换协议绕过",
+                      "data": null,
+                      "reasonCode": "CLIENT_TYPE_MISMATCH",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "description": "该路径允许的HTTP方法"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "METHOD_NOT_ALLOWED": {
+                    "value": {
+                      "code": "METHOD_NOT_ALLOWED",
+                      "message": "客户端调用错误，不回退为写接口",
+                      "data": null,
+                      "reasonCode": "METHOD_NOT_ALLOWED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                },
+                "examples": {
+                  "ACCOUNT_CONTEXT_INCONSISTENT": {
+                    "value": {
+                      "code": "DATA_INTEGRITY_ERROR",
+                      "message": "不猜进入页面，提示联系支持并记录追踪号",
+                      "data": null,
+                      "reasonCode": "ACCOUNT_CONTEXT_INCONSISTENT",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "UNEXPECTED_ERROR": {
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "message": "展示失败或结果待确认，不认定事务已回滚",
+                      "data": null,
+                      "reasonCode": "UNEXPECTED_ERROR",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    }
+                  ]
+                },
+                "examples": {
+                  "SESSION_STORE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不信任本地缓存身份",
+                      "data": null,
+                      "reasonCode": "SESSION_STORE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "DATABASE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不用缓存权限降级",
+                      "data": null,
+                      "reasonCode": "DATABASE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-implementation-status": "design-only",
+        "x-business-side-effects": "无MySQL业务写入；认证会话/日志按接口行为处理",
+        "parameters": [
+          {
+            "name": "X-Session-Activity",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "interactive",
+                "background"
+              ],
+              "default": "background"
+            },
+            "description": "公共客户端封装设置；真实前台操作标interactive。后台轮询不得续期；不是授权证明。"
+          }
+        ],
+        "x-required-permission": "admin:menu:manage"
+      }
+    },
+    "/api/admin/auth/logout": {
+      "post": {
+        "operationId": "logoutAdmin",
+        "summary": "管理员退出",
+        "security": [
+          {
+            "AdminCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；不据此推断未来业务资格。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutSuccess"
+                },
+                "example": {
+                  "code": "OK",
+                  "message": "成功",
+                  "data": null,
+                  "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                },
+                "examples": {
+                  "REQUEST_INVALID": {
+                    "value": {
+                      "code": "INVALID_ARGUMENT",
+                      "message": "修正字段或请求格式，保留非敏感输入",
+                      "data": null,
+                      "reasonCode": "REQUEST_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "LOGIN_REQUIRED": {
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "清理本端登录态，回到登录入口并保留安全返回路径",
+                      "data": null,
+                      "reasonCode": "LOGIN_REQUIRED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CSRF_INVALID"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    }
+                  ]
+                },
+                "examples": {
+                  "CSRF_INVALID": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "重新取CSRF，提示重新操作，不自动重放写请求",
+                      "data": null,
+                      "reasonCode": "CSRF_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "CLIENT_TYPE_MISMATCH": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "清理本端错误凭据，不切换协议绕过",
+                      "data": null,
+                      "reasonCode": "CLIENT_TYPE_MISMATCH",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "description": "该路径允许的HTTP方法"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "METHOD_NOT_ALLOWED": {
+                    "value": {
+                      "code": "METHOD_NOT_ALLOWED",
+                      "message": "客户端调用错误，不回退为写接口",
+                      "data": null,
+                      "reasonCode": "METHOD_NOT_ALLOWED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                },
+                "examples": {
+                  "UNEXPECTED_ERROR": {
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "message": "展示失败或结果待确认，不认定事务已回滚",
+                      "data": null,
+                      "reasonCode": "UNEXPECTED_ERROR",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                },
+                "examples": {
+                  "SESSION_STORE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不信任本地缓存身份",
+                      "data": null,
+                      "reasonCode": "SESSION_STORE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-implementation-status": "design-only",
+        "x-business-side-effects": "无MySQL业务写入；认证会话/日志按接口行为处理"
+      }
+    },
+    "/api/me/context": {
+      "get": {
+        "operationId": "getMiniContext",
+        "summary": "小程序当前账号上下文",
+        "security": [
+          {
+            "MiniBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；不据此推断未来业务资格。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextSuccess"
+                },
+                "example": {
+                  "code": "OK",
+                  "message": "成功",
+                  "data": {
+                    "userId": "a0000000000040008000000000000001",
+                    "nickname": "演示租赁方",
+                    "userStatus": "active",
+                    "roleCode": "demander",
+                    "registrationStage": "demander_bound",
+                    "accessMode": "normal",
+                    "nextAction": "ENTER_DEMANDER_HOME"
+                  },
+                  "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                },
+                "examples": {
+                  "REQUEST_INVALID": {
+                    "value": {
+                      "code": "INVALID_ARGUMENT",
+                      "message": "修正字段或请求格式，保留非敏感输入",
+                      "data": null,
+                      "reasonCode": "REQUEST_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "LOGIN_REQUIRED": {
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "清理本端登录态，回到登录入口并保留安全返回路径",
+                      "data": null,
+                      "reasonCode": "LOGIN_REQUIRED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_ACTION_RESTRICTED"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    }
+                  ]
+                },
+                "examples": {
+                  "ACCOUNT_ACTION_RESTRICTED": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "提示账号不可执行此操作，保留支持入口",
+                      "data": null,
+                      "reasonCode": "ACCOUNT_ACTION_RESTRICTED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "CLIENT_TYPE_MISMATCH": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "清理本端错误凭据，不切换协议绕过",
+                      "data": null,
+                      "reasonCode": "CLIENT_TYPE_MISMATCH",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "description": "该路径允许的HTTP方法"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "METHOD_NOT_ALLOWED": {
+                    "value": {
+                      "code": "METHOD_NOT_ALLOWED",
+                      "message": "客户端调用错误，不回退为写接口",
+                      "data": null,
+                      "reasonCode": "METHOD_NOT_ALLOWED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                },
+                "examples": {
+                  "ACCOUNT_CONTEXT_INCONSISTENT": {
+                    "value": {
+                      "code": "DATA_INTEGRITY_ERROR",
+                      "message": "不猜进入页面，提示联系支持并记录追踪号",
+                      "data": null,
+                      "reasonCode": "ACCOUNT_CONTEXT_INCONSISTENT",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "UNEXPECTED_ERROR": {
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "message": "展示失败或结果待确认，不认定事务已回滚",
+                      "data": null,
+                      "reasonCode": "UNEXPECTED_ERROR",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    }
+                  ]
+                },
+                "examples": {
+                  "SESSION_STORE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不信任本地缓存身份",
+                      "data": null,
+                      "reasonCode": "SESSION_STORE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  },
+                  "DATABASE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不用缓存权限降级",
+                      "data": null,
+                      "reasonCode": "DATABASE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-implementation-status": "design-only",
+        "x-business-side-effects": "无MySQL业务写入；认证会话/日志按接口行为处理",
+        "parameters": [
+          {
+            "name": "X-Session-Activity",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "interactive",
+                "background"
+              ],
+              "default": "background"
+            },
+            "description": "公共客户端封装设置；真实前台操作标interactive。后台轮询不得续期；不是授权证明。"
+          }
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "logoutMini",
+        "summary": "小程序退出",
+        "security": [
+          {
+            "MiniBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；不据此推断未来业务资格。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutSuccess"
+                },
+                "example": {
+                  "code": "OK",
+                  "message": "成功",
+                  "data": null,
+                  "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                },
+                "examples": {
+                  "REQUEST_INVALID": {
+                    "value": {
+                      "code": "INVALID_ARGUMENT",
+                      "message": "修正字段或请求格式，保留非敏感输入",
+                      "data": null,
+                      "reasonCode": "REQUEST_INVALID",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    }
+                  ]
+                },
+                "examples": {
+                  "CLIENT_TYPE_MISMATCH": {
+                    "value": {
+                      "code": "FORBIDDEN",
+                      "message": "清理本端错误凭据，不切换协议绕过",
+                      "data": null,
+                      "reasonCode": "CLIENT_TYPE_MISMATCH",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Allow": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "description": "该路径允许的HTTP方法"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                },
+                "examples": {
+                  "METHOD_NOT_ALLOWED": {
+                    "value": {
+                      "code": "METHOD_NOT_ALLOWED",
+                      "message": "客户端调用错误，不回退为写接口",
+                      "data": null,
+                      "reasonCode": "METHOD_NOT_ALLOWED",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                },
+                "examples": {
+                  "UNEXPECTED_ERROR": {
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "message": "展示失败或结果待确认，不认定事务已回滚",
+                      "data": null,
+                      "reasonCode": "UNEXPECTED_ERROR",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "按reasonCode处理，data必须为null。",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Id"
+                },
+                "description": "必须等于响应体traceId，服务端生成，不信任客户端任意输入。"
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                },
+                "examples": {
+                  "SESSION_STORE_UNAVAILABLE": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "message": "提示稍后再试，不信任本地缓存身份",
+                      "data": null,
+                      "reasonCode": "SESSION_STORE_UNAVAILABLE",
+                      "traceId": "7e3ae15f531b4d29b670ec83b4f80004"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-implementation-status": "design-only",
+        "x-business-side-effects": "无MySQL业务写入；认证会话/日志按接口行为处理",
+        "description": "无凭据或已失效凭据也返回200，清理本端；有效但非小程序会话返回403，不删除其他端会话。Redis不可用返回503，不能声称服务器已注销。"
+      }
+    }
+  }
+}

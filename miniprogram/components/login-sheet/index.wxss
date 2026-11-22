@@ -1,0 +1,72 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+.mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.4);
+}
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+  padding: 34px 24px calc(28px + env(safe-area-inset-bottom));
+  color: #111827;
+  box-sizing: border-box;
+}
+.close {
+  position: absolute;
+  right: 20px;
+  top: 14px;
+  font-size: 27px;
+  line-height: 30px;
+  color: #6b7280;
+}
+.title {
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+  margin: 10px 0 24px;
+}
+.login {
+  border-radius: 28px;
+  background: #ffe52c;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 22px;
+}
+.login.disabled {
+  background: #f4f4f4;
+  color: #999;
+}
+.login::after {
+  border: 0;
+}
+.consent {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  line-height: 1.6;
+}
+.link {
+  font-size: 13px;
+  color: #806d00;
+  margin: 10px 0;
+}
+.description {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #6b7280;
+}
+.error {
+  font-size: 13px;
+  color: #9b3929;
+  margin-top: 14px;
+}
+
+@import "../../styles/login-motion.wxss";

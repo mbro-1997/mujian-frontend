@@ -1,0 +1,16 @@
+/* 方案 A 的尺度。声明本身不改变任何页面；租赁端页面和组件按需引用。 */
+page {
+  --mj-canvas: #f3f5f1;
+  --mj-paper: #fff;
+  --mj-ink: #242924;
+  --mj-muted: #5c665d;
+  --mj-line: #dfe4dc;
+  --mj-soft: #f5f7f4;
+  --mj-accent: #ffe444;
+  --mj-active-bg: #e7f0e8;
+  --mj-active-ink: #355c43;
+  --mj-edge: 16px;
+  --mj-card: 14px;
+  --mj-control: 10px;
+  --mj-tap: 44px;
+}

@@ -1,0 +1,3 @@
+<include src="../../templates/disputes.wxml"/>
+
+<navigator wx:if="{{id}}" url="/pages/service/index?type={{kind==='claims'?'claim':kind==='arbitrations'?'arbitration_case':'compensation_receivable'}}&id={{id}}">咨询平台客服 ›</navigator>

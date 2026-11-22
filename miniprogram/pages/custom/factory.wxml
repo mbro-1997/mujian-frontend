@@ -1,0 +1,12 @@
+<view class="custom">
+  <block wx:if="{{factory}}">
+    <view class="card"><view class="title">{{factory.name}}</view><view wx:if="{{factory.mainBusiness}}" class="muted">{{factory.mainBusiness}}</view></view>
+    <view class="card"><view class="title">选择发起方式</view>
+      <button wx:if="{{reference}}" disabled="{{busy}}" data-mode="reference" bindtap="create">按「{{reference.name}}」的风格定制</button>
+      <button class="primary" disabled="{{busy}}" bindtap="create">从空白需求开始</button>
+    </view>
+    <view class="card"><view class="title">案例模板</view><button disabled="{{busy}}" data-mode="template" bindtap="create">预览舞台家具组合 ›</button></view>
+  </block>
+  <view wx:elif="{{busy}}" class="card">正在读取工厂资料…</view>
+  <view wx:if="{{message}}" class="notice">{{message}}<button bindtap="refresh" disabled="{{busy}}">重试</button></view>
+</view>

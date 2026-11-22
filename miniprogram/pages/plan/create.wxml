@@ -1,0 +1,14 @@
+<view class="planning create-page">
+  <view wx:if="{{limit}}" class="notice">未归档方案已达 10 个，请先归档已有方案。</view>
+  <view class="card">
+    <view class="title">方案信息</view>
+    <view class="field"><view class="field-label">方案名称 <text>*</text></view>
+      <input maxlength="128" disabled="{{busy || limit}}" value="{{name}}" data-field="name" bindinput="input" placeholder="例如：毕业晚会方案"/>
+    </view>
+    <view class="field"><view class="field-label">方案说明</view>
+      <textarea maxlength="1000" disabled="{{busy || limit}}" value="{{description}}" data-field="description" bindinput="input" placeholder="选填，例如项目场景、舞台风格或客户需求。"/>
+    </view>
+  </view>
+  <view class="error" wx:if="{{message}}">{{message}}<button wx:if="{{pendingCreate}}" bindtap="recover">查询原创建结果</button><button wx:elif="{{!contextReady}}" bindtap="loadLimit">重新读取</button></view>
+  <view class="footer buttons"><button class="secondary" bindtap="back" disabled="{{busy}}">取消</button><button class="primary" bindtap="save" disabled="{{busy || limit || !hasName || !contextReady || pendingCreate}}">{{busy?'保存中…':'创建方案'}}</button></view>
+</view>

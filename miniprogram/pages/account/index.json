@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "账号与身份",
+  "usingComponents": {
+    "login-sheet": "/components/login-sheet/index"
+  }
+}

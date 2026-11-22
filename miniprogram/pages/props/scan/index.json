@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "道具标签",
+  "usingComponents": {
+    "login-sheet": "/components/login-sheet/index"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "道具详情",
+  "usingComponents": {
+    "login-sheet": "/components/login-sheet/index",
+    "public-prop-image": "/components/public-prop-image/index",
+    "scheme-picker": "/components/scheme-picker/index",
+    "checklist-picker": "/components/checklist-picker/index"
+  }
+}

@@ -1,0 +1,4 @@
+<import src="../../navigation/factory-root.wxml"/><view wx:if="{{rootMessage}}" class="feedback error">{{rootMessage}}<button bindtap="resolveRoot">重试</button></view><view wx:elif="{{!rootReady}}" class="empty">正在恢复身份</view><template wx:elif="{{factoryRoot}}" is="factory-root" data="{{rootLoading,rootIndex,factoryProfile,factoryContext,factoryMenus,tradeOverview,tradeOrders,tradePage,tradeTotal,tradeMessage,tradeBusy,tradeExhausted,items,message,busy,tab,keyword,page,total,assetType,selection}}"/><block wx:else><include src="../../navigation/catalog.wxml"/></block>
+<login-sheet visible="{{loginVisible}}" return-path="{{loginReturnPath}}" bindclose="closeLogin" bindauthenticated="loginSucceeded"/>
+
+<coupon-offers id="couponOffers"/>

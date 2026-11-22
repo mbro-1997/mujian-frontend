@@ -1,0 +1,43 @@
+@import "planning-controls.wxss";
+/* 03 模块两张列表共用布局；紧凑的方案卡使用原型自己的尺寸。 */
+.pl-screen {
+  --card-pad: 12px; --gap: 10px; --action-h: 42px; --metric-h: 46px;
+  padding: 12px 12px calc(88px + env(safe-area-inset-bottom));
+  color: #111827; overflow-wrap: anywhere;
+}
+.pl-scheme { --card-pad: 10px; --gap: 8px; --action-h: 36px; --metric-h: 38px; }
+.pl-hero, .pl-card, .pl-filter { border: 1px solid #eee; border-radius: 8px; background: #fff; }
+.pl-hero { padding: 14px; background: linear-gradient(135deg,#fff7cc,#fff); }
+.pl-scheme .pl-hero { display: grid; grid-template-columns: minmax(0,1fr) 96px; align-items: center; gap: 12px; }
+.pl-heading, .pl-title { font-weight: 900; line-height: 1.3; }
+.pl-heading { font-size: 22px; }
+.pl-scheme .pl-heading { font-size: 20px; }
+.pl-copy, .pl-note { color: #6b7280; font-weight: 700; }
+.pl-copy { margin-top: 6px; font-size: 12px; line-height: 1.5; }
+.pl-scheme .pl-copy { font-size: 11px; line-height: 1.35; }
+.pl-scheme .pl-action { font-size: 13px; }
+.pl-scheme .pl-create { height: 40px; }
+.pl-checklist .pl-create { margin-top: 12px; height: 46px; font-size: 15px; }
+.pl-filters, .pl-actions, .pl-metrics { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.pl-filters { margin-top: 8px; gap: 7px; }
+.pl-filter { min-height: 36px; padding: 2px 10px; border-color: #eef0f3; display: flex; flex-direction: column; justify-content: center; font-size: 12px; line-height: 1.2; font-weight: 900; }
+.pl-filter text { display: block; color: #9ca3af; font-size: 10px; font-weight: 800; margin-bottom: 2px; }
+.pl-card { margin-top: var(--gap); padding: var(--card-pad); }
+.pl-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.pl-intro { min-width: 0; }
+.pl-title { font-size: 17px; }
+.pl-scheme .pl-title { font-size: 15px; }
+.pl-badge { flex: none; display: inline-flex; align-items: center; height: 25px; padding: 0 9px; border-radius: 14px; background: #f3f4f6; color: #6b7280; font-size: 11px; font-weight: 900; }
+.pl-scheme .pl-badge { height: 22px; padding: 0 8px; font-size: 10px; }
+.pl-badge.pl-current { color: #ffe100; background: #111827; }
+.pl-note { font-size: 11px; line-height: 1.45; }
+.pl-scheme .pl-note { margin-top: 5px; line-height: 1.3; }
+.pl-metrics { margin-top: 19px; grid-template-columns: repeat(3,minmax(0,1fr)); }
+.pl-scheme .pl-metrics { margin-top: 7px; gap: 6px; }
+.pl-scheme .pl-metric { padding: 4px 8px; font-size: 13px; }
+.pl-scheme .pl-metric text { font-size: 9px; }
+.pl-actions { margin-top: 19px; }
+.pl-scheme .pl-actions { margin-top: 8px; gap: 7px; }
+.pl-feedback { padding: 12px; margin-top: 10px; background: #fff7cc; }
+.pl-empty, .pl-screen .pl-link { margin: 12px auto; padding: 10px; text-align: center; font-size: 13px; color: #6b7280; }
+.pl-screen .pl-link { width: auto; background: transparent; }

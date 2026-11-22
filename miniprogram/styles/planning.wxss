@@ -1,0 +1,224 @@
+page {
+  background: #f6f6f6;
+  color: #111827;
+}
+.planning {
+  padding: 28rpx 28rpx 190rpx;
+}
+.planning .intro {
+  font-size: 46rpx;
+  font-weight: 700;
+  margin: 10rpx 0 14rpx;
+}
+.planning .muted {
+  font-size: 25rpx;
+  color: #777;
+  line-height: 1.7;
+}
+.planning .card {
+  background: #fff;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  margin: 24rpx 0;
+}
+.planning .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+.planning .title {
+  font-size: 32rpx;
+  font-weight: 650;
+  line-height: 1.5;
+}
+.planning .badge {
+  font-size: 22rpx;
+  background: #f1eddf;
+  color: #776633;
+  padding: 7rpx 15rpx;
+  border-radius: 30rpx;
+  white-space: nowrap;
+}
+.planning .stats {
+  display: flex;
+  justify-content: space-between;
+  margin: 25rpx 0;
+  gap: 12rpx;
+}
+.planning .stats view {
+  font-size: 29rpx;
+  font-weight: 600;
+}
+.planning .stats text {
+  font-size: 22rpx;
+  color: #888;
+  display: block;
+  margin-bottom: 10rpx;
+  font-weight: 400;
+}
+.planning button {
+  font-size: 27rpx;
+  border-radius: 16rpx;
+  margin: 0;
+  line-height: 2.6;
+}
+.planning .primary {
+  background: #ffe100;
+  color: #171714;
+}
+.planning .secondary {
+  background: #f2f2ee;
+  color: #333;
+}
+.planning .danger {
+  color: #a94c3e;
+  background: #fff2ed;
+}
+.planning .buttons {
+  display: flex;
+  gap: 16rpx;
+  flex-wrap: wrap;
+}
+.planning .buttons button {
+  flex: 1;
+  min-width: 120rpx;
+}
+.planning .error {
+  padding: 22rpx;
+  border-radius: 14rpx;
+  background: #fff0e8;
+  color: #963f2d;
+  font-size: 26rpx;
+  line-height: 1.6;
+  margin: 16rpx 0;
+}
+.planning .empty {
+  padding: 70rpx 20rpx;
+  text-align: center;
+  color: #777;
+}
+.planning .field {
+  margin: 25rpx 0;
+}
+.planning .field-label {
+  font-size: 25rpx;
+  color: #666;
+  margin-bottom: 14rpx;
+}
+.planning input,
+.planning textarea {
+  background: #f8fafc;
+  padding: 18rpx;
+  border-radius: 12rpx;
+  box-sizing: border-box;
+  width: 100%;
+  font-size: 29rpx;
+}
+.planning input {
+  height: 80rpx;
+}
+.planning textarea {
+  min-height: 160rpx;
+}
+.planning .item {
+  border-top: 1rpx solid #eee;
+  padding: 24rpx 0;
+}
+.planning .item-main {
+  display: flex;
+  gap: 20rpx;
+}
+.planning .picture {
+  width: 140rpx;
+  height: 140rpx;
+  flex-shrink: 0;
+  border-radius: 16rpx;
+  overflow: hidden;
+  background: #eee;
+}
+.planning .item-body {
+  flex: 1;
+  min-width: 0;
+}
+.planning .price {
+  font-size: 27rpx;
+  margin: 12rpx 0;
+  color: #78611d;
+}
+.planning .quantity {
+  width: 210rpx;
+  flex-shrink: 0;
+}
+.planning .item-tools {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+.planning .item-tools button {
+  font-size: 24rpx;
+  line-height: 2.2;
+}
+.planning .footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1rpx solid #e8e8e0;
+  padding: 22rpx 28rpx calc(22rpx + env(safe-area-inset-bottom));
+  z-index: 8;
+}
+.planning .notice {
+  background: #ece8d8;
+  color: #776640;
+  padding: 22rpx;
+  border-radius: 14rpx;
+  font-size: 25rpx;
+  line-height: 1.6;
+}
+.planning .small-link {
+  font-size: 24rpx;
+  text-decoration: underline;
+  color: #777;
+}
+.planning .unavailable {
+  color: #ad6451;
+  font-size: 23rpx;
+}
+.planning .quantity {
+  display: flex;
+  align-items: center;
+}
+.planning .quantity input {
+  width: 98rpx;
+  padding: 8rpx;
+  text-align: center;
+}
+.planning .quantity button {
+  padding: 0;
+  width: 56rpx;
+  flex: none;
+}
+.planning .success {
+  color: #218454;
+  font-size: 24rpx;
+}
+
+.planning .footer button {padding: 0 8rpx;white-space: nowrap;height: 76rpx;}
+.planning .item-tools > button {padding: 0 16rpx;white-space: nowrap;}
+.planning .item-tools {flex-wrap: wrap;}
+.planning .row > .title {flex:1;min-width:0;}
+.planning .factory-title {margin:12rpx 0 20rpx;font-size:30rpx;font-weight:700;}
+
+.planning .footer > button {width:100%;}
+
+/* 原生button自带宽度；按正式设计保持操作成行，长文案按钮允许换行布局。 */
+.planning .item-tools > button { width:auto; flex:none; }
+.planning .card.buttons > button { flex:1 1 250rpx; white-space:nowrap; padding:0 20rpx; }
+
+/* 方案、分享快照和租赁清单使用相同价格位置；是否显示由各自契约决定。 */
+.planning .item-body { min-width:0; overflow-wrap:anywhere; }
+.planning .item-rent { flex:0 1 auto; max-width:42%; margin-left:auto; color:#ef4444; font-size:13px; font-weight:900; text-align:right; overflow-wrap:anywhere; }

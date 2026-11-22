@@ -1,0 +1,9 @@
+.overlay{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;background:rgba(17,23,26,.55);padding:40rpx}
+.panel{width:100%;max-width:660rpx;background:#fffaf1;border-radius:32rpx;padding:28rpx;box-sizing:border-box;color:#24312e}
+.heading{display:flex;align-items:center;justify-content:space-between;font-size:36rpx;font-weight:650;margin-bottom:16rpx}.heading button{margin:0;font-size:24rpx}
+.offers{max-height:65vh}.ticket{background:white;padding:26rpx;border:2rpx solid #e6d7bf;border-radius:20rpx;margin-bottom:16rpx}
+.value{color:#a74c28;font-size:54rpx;font-weight:700}.meta{font-size:24rpx;margin-top:8rpx}.ticket button{margin-top:20rpx;background:#275548;color:white}.ticket button[disabled]{background:#eae6db;color:#666}
+.panel { background:var(--mj-paper,#fff); color:var(--mj-ink,#242924); border-radius:14px; }
+.heading button { min-height:44px; width:auto; padding:0 10px; background:transparent; }
+.ticket { border-color:var(--mj-line,#dfe4dc); }
+.ticket button:not([disabled]) { border-radius:10px; min-height:44px; background:var(--mj-accent,#ffe444); color:var(--mj-ink,#242924); }

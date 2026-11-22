@@ -1,0 +1,17 @@
+<view class="home-page {{catalogTabRoot ? 'with-tabs' : 'catalog-page'}}" bindtouchstart="activity">
+<view class="search"><view class="magnifier"></view><input placeholder="搜索道具名称" value="{{keyword}}" bindinput="input" bindconfirm="search"/><button class="search-button" bindtap="search">搜索</button></view>
+<view wx:if="{{optionsMessage && !message}}" class="feed-state">筛选项读取失败　{{optionsMessage}}<button bindtap="refresh">重新读取</button></view>
+<view class="filter-card"><view class="style-filter-row" bindtap="toggleStyles"><text class="filter-label">风格</text><view class="selected-styles"><text wx:if="{{!styleCodes.length}}" class="style-chip unselected">全部风格</text><block wx:for="{{options.styles}}" wx:key="code"><text wx:if="{{item.selected}}" class="style-chip">{{item.label}}</text></block></view><text>{{styleOpen?'▴':'▾'}}</text></view>
+<view wx:if="{{styleOpen}}" class="home-options"><view class="home-options-heading"><text>最多选3个，匹配任一风格</text><text>已选 {{styleCodes.length}}/3</text></view><scroll-view scroll-y class="home-options-scroll"><view wx:for="{{options.styles}}" wx:key="code" class="home-option {{item.selected?'chosen':''}}" data-code="{{item.code}}" bindtap="style"><text>{{item.label}}</text><text class="home-option-check">{{item.selected?'✓':''}}</text></view><view wx:if="{{!options.styles.length}}" class="home-option">{{busy?'正在加载风格':'暂无可选风格'}}</view></scroll-view></view>
+<view class="type-reset-row"><view class="dropdown" bindtap="toggleTypes"><text class="small">类型</text><view class="type-value"><text>{{typeLabel}}</text><text>{{typeOpen?'▴':'▾'}}</text></view></view><view class="reset" bindtap="reset"><text>重置</text></view></view>
+<scroll-view wx:if="{{typeOpen}}" scroll-y class="home-options home-options-scroll"><view class="home-option {{!typeCode?'chosen':''}}" data-code="" bindtap="chooseType"><text>全部类型</text><text>{{!typeCode?'✓':''}}</text></view><view wx:for="{{options.types}}" wx:key="code" class="home-option {{typeCode===item.code?'chosen':''}}" data-code="{{item.code}}" bindtap="chooseType"><text>{{item.label}}</text><text>{{typeCode===item.code?'✓':''}}</text></view></scroll-view></view>
+<view class="rent-card"><view><view class="rent-title">我要租道具</view><view class="rent-description">{{rental?startDate+' 至 '+endDate:'选择取还日期，查看这段时间可租的道具。'}}</view></view><button class="rent-btn primary" bindtap="dates">选择租期</button></view>
+<view wx:if="{{rental}}" class="rent-card"><view><view class="rent-title">{{currentChecklist?currentChecklist.name:'当前清单'}}</view><view class="rent-description">{{currentChecklist?'已加入 '+currentChecklist.quantityTotal+' 件 · 保存清单不锁库存':planningMessage}}</view></view><button class="rent-btn" bindtap="openChecklist">查看清单</button></view><view class="section-head">道具浏览</view><view wx:if="{{message}}" class="feed-state">{{message}}<button bindtap="refresh">重试</button></view><prop-grid wx:if="{{feedState!=='blocked'}}" items="{{items}}" state="{{feedState}}" bindopen="open" bindjoinscheme="joinScheme" bindinaccessible="inaccessible"/>
+<view wx:if="{{items.length && feedState!=='blocked'}}" class="feed-state">
+<text wx:if="{{moreState==='loading'}}">正在加载</text>
+<button wx:elif="{{moreState==='error'}}" bindtap="retryMore">加载失败，点击重试</button>
+<text wx:elif="{{moreState==='end'}}">没有更多</text>
+</view>
+</view>
+
+<scheme-picker wx:if="{{schemeProp}}" prop="{{schemeProp}}" bindclose="closeSchemePicker"/>

@@ -1,0 +1,2 @@
+<include src="../../navigation/catalog.wxml"/>
+<login-sheet visible="{{loginVisible}}" return-path="{{loginReturnPath}}" bindclose="closeLogin" bindauthenticated="loginSucceeded"/>

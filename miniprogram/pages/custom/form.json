@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "定制需求",
+  "usingComponents": {
+    "private-material": "/components/private-material/index"
+  }
+}

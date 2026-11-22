@@ -1,0 +1,14 @@
+<view class="mask" bindtap="close" catchtouchmove="noop"></view>
+<view class="sheet" aria-role="dialog" aria-label="加入清单">
+  <view class="head"><text>加入清单</text><button class="close" bindtap="close" disabled="{{saving}}" aria-label="关闭">×</button></view>
+  <view class="desc">确认数量后加入当前租赁清单。</view>
+  <view class="summary"><view class="thumb"><public-prop-image wx:if="{{prop.cover}}" image="{{prop.cover}}" sku-id="{{prop.id}}" lazy="{{false}}" active="{{true}}"/></view><view class="copy"><view class="name">{{prop.name}}</view><view class="meta">{{prop.startDate}} 至 {{prop.endDate}} · ¥{{prop.price}}/天</view></view></view>
+  <block wx:if="{{target}}">
+    <view class="target"><view class="copy"><view class="name">{{target.name}}</view><view class="meta">已加入 {{existing}} 件，本次最多加入 {{max}} 件</view></view></view>
+    <view class="count"><text>本次加入</text><view class="stepper"><button disabled="{{busy || recovery || amount<=1}}" bindtap="step" data-delta="-1" aria-label="减少一件">−</button><input type="number" maxlength="10" value="{{amount}}" disabled="{{busy || recovery}}" bindinput="input" cursor-spacing="90" aria-label="本次加入数量"/><button disabled="{{busy || recovery || amount>=max}}" bindtap="step" data-delta="1" aria-label="增加一件">＋</button></view></view>
+    <view class="meta result">{{total?'加入后共 '+total+' 件':max?'请输入有效的正整数数量':'已达到当前租期可租上限'}}</view>
+    <label class="remark-label">备注<textarea value="{{remark}}" bindinput="remark" disabled="{{busy || recovery}}" maxlength="1000" placeholder="选填，补充道具使用要求" cursor-spacing="90"/></label>
+  </block>
+  <view wx:if="{{message}}" class="error">{{message}} <text wx:if="{{!recovery}}" bindtap="load">重新读取</text></view>
+  <view class="actions"><button class="secondary" bindtap="close" disabled="{{saving}}">取消</button><button wx:if="{{recovery}}" class="primary" disabled="{{busy}}" bindtap="recover">查询原加入结果</button><button wx:else class="primary" disabled="{{busy || !target || !total}}" bindtap="submit">{{busy?'正在读取…':'确认加入'}}</button></view>
+</view>

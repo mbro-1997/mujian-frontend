@@ -1,0 +1,1 @@
+<view class="empty">{{message || "正在打开道具…"}}</view>

@@ -1,0 +1,179 @@
+.home-page {
+  padding: 10px 12px 0;
+}
+.home-page.with-tabs {
+  padding-bottom: calc(90px + env(safe-area-inset-bottom));
+}
+.search {
+  min-height: 42px;
+  border-radius: 22px;
+  background: white;
+  border: 1px solid #eee;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  color: #9ca3af;
+  font-size: 14px;
+  font-weight: 700;
+}
+.magnifier {
+  width: 17px;
+  height: 17px;
+  border: 2px solid #111827;
+  border-radius: 50%;
+  position: relative;
+}
+.magnifier::after {
+  content: "";
+  position: absolute;
+  right: -7px;
+  bottom: -5px;
+  width: 8px;
+  height: 2px;
+  border-radius: 2px;
+  background: #111827;
+  transform: rotate(45deg);
+}
+.search-button {
+  height: 28px;
+  border-radius: 15px;
+  background: #111827;
+  color: #ffe100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+.filter-card,
+.rent-card,
+.section-head {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+.filter-card {
+  margin-top: 10px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+.style-filter-row {
+  min-height: 44px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #eef0f3;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+}
+.filter-label {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 900;
+}
+.selected-styles {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.style-chip {
+  background: #fff2a8;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.selected-styles .unselected {
+  background: transparent;
+  color: #6b7280;
+  padding-left: 0;
+}
+.type-reset-row {
+  display: grid;
+  grid-template-columns: 1fr 74px;
+  gap: 8px;
+}
+.dropdown,
+.reset {
+  height: 42px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #eef0f3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 900;
+}
+.small {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-bottom: 2px;
+}
+.rent-card {
+  margin-top: 10px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 12px;
+  align-items: center;
+  background: linear-gradient(135deg, #fff7cc, #fff);
+}
+.rent-title {
+  font-size: 19px;
+  font-weight: 900;
+  margin-bottom: 5px;
+}
+.rent-description {
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 700;
+  color: #6b7280;
+}
+.rent-btn {
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+.section-head {
+  min-height: 42px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.rent-btn {
+  width: 112px;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+}
+
+
+
+.search input{min-width:0;width:100%;font-size:14px;font-weight:700;height:36px;padding:0;background:transparent}.search button.search-button{padding:0;margin:0;width:52px;min-width:0;min-height:28px;line-height:28px;height:28px;font-size:12px}.selected-styles{min-width:0}.type-value{display:flex;justify-content:space-between;gap:8px}.type-value>text:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.home-options{border:1px solid #eef0f3;border-radius:8px;overflow:hidden;background:white;animation:home-options-in .2s ease-out}.home-options-heading{display:flex;justify-content:space-between;gap:8px;padding:10px;background:#f8fafc;font-size:12px;color:#6b7280}.home-options-scroll{height:230px;max-height:35vh}.home-option{min-height:44px;padding:12px;display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #eef0f3;font-size:14px;font-weight:700}.home-option:last-child{border-bottom:0}.home-option.chosen{background:#fffdf0}.home-option-check{width:18px;flex-shrink:0}.home-pager{display:flex;align-items:center;justify-content:space-between;margin:16px 0}.home-pager button{width:auto;font-size:13px}.feed-state{padding:12px;font-size:13px;line-height:1.6}@keyframes home-options-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+.catalog-page{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+/* 仅由普通用户首页与选品目录使用。 */
+.home-page { min-height:100vh; padding-left:var(--mj-edge); padding-right:var(--mj-edge); background:var(--mj-canvas); color:var(--mj-ink); }
+.home-page .search,.home-page .filter-card,.home-page .rent-card { border-color:var(--mj-line); border-radius:var(--mj-card); }
+.home-page .search { padding:3px 5px 3px 12px; }
+.home-page .search input { font-weight:500; }
+.home-page .search button.search-button { height:40px; line-height:40px; border-radius:10px; }
+.home-page .filter-label,.home-page .small,.home-page .rent-description { color:var(--mj-muted); font-weight:500; }
+.home-page .reset { align-items:center; background:white; color:var(--mj-muted); }
+.home-page .rent-card { grid-template-columns:minmax(0,1fr) auto; background:var(--mj-paper); }
+.home-page .rent-btn { width:auto; padding:0 14px; border-radius:var(--mj-control); font-size:14px; }
+.home-page .rent-btn.primary { background:var(--mj-accent); color:var(--mj-ink); }
+.home-page .section-head { min-height:0; padding:8px 0 0; background:transparent; border:0; font-weight:700; }
+.home-page .style-chip { max-width:100%; overflow-wrap:anywhere; }

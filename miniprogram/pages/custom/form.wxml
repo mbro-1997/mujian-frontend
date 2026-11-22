@@ -1,0 +1,62 @@
+<view class="custom has-form-actions">
+<view wx:if="{{!ready}}" class="card">{{message || "正在读取定制资料…"}}<button wx:if="{{message}}" bindtap="retryLoad" disabled="{{busy}}">重试</button></view>
+<view wx:elif="{{previewTemplate}}" class="template-page">
+  <view class="card"><view class="title">舞台家具组合</view><view class="muted">需求预填模板 · 话剧／音乐剧／巡演</view></view>
+  <view class="card"><view class="title">模板会预填</view><view class="line">道具名称、数量、风格及验收要求</view><view class="muted">示例道具追加到当前需求，已有内容会保留。提交前可逐项修改。</view></view>
+  <view class="card"><view class="title">示例道具</view><view class="line" wx:for="{{templateItems}}" wx:key="title">{{item.title}} × {{item.quantity}}<view class="muted">{{item.style}} · {{item.acceptanceNotes}}</view></view></view>
+  <view class="template-footer"><button bindtap="closeTemplate">返回编辑</button><button class="primary" bindtap="useTemplate">使用此模板</button></view>
+</view>
+<block wx:else>
+<view class="card">
+<view class="title">选择承接工厂</view>
+<picker value="{{factoryIndex}}" disabled="{{busy || !!id || !factories.length}}" range="{{factories}}" range-key="name" bindchange="select">{{factoryLabel || "选择工厂"}}</picker>
+<button disabled="{{busy}}" wx:if="{{form.factoryId}}" bindtap="factoryHome">查看工厂</button>
+<button disabled="{{busy}}" wx:if="{{!id && more && factories.length}}" bindtap="factories">查看更多工厂</button>
+</view>
+<view class="card">
+<view class="title">整单要求</view>
+<label class="field">需求标题 *<input disabled="{{busy}}" type="text" value="{{form.title}}" data-path="form.title" bindinput="change"/>
+</label>
+<label class="field">使用场景 *<input disabled="{{busy}}" type="text" value="{{form.usageScene}}" data-path="form.usageScene" bindinput="change"/>
+</label>
+<label class="field">交付城市 *<input disabled="{{busy}}" type="text" value="{{form.deliveryCity}}" data-path="form.deliveryCity" bindinput="change"/>
+</label>
+<label class="field">整单说明 *<input disabled="{{busy}}" type="text" value="{{form.remark}}" data-path="form.remark" bindinput="change"/>
+</label>
+<label class="field">期望完成日 *<picker disabled="{{busy}}" value="{{form.expectedCompletionDate}}" mode="date" data-path="form.expectedCompletionDate" bindchange="change">{{form.expectedCompletionDate || "选择日期"}}</picker>
+</label>
+<label class="field">交付方式<picker disabled="{{busy}}" value="{{form.deliveryMode==='buyer_pickup'?1:0}}" range="{{['工厂配送','买家自提']}}" bindchange="mode">{{form.deliveryMode==='buyer_pickup'?'买家自提':'工厂配送'}}</picker>
+</label>
+<label class="field">预算下限（元，选填）<input disabled="{{busy}}" type="digit" value="{{low}}" data-path="low" bindinput="change"/>
+</label>
+<label class="field">预算上限（元，选填）<input disabled="{{busy}}" type="digit" value="{{high}}" data-path="high" bindinput="change"/>
+</label>
+<view wx:for="{{form.attachments}}" wx:key="materialId" wx:for-item="file" wx:for-index="j"><private-material file="{{file}}" source-id="{{id}}"/>{{file.name}}<button disabled="{{busy}}" size="mini"  data-file="{{j}}" bindtap="removeFile">移除</button>
+</view>
+<button disabled="{{busy}}"  bindtap="upload">添加附件</button>
+</view>
+<view wx:for="{{form.items}}" wx:key="rowKey" class="card">
+<view class="title">定制件 {{index+1}}</view>
+<label class="field">名称 *<input disabled="{{busy}}" type="text" value="{{item.title}}" data-path="form.items[{{index}}].title" bindinput="change"/>
+</label>
+<label class="field">数量 *<input disabled="{{busy}}" type="number" value="{{item.quantity}}" data-path="form.items[{{index}}].quantity" bindinput="change"/>
+</label>
+<label class="field">尺寸 *<input disabled="{{busy}}" type="text" value="{{item.dimension}}" data-path="form.items[{{index}}].dimension" bindinput="change"/>
+</label>
+<label class="field">材质 *<input disabled="{{busy}}" type="text" value="{{item.material}}" data-path="form.items[{{index}}].material" bindinput="change"/>
+</label>
+<label class="field">风格 *<input disabled="{{busy}}" type="text" value="{{item.style}}" data-path="form.items[{{index}}].style" bindinput="change"/>
+</label>
+<label class="field">验收要求 *<input disabled="{{busy}}" type="text" value="{{item.acceptanceNotes}}" data-path="form.items[{{index}}].acceptanceNotes" bindinput="change"/>
+</label>
+<view wx:for="{{item.attachments}}" wx:key="materialId" wx:for-item="file" wx:for-index="j"><private-material file="{{file}}" source-id="{{id}}"/>{{file.name}}<button disabled="{{busy}}" size="mini" data-index="{{index}}" data-file="{{j}}" bindtap="removeFile">移除</button>
+</view>
+<button disabled="{{busy}}" data-index="{{index}}" bindtap="upload">{{item.sourceSkuId?'添加参考附件':'添加参考图（提交时必填）'}}</button>
+<button disabled="{{busy}}" data-index="{{index}}" bindtap="remove">移除此件</button>
+</view>
+<button disabled="{{busy}}" bindtap="add">添加定制件</button>
+<button disabled="{{busy}}" bindtap="template">预览舞台家具组合模板</button>
+<view class="notice" wx:if="{{message}}">{{message}}</view>
+<view class="form-actions"><button disabled="{{busy}}" bindtap="save">保存草稿</button>
+<button class="primary" disabled="{{busy}}" data-submit="{{true}}" bindtap="save">提交需求</button></view>
+</block></view>

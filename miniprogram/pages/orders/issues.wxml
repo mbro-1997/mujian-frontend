@@ -1,0 +1,34 @@
+<view class="trade">
+  <view wx:if="{{message}}" class="feedback">{{message}}<button bindtap="load">刷新</button></view>
+  <view wx:if="{{!items.length && !message}}" class="section">{{busy?'正在读取问题…':'这笔订单尚无问题记录'}}</view>
+  <view wx:for="{{items}}" wx:key="id" class="section">
+    <view class="heading">{{item.scene==='receipt'?'收货问题':'使用中异常'}} · {{item.statusText}}</view>
+    <view>{{item.summary}}</view><view class="muted">{{item.createdText}}</view>
+    <button data-id="{{item.id}}" bindtap="open" disabled="{{busy || pending}}">查看进度</button>
+  </view>
+  <view wx:if="{{total>15}}" class="section">
+    <button data-step="-1" bindtap="changePage" disabled="{{busy || pending || page===1}}">上一页</button>
+    <button data-step="1" bindtap="changePage" disabled="{{busy || pending || page*15>=total}}">下一页</button>
+  </view>
+  <view wx:if="{{detail}}" class="section">
+    <view class="heading">{{detail.statusText}}</view><view>{{detail.summary}}</view>
+    <view class="muted">订单 {{detail.orderNo}} · {{detail.factoryName}}</view>
+    <view wx:if="{{detail.supplementRequest}}" class="notice">平台补证要求　{{detail.supplementRequest}}</view>
+    <block wx:if="{{detail.plan}}">
+      <view class="heading">{{detail.plan.direction==='terminate'?'终止履约方案':'继续履约方案'}}</view>
+      <view>{{detail.plan.solutionSummary}}</view>
+      <view wx:if="{{detail.plan.recovery}}">回收安排　{{detail.plan.recovery}}</view>
+      <view wx:if="{{detail.plan.freightResponsibility}}">运费责任　{{detail.plan.freightResponsibility}}</view>
+      <view wx:for="{{detail.refunds}}" wx:key="refundId">¥{{item.amount}} · {{item.label}}</view>
+    </block>
+    <block wx:if="{{detail.canSupplement || pending}}">
+      <textarea value="{{summary}}" bindinput="edit" maxlength="1000" placeholder="填写补充说明" disabled="{{busy || pending}}"/>
+      <button bindtap="attach" disabled="{{busy || pending}}">添加照片{{photos.length?'（已选 '+photos.length+' 张）':''}}</button>
+      <button bindtap="submit" disabled="{{busy || (!pending && !summary)}}">{{pending?'恢复原操作':'提交补充材料'}}</button>
+    </block>
+  </view>
+</view>
+
+<navigator wx:if="{{orderId}}" url="/pages/service/index?type=rental_order&id={{orderId}}">咨询平台客服 ›</navigator>
+
+<navigator wx:if="{{detail.id}}" url="/pages/service/index?type=order_issue&id={{detail.id}}">咨询此订单问题 ›</navigator>

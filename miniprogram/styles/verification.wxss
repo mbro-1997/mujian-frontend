@@ -1,0 +1,15 @@
+.verify-page{padding:16px 14px calc(32px + env(safe-area-inset-bottom));line-height:1.65}.verify-hero{padding:22px 20px;background:linear-gradient(125deg,#fff3b5,#fffdf0);border:1px solid #eee3ae;border-radius:12px;margin-bottom:16px}.eyebrow{font-size:11px;color:#766b36}.title{font-size:24px;font-weight:900;margin:8px 0}.description{font-size:13px;color:#6b7280}.verify-card{background:#fff;padding:20px;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:16px}.level{display:flex;gap:12px;margin-bottom:20px}.mark{height:44px;width:44px;background:#fff2a8;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900}.field{margin:18px 0}.label{font-size:13px;font-weight:800;margin-bottom:8px}.input{height:46px;border:1px solid #dfe3e8;background:#fafbfc;border-radius:8px;padding:0 12px;font-size:14px}.photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.photo{height:110px;border:1px dashed #ccb95e;border-radius:8px;background:#fffdf1;display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:13px;overflow:hidden}.photo image{width:100%;height:100%}.consent{margin:18px 0;font-size:12px;color:#6b7280;display:flex;align-items:flex-start}.hint{padding:12px;background:#f7f8fa;font-size:12px;color:#6b7280;border-radius:6px}.verify-actions button{margin:12px 0}.status-row{padding:13px 0;border-bottom:1px solid #eee;overflow-wrap:anywhere}.status-row text{display:block;color:#6b7280;font-size:12px}.reject{color:#ad2832;background:#fff0f0;padding:12px;border-radius:8px}.request-id{word-break:break-all;font-size:11px;color:#777}
+/* Approved 01 source: white square hero/card and three student slots. */
+.verify-page{background:#f6f6f6;padding:14px 16px calc(24px + env(safe-area-inset-bottom))}
+.verify-hero{background:#fff;padding:24px 20px;border:0;border-bottom:1px solid #eee;border-radius:0;margin-bottom:12px}
+.eyebrow{font-size:13px;color:#1d4ed8;font-weight:900;display:block;margin-bottom:10px}
+.title{font-size:28px;margin:0 0 10px;color:#111827}
+.description{font-size:14px;line-height:1.55;font-weight:600}
+.verify-card{padding:18px;border:0;border-radius:0;margin-bottom:12px}
+.level{display:grid;grid-template-columns:54px 1fr;gap:14px;align-items:center;padding-bottom:16px;border-bottom:1px solid #f0f0f0}
+.mark{width:54px;height:54px;border-radius:50%;background:#fff7cc;font-size:22px}
+.level .label{font-size:19px;margin-bottom:6px}
+.student .photo-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.student .photo{height:76px;border-color:#d1d5db;background:#f8fafc;color:#6b7280;font-size:12px;line-height:1.35;text-align:center;font-weight:900}
+
+.verify-page button{box-sizing:border-box;width:100%;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}.verify-page .input{width:100%;min-width:0}.verify-page .level>view:last-child{min-width:0}.verify-page .consent checkbox{flex-shrink:0}.verify-page .title,.verify-page .description{overflow-wrap:anywhere}.verify-page button[disabled]{background:#e5e7eb;color:#9ca3af}

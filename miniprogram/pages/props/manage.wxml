@@ -1,0 +1,1 @@
+<view class="navigation-return" wx:if="{{!nativeBackAvailable}}" bindtap="navigationBack">‹ 返回</view><import src="../../navigation/warehouse.wxml"/><template is="warehouse" data="{{items,message,busy,tab,keyword,page,total,assetType,selection}}"/>

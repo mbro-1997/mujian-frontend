@@ -1,0 +1,5 @@
+@import "../../styles/trading.wxss";
+
+.trade .coupon-option{width:100%;text-align:left;white-space:normal;background:#fff}.trade .coupon-option.selected{background:#fff9db}
+.trade .footer button{text-align:center}
+@import "../../styles/renter-surfaces.wxss";

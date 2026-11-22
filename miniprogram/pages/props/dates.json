@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "选择租期",
+  "usingComponents": {
+    "login-sheet": "/components/login-sheet/index"
+  }
+}

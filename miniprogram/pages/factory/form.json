@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "工厂资料",
+  "usingComponents": {
+    "private-material": "/components/private-material/index"
+  }
+}

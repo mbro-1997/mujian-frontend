@@ -1,0 +1,28 @@
+<view class="trade">
+  <view wx:if="{{source}}" class="section">
+    <view class="item-title">咨询进度</view>
+    <view wx:if="{{record}}">{{record.title}} · {{record.statusLabel}}</view>
+    <block wx:if="{{checked}}">
+      <view wx:if="{{progress}}">案件号 {{progress.caseNo}} · {{progress.status==='resolved'?'已解决':'人工已登记'}}</view>
+      <view wx:else>暂无人工处理记录</view>
+      <view wx:if="{{context.contextStatus==='expired'}}">咨询卡片已过期，可重新准备。</view>
+      <view wx:if="{{context.contextStatus==='sent'}}">微信已确认发送卡片</view>
+      <button wx:if="{{!card}}" bindtap="prepare" disabled="{{busy}}">{{context?'重新准备咨询卡片':'准备咨询卡片'}}</button>
+      <block wx:else>
+        <view>卡片有效至 {{expiresText}}</view>
+        <button open-type="contact" show-message-card session-from="{{card.contextToken}}" send-message-title="{{context.title}}" send-message-path="{{context.returnPagePath}}" bindcontact="returned" binderror="failed">联系微信客服</button>
+      </block>
+    </block>
+    <button bindtap="refresh" disabled="{{busy}}">刷新进度</button>
+    <button bindtap="back">返回原业务页</button>
+  </view>
+  <block wx:else>
+    <view class="section hero"><view class="heading">需要协助的事情</view><view class="muted">选择要咨询的业务，可将对应业务卡片发送给微信客服。</view></view>
+    <view class="section service-list"><view class="row"><text class="heading">最近业务</text><text class="muted">仅本人可见</text></view>
+    <view wx:if="{{busy && !items.length}}" class="blank">正在读取…</view>
+    <button class="service-item" wx:for="{{items}}" wx:key="sourceKey" data-index="{{index}}" bindtap="select" disabled="{{busy}}"><view class="muted">{{item.sourceLabel}}</view><view class="item-title">{{item.title}}</view><view>{{item.statusLabel}} ›</view></button>
+    <view wx:if="{{!busy&&!message&&!items.length}}" class="blank">暂无可关联的业务</view></view>
+    <view class="section"><view class="heading">其他帮助</view><button class="service-direct" open-type="contact" bindcontact="returned" binderror="failed">没有对应业务，直接咨询 ›</button></view>
+  </block>
+  <view wx:if="{{message}}" class="feedback">{{message}}<button wx:if="{{!source}}" bindtap="retryList" disabled="{{busy}}">重试</button></view>
+</view>

@@ -1,0 +1,68 @@
+<import src="../../navigation/factory-root.wxml"/><view class="mine-page"><view wx:if="{{rootMessage}}" class="feedback error">{{rootMessage}}<button bindtap="resolveRoot">重试</button></view><view wx:elif="{{!rootReady}}" class="empty">正在恢复身份</view><template wx:elif="{{factoryRoot}}" is="factory-root" data="{{rootLoading,rootIndex,factoryProfile,factoryContext,factoryMenus,tradeOverview,tradeOrders,tradePage,tradeTotal,tradeMessage,tradeBusy,items,message,busy,tab,keyword,page,total,assetType,selection}}"/><block wx:else><view class="with-tabs" bindtouchstart="activity"
+  ><view class="mine-hero"
+    ><view class="mine-avatar"
+      >{{context ? (context.roleCode === 'supplier' ? '厂' : '租') :
+      '幕'}}</view
+    ><view
+      ><view class="mine-name"
+        >{{context ? context.nickname : '欢迎来到幕间'}}</view
+      ><view class="mine-description"
+        >{{context ? identity : '登录后管理你的账号'}}<text
+          wx:if="{{restricted}}"
+        >
+          · 账号受限</text
+        ></view
+      ></view
+    ></view
+  ><view wx:if="{{message}}" class="feedback">{{message}}</view
+  ><view class="mine-section"
+    ><view class="section-title"
+      ><text>我的租赁</text
+      ><text class="muted" bindtap="openOrders">全部订单 ›</text></view
+    ><view class="mine-grid"
+      ><view
+        class="mine-tool"
+        wx:for="{{orders}}"
+        wx:key="label"
+        bindtap="openOrders"
+        ><view class="tool-icon tool-{{item.icon}}" aria-hidden="true"></view><text>{{item.label}}</text></view
+      ></view
+    ></view
+  ><view class="mine-section"
+    ><view class="section-title"
+      ><text>常用功能</text></view
+    ><view class="mine-grid"
+      ><view
+        class="mine-tool"
+        wx:for="{{tools}}"
+        wx:key="label" data-label="{{item.label}}"
+        bindtap="tool"
+        ><view class="tool-icon tool-{{item.icon}}" aria-hidden="true"></view><text>{{item.label}}</text></view
+      ></view
+    ></view
+  ><view class="mine-section"
+    ><view class="mine-row" bindtap="unavailable"
+      ><text>个人资料</text><text class="muted">暂未开放</text></view
+    ><view class="mine-row" bindtap="goAccount"
+      ><text>账号管理</text><text class="chevron">›</text></view
+    ></view
+  ><view class="action-row"
+    ><button class="secondary" bindtap="load" loading="{{busy}}">
+      刷新状态</button
+    ><button
+      wx:if="{{context}}"
+      class="secondary"
+      bindtap="logout"
+      disabled="{{busy}}"
+    >
+      退出登录</button
+    ><button wx:else class="primary" bindtap="goAccount">
+      登录 / 选择身份
+    </button></view
+  ></view
+>
+
+<login-sheet visible="{{loginVisible}}" return-path="/pages/mine/index" bindclose="closeLogin" bindauthenticated="loginSucceeded"/>
+</block>
+<local-debug-accounts bindswitchfailed="resolveRoot"/>
+</view>

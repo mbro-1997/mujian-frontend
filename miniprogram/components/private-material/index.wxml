@@ -1,0 +1,1 @@
+<view wx:if="{{file.type==='image' || factoryFile}}" class="material {{compact?'compact':''}}"><image wx:if="{{src}}" src="{{src}}" mode="aspectFill" binderror="failed" lazy-load/><view wx:else class="fallback" catchtap="retry">{{loading?'正在加载图片…':message||'参考图片'}}</view></view>

@@ -1,0 +1,67 @@
+<view class="account-page" bindtouchstart="activity"
+  ><view class="role-wrap" wx:if="{{action === 'SELECT_IDENTITY'}}"
+    ><view class="role-hero"
+      ><view class="beam a"></view><view class="beam b"></view
+      ><view class="beam c"></view><view class="stage-line"></view
+      ><view class="role-brand">幕后 MUHOU</view
+      ><view class="role-subtitle">舞美道具租赁平台</view
+      ><view class="role-hint"
+        >租赁方与工厂方身份互斥，请根据实际用途选择</view
+      ></view
+    ><view class="role-panel"
+      ><view class="role-heading">请选择你的身份</view
+      ><view class="role-card" bindtap="bind"
+        ><view class="role-icon rent">租</view
+        ><view
+          ><view class="role-name">我要租赁</view
+          ><view class="muted">浏览道具，创建方案和租赁清单</view></view
+        ><text class="chevron">›</text></view
+      ><view class="role-card" bindtap="factory"
+        ><view class="role-icon factory">厂</view
+        ><view
+          ><view class="role-name">我是工厂</view
+          ><view class="muted">管理道具、库存与租赁服务</view></view
+        ><text class="chevron">›</text></view
+      ></view
+    ><view class="role-note">身份绑定后不可在小程序内切换。工厂入驻需平台邀请码。</view></view
+  ><view wx:elif="{{!action}}" class="page-pad"><view wx:if="{{!loginVisible}}" class="state-detail">{{busy?'正在读取账号状态':'账号状态尚未加载'}}<button wx:if="{{!busy}}" bindtap="load">重试</button></view></view><view wx:elif="{{summary && (action === 'ENTER_DEMANDER_HOME' || action === 'ENTER_FACTORY_HOME')}}" class="account-settings {{summary.roleCode==='demander'?'renter-account':''}}"><view class="account-settings-card"><view class="account-setting-row"><text>手机</text><text>{{summary.phoneMasked}}</text></view><view class="account-setting-row"><text>微信账号</text><text>{{summary.wechatBound ? '已绑定' : '未绑定'}}</text></view><view class="account-setting-row"><text>账号身份</text><text>{{summary.roleCode === 'supplier' ? '工厂' : '租赁方'}}</text></view></view><button class="account-logout" bindtap="logout" disabled="{{busy}}">退出登录</button><view class="account-settings-card" wx:if="{{summary.roleCode !== 'supplier'}}"><view class="account-setting-row" data-domain="realname" bindtap="verification"><text>实名认证</text><text>›</text></view><view class="account-setting-row" data-domain="student" bindtap="verification"><text>学生认证</text><text>›</text></view></view></view><view wx:else class="page-pad"
+    ><view class="status-card"
+      ><view class="muted"
+        >{{action === 'ENTER_RESTRICTED_HOME' ? '账号状态' : action ===
+        'ENTER_DEMANDER_HOME' ? '租赁身份' : '工厂入驻'}}</view
+      ><view class="status-title">{{title}}</view
+      ><view class="status-description">{{description}}</view></view
+    ><view class="status-card"
+      ><view
+        class="status-mark {{action === 'REVISE_FACTORY_APPLICATION' ? 'rejected' : ''}}"
+        >{{action === 'WAIT_FACTORY_REVIEW' ? '审' : action ===
+        'REVISE_FACTORY_APPLICATION' ? '驳' : action === 'ENTER_RESTRICTED_HOME'
+        ? '!' : '✓'}}</view
+      ><view class="status-description state-detail"
+        >{{action === 'WAIT_FACTORY_REVIEW' || action ===
+        'REVISE_FACTORY_APPLICATION' ?
+        '可进入工厂入口查看申请资料与审核详情。' : action ===
+        'COMPLETE_FACTORY_PROFILE' ? '请继续完善工厂资料。' :
+        '身份状态以当前账号信息为准。'}}</view
+      ></view
+    ><view class="status-card" wx:if="{{summary}}"><view class="mine-row">绑定手机 <text>{{summary.phoneMasked}}</text></view><view class="mine-row">微信 <text>{{summary.wechatBound ? '已绑定' : '未绑定'}}</text></view><view wx:if="{{summary.roleCode!=='supplier'}}" class="mine-row" data-domain="realname" bindtap="verification">实名认证 <text>›</text></view><view wx:if="{{summary.roleCode!=='supplier'}}" class="mine-row" data-domain="student" bindtap="verification">学生认证 <text>›</text></view><button class="secondary" bindtap="logout">退出登录</button></view><view class="action-row"
+      ><button class="primary" bindtap="load" loading="{{busy}}">
+        刷新状态</button
+      ><button
+        wx:if="{{action === 'ENTER_FACTORY_HOME' || action === 'COMPLETE_FACTORY_PROFILE' || action === 'WAIT_FACTORY_REVIEW' || action === 'REVISE_FACTORY_APPLICATION'}}"
+        class="secondary"
+        bindtap="factory"
+      >
+        工厂资料与入驻</button
+      ><button wx:else class="secondary" disabled>
+        {{action === 'REVISE_FACTORY_APPLICATION' ? '修改申请暂未开放' :
+        '联系客服暂未开放'}}
+      </button></view
+    ></view
+  ><view wx:if="{{message}}" class="feedback">{{message}}</view
+  ><view class="action-row" wx:if="{{!nativeBackAvailable}}"
+    ><button class="secondary" bindtap="back">返回原页面</button></view
+  ></view
+>
+
+<login-sheet visible="{{loginVisible}}" return-path="{{returnPath}}" bindclose="closeLogin" bindauthenticated="loginSucceeded"/>

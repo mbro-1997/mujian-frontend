@@ -1,0 +1,9 @@
+@import "common.wxss";
+page{background:#fff}
+.factory-page .hero{padding:0 0 12px}
+.factory-page .hero .heading{display:none}
+.factory-page .card{padding:0;border:0;border-radius:0;margin-bottom:20px}
+.factory-page .section-title{font-size:15px;margin:16px 0 8px}
+.factory-page .label{font-size:14px;line-height:1.5;margin:16px 0 8px}
+.factory-page input,.factory-page textarea,.factory-page .readonly{border:1px solid #e5e7eb;border-radius:4px;background:#fff;padding:10px 12px;font-size:14px}
+.factory-page input{height:44px}

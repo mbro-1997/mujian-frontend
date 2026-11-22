@@ -1,0 +1,12 @@
+@import "../../styles/planning.wxss";
+.create-page{padding:12px 12px calc(96px + env(safe-area-inset-bottom))}
+.create-page .card{margin:0 0 12px;padding:16px;border:1px solid #eee;border-radius:8px}
+.create-page .title{font-size:18px;font-weight:900}
+.create-page .field{margin:16px 0 0}
+.create-page .field-label{font-size:13px;font-weight:700;color:#374151;margin-bottom:8px}
+.create-page .field-label text{color:#b74439}
+.create-page input,.create-page textarea{width:100%;border:1px solid #e5e7eb;font-size:14px}
+.create-page textarea{height:100px}
+.create-page .footer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:10px;padding:12px 18px max(16px,env(safe-area-inset-bottom))}
+.create-page .footer button{min-width:0;margin:0;height:48px;line-height:48px;border-radius:24px;font-size:16px}
+@import "../../styles/renter-surfaces.wxss";

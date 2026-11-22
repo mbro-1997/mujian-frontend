@@ -1,0 +1,7 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "工厂订单",
+  "usingComponents": {
+    "public-prop-image": "/components/public-prop-image/index"
+  }
+}

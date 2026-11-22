@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "审核详情",
+  "usingComponents": {
+    "prop-fields": "/components/prop-fields/index",
+    "prop-grid": "/components/prop-grid/index"
+  }
+}

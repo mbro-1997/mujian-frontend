@@ -1,0 +1,16 @@
+<view wx:if="{{visible}}" class="overlay">
+  <view class="panel">
+    <view class="heading">可领取优惠券<button aria-label="关闭领券弹窗" bindtap="close">关闭</button></view>
+    <scroll-view scroll-y class="offers" bindscrolltolower="more">
+      <view wx:for="{{items}}" wx:key="activityId" class="ticket">
+        <text class="value">{{item.value}}</text><view>{{item.templateName}}</view>
+        <view class="meta">{{item.threshold}} · {{item.scope}}</view><view class="meta">{{item.validity}}</view>
+        <button disabled="{{item.claimed || !!claiming || loading}}" data-id="{{item.activityId}}" bindtap="claim">{{item.claimed?'已领取':claiming===item.activityId?'正在领取…':'立即领取'}}</button>
+      </view>
+      <view wx:if="{{loading}}">正在读取…</view>
+      <view wx:elif="{{!items.length && !message}}">暂无可领取活动</view>
+      <button wx:if="{{more}}" bindtap="more">更多活动</button>
+      <view wx:if="{{message}}">{{message}}<button wx:if="{{!items.length}}" bindtap="retry">重新查询</button></view>
+    </scroll-view>
+  </view>
+</view>

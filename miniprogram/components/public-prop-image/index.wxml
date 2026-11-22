@@ -1,0 +1,1 @@
+<view class="image-slot"><image wx:if="{{src}}" class="image" src="{{src}}" mode="{{mode}}" binderror="failed" bindtap="preview"/><view wx:else class="placeholder">{{error?'图片暂不可预览':'图片加载中'}}</view></view>

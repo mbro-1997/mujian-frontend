@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "public-prop-image": "/components/public-prop-image/index"
+  }
+}

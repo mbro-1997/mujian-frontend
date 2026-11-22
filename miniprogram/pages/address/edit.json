@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "地址信息",
+  "usingComponents": {
+    "public-prop-image": "/components/public-prop-image/index"
+  }
+}

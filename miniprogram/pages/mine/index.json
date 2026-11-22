@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "我的",
+  "usingComponents": {
+    "local-debug-accounts": "/components/local-debug-accounts/index",
+    "login-sheet": "/components/login-sheet/index"
+  }
+}

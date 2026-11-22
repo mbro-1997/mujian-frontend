@@ -1,0 +1,16 @@
+@import "../../styles/planning.wxss";
+
+@import "../../styles/planning-detail.wxss";
+
+page{background:var(--mj-canvas)}.scheme-detail{color:var(--mj-ink);padding:16px 16px calc(90px + env(safe-area-inset-bottom))}.scheme-detail .card{border-color:var(--mj-line);border-radius:14px;padding:14px}
+.scheme-detail .badge.current{background:var(--mj-active-bg);color:var(--mj-active-ink)}.scheme-detail .detail-metrics{grid-template-columns:1fr 1fr}
+.scheme-detail .detail-label{margin-top:10px;font-weight:550;color:var(--mj-muted)}.scheme-detail .detail-name,.scheme-detail .detail-description{background:white;font-weight:450;font-size:15px;color:var(--mj-ink)}
+.scheme-detail .item{border:none;border-top:1px solid var(--mj-line);border-radius:0;padding:10px 0}.scheme-tools,.scheme-detail .scheme-dock{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.scheme-tools button,.scheme-detail .scheme-dock button.pl-action,.scheme-sheet button.pl-action{width:100%;min-width:0;min-height:44px;line-height:1.4;border:1px solid var(--mj-line);background:white;color:var(--mj-ink);border-radius:10px;font-size:15px;font-weight:620;display:flex;justify-content:center;align-items:center;margin:0}
+.scheme-tools .to-checklist{grid-column:1 / -1}.scheme-detail .scheme-dock{grid-template-columns:minmax(0,1fr) minmax(0,1.8fr);padding-inline:16px}
+.scheme-detail .scheme-dock button.pl-main,.scheme-sheet button.pl-main{border-color:var(--mj-accent);background:var(--mj-accent)}
+.scheme-scrim{position:fixed;inset:0;background:rgba(20,34,25,.42);z-index:12}.scheme-sheet{position:fixed;left:0;right:0;bottom:0;z-index:13;padding:16px 18px calc(16px + env(safe-area-inset-bottom));border-radius:18px 18px 0 0;background:white}
+.scheme-sheet-title{display:flex;justify-content:space-between;align-items:center;font-size:19px;font-weight:700}.scheme-sheet-title button{min-height:44px;width:44px;background:transparent}
+.scheme-sheet button.pl-action{margin-top:10px}.scheme-sheet-title button::after,.scheme-sheet button::after{border:none}
+
+.scheme-detail .item-body{min-width:0;overflow-wrap:anywhere}

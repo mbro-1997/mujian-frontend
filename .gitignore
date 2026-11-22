@@ -1,0 +1,19 @@
+**/node_modules/
+**/dist/
+*.tsbuildinfo
+*.log
+.DS_Store
+# 本机开发工具私有配置和意外生成的 Redis 快照不属于交付源码。
+/project.private.config.json
+/dump.rdb
+
+/miniprogram/project.private.config.json
+
+# 本机全局忽略含 tests；正式回归源码仍应进入工程复核范围。
+!/tests/
+!/tests/*.cjs
+!/tests/support/
+!/tests/support/*.cjs
+
+# Local test configuration and evidence staging.
+/.local/

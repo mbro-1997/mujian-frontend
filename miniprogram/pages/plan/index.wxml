@@ -1,0 +1,20 @@
+<import src="../../navigation/factory-root.wxml"/><view wx:if="{{rootMessage}}" class="feedback error">{{rootMessage}}<button bindtap="resolveRoot">重试</button></view><view wx:elif="{{!rootReady}}" class="empty">正在恢复身份</view><template wx:elif="{{factoryRoot}}" is="factory-root" data="{{rootLoading,rootIndex,factoryProfile,factoryContext,factoryMenus,tradeOverview,tradeOrders,tradePage,tradeTotal,tradeMessage,tradeBusy,items,message,busy,tab,keyword,page,total,assetType,selection}}"/><block wx:else><block wx:if="{{factoryContext.roleCode==='demander'}}">
+  <view class="scheme-board">
+    <view class="scheme-heading"><view><view class="scheme-h1">我的方案</view><text wx:if="{{page}}" class="subtle">{{filter==='all'?'全部方案':filter==='editing'?'编辑中':'已归档'}} · {{total}} 个</text></view><button class="scheme-new" bindtap="create">＋ 新建方案</button></view>
+    <view class="scheme-filter-row">
+      <button class="status-trigger" disabled="{{busy}}" aria-expanded="{{statusOpen}}" bindtap="toggleStatus"><text>状态</text>{{filter==='all'?'全部方案':filter==='editing'?'编辑中':'已归档'}}<view class="chev {{statusOpen?'up':''}}"/></button>
+      <button class="scheme-reset" disabled="{{busy}}" bindtap="resetStatus">重置</button>
+      <view wx:if="{{statusOpen}}" class="scheme-options"><button wx:for="{{schemeStatuses}}" wx:key="value" data-value="{{item.value}}" bindtap="selectSchemeStatus">{{item.label}}<text wx:if="{{filter===item.value}}">✓</text></button></view>
+    </view>
+    <view wx:if="{{message}}" class="scheme-message">{{message}}<button bindtap="retry">重试</button></view>
+    <view wx:if="{{!items.length && !message}}" class="pl-empty">{{busy?'正在加载…':'暂无方案'}}</view>
+    <view class="scheme-card" wx:for="{{items}}" wx:key="id">
+      <view class="scheme-open" data-id="{{item.id}}" bindtap="open" role="button" aria-label="查看{{item.listTitle}}详情">
+        <view class="scheme-line"><text class="scheme-title">{{item.listTitle}}</text><text class="scheme-state {{item.status==='editing'?'editing':''}}">{{item.statusLabel}}</text></view>
+        <view wx:if="{{item.note}}" class="scheme-description">{{item.note}}</view>
+        <view class="scheme-budget"><text>{{item.quantityTotal}} 件道具</text><text>预估日租 <text class="amount">{{item.dailyText}}</text></text></view>
+      </view>
+    </view>
+    <view wx:if="{{items.length && items.length < total}}" class="pl-empty">{{busy?'正在加载…':'上拉加载更多'}}</view>
+  </view>
+</block><block wx:else><import src="../../navigation/renter-empty.wxml"/><template is="renter-empty" data="{{loggedIn:factoryContext,subject:'方案'}}"/></block><login-sheet visible="{{loginVisible}}" return-path="/pages/plan/index" bindclose="closeLogin" bindauthenticated="loginSucceeded"/></block>

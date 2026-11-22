@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "道具与租期",
+  "usingComponents": {
+    "prop-fields": "/components/prop-fields/index",
+    "prop-grid": "/components/prop-grid/index",
+    "login-sheet": "/components/login-sheet/index",
+    "scheme-picker": "/components/scheme-picker/index"
+  },
+  "enablePullDownRefresh": true
+}

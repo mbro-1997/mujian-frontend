@@ -1,0 +1,18 @@
+<view class="screen">
+<view wx:if="{{message}}" class="panel">{{message}}<button bindtap="refresh" disabled="{{busy}}">重新读取</button></view>
+<block wx:if="{{!id}}">
+  <view class="hero"><view class="title">{{items.length?items[0].factoryName:'结算到账'}}</view><view>这里只展示已分账解冻并到账的结算批次。</view></view>
+  <view class="panel"><view class="heading">到账概览</view><view class="amounts"><view>本月到账<text>{{month===null?'—':'¥'+month}}</text></view><view>累计到账<text>{{lifetime===null?'—':'¥'+lifetime}}</text></view></view><view wx:if="{{more}}" class="muted">加载全部批次后可查看汇总。</view></view>
+  <view class="panel"><view class="heading">到账记录 <text>{{total}} 个批次</text></view>
+    <view wx:for="{{items}}" wx:key="id" class="entry" bindtap="open" data-id="{{item.id}}"><view class="row"><text class="number">{{item.batchNo}}</text><text class="price">¥{{item.actualUnlock}} ›</text></view><view class="muted">{{item.orderCount}} 张订单 · {{item.date}} 到账</view></view>
+    <view wx:if="{{!items.length&&!message}}" class="empty">{{busy?'正在读取到账记录':'暂无已到账批次'}}</view><button wx:if="{{more}}" bindtap="moreBatches" disabled="{{busy}}">更多到账记录</button></view><button class="settlement-rules" bindtap="rules">查看结算规则</button>
+</block>
+<block wx:elif="{{detail}}">
+  <view class="hero"><view class="caption">已到账</view><view class="title">¥{{detail.summary.actualUnlock}}</view><view class="number">{{detail.summary.batchNo}}</view><view>{{detail.summary.date}} · {{detail.summary.orderCount}} 张订单</view></view>
+  <view class="panel"><view class="heading">金额计算</view><view class="row">租金结算基数<text>¥{{detail.summary.rentBase}}</text></view><view class="row">平台佣金 20%<text>−¥{{detail.summary.commission}}</text></view><view class="row">押金赔付<text>¥{{detail.summary.depositCompensation}}</text></view><view class="row">线上应结运费<text>¥{{detail.summary.freight}}</text></view><view class="row strong">工厂应结<text>¥{{detail.summary.factorySettle}}</text></view></view>
+  <view wx:for="{{groups}}" wx:key="key" wx:for-item="group" class="panel"><view class="heading">{{group.title}}</view>
+    <view wx:for="{{group.rows}}" wx:key="id" class="entry"><block wx:if="{{group.key==='items'}}"><view class="row"><text class="number">{{item.orderNo}}</text><text class="price">¥{{item.factorySettle}}</text></view><view wx:if="{{item.goodsPaid}}">实付商品 ¥{{item.goodsPaid}} · 已退 ¥{{item.goodsRefunded}} · 商品基数 ¥{{item.goodsBase}}</view><view wx:else>实付租金 ¥{{item.initialRent}} · 已退 ¥{{item.rentRefunded}}</view><view wx:if="{{item.overdueRentFen}}">逾期租金 ¥{{item.overdueRent}} · 逾期佣金 ¥{{item.overdueCommission}}</view><view wx:if="{{item.excessCompensationFen}}">实收补缴赔付 ¥{{item.excessCompensation}}</view><view wx:if="{{item.goodsPaid}}">商品收入 ¥{{item.factoryGoods}} · 佣金 ¥{{item.commission}}</view><view wx:else>租金收入 ¥{{item.factoryRent}} · 佣金 ¥{{item.commission}}</view><view>核准运费 ¥{{item.freightApproved}} · 已退 ¥{{item.freightRefunded}} · 应结 ¥{{item.freightSettle}}</view></block>
+    <block wx:else><view>分佣{{item.commissionStage}} · ¥{{item.actualCommission}}</view><view>解冻{{item.unlockStage}} · ¥{{item.actualUnlock}}</view><view wx:if="{{item.channelSharingNo}}" class="muted number">分佣流水 {{item.channelSharingNo}}</view><view class="muted number">解冻流水 {{item.channelFinishNo}}</view></block></view>
+    <button wx:if="{{group.more}}" data-index="{{index}}" bindtap="moreRows" disabled="{{busy}}">更多{{group.title}}</button></view>
+  <view class="panel"><view class="heading">到账信息</view><view class="row">收款方<text>{{detail.receiverName}}</text></view><view class="row">结算账户<text>{{detail.accountMasked}}</text></view><view class="row">到账时间<text>{{detail.summary.date}}</text></view></view>
+</block></view>

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "道具与库存申请",
+  "usingComponents": {
+    "prop-fields": "/components/prop-fields/index",
+    "prop-grid": "/components/prop-grid/index"
+  }
+}

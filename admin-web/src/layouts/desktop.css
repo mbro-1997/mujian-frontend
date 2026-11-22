@@ -1,0 +1,620 @@
+.desk {
+  min-width: 0;
+  font-size: 12px;
+  color: #111827;
+}
+.desk-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 13px;
+}
+.desk-head h1 {
+  margin: 0;
+  font-size: 22px;
+}
+.desk-head p {
+  margin: 5px 0 0;
+  color: #626b77;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.desk-panel {
+  background: white;
+  border: 1px solid #e0e4e8;
+  border-radius: 7px;
+  min-width: 0;
+  overflow: hidden;
+}
+.desk-panel + .desk-panel {
+  margin-top: 10px;
+}
+.desk-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 13px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 12px;
+}
+.desk-panel-head small {
+  font-size: 10px;
+  color: #626b77;
+}
+.metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.metric-strip > div {
+  min-height: 74px;
+  padding: 12px 13px;
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 7px;
+}
+.metric-strip dt {
+  color: #606a76;
+  font-size: 10px;
+  font-weight: 700;
+}
+.metric-strip dd {
+  margin: 8px 0 0;
+  font-weight: 800;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.desk-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 9px 12px;
+  background: #fafbfc;
+  border-bottom: 1px solid #e5e7eb;
+}
+.desk-filters select,
+.desk-filters input,
+.desk-btn,
+.desk-pager button {
+  font-family: inherit;
+  min-height: 28px;
+  font-size: 11px;
+  border: 1px solid #d8dde4;
+  border-radius: 4px;
+  background: white;
+  padding: 0 8px;
+  color: #4b5563;
+}
+.desk-filters input {
+  width: 145px;
+}
+.desk-btn,
+.desk-pager button,
+.desk-link {
+  cursor: pointer;
+}
+.desk-btn {
+  font-weight: 800;
+  min-height: 31px;
+  color: #111827;
+}
+.desk-btn.primary {
+  background: #111827;
+  color: #ffe100;
+  border-color: #111827;
+}
+.desk :disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+.desk-link {
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: #c2a900;
+  text-underline-offset: 3px;
+}
+.desk-scroll {
+  overflow-x: auto;
+}
+.desk-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 700px;
+  font-size: 11px;
+  text-align: left;
+}
+.desk-table th {
+  height: 31px;
+  background: #f7f8fa;
+  color: #626c79;
+  padding: 0 8px;
+}
+.desk-table td {
+  height: 48px;
+  padding: 7px 8px;
+  border-top: 1px solid #edf0f2;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.desk-table small {
+  display: block;
+  color: #68717c;
+}
+.desk-state {
+  padding: 18px;
+  color: #606a76;
+  text-align: center;
+}
+.desk-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  min-height: 22px;
+  border-radius: 999px;
+  background: #edf0f3;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 800;
+}
+.desk-status.active,
+.desk-status.approved {
+  background: #d1fadf;
+  color: #067647;
+}
+.desk-status.pending,
+.desk-status.draft {
+  background: #fff2a8;
+  color: #605000;
+}
+.desk-status.rejected {
+  background: #fee2e2;
+  color: #9f202a;
+}
+.desk-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  padding: 10px 12px;
+}
+.desk-pager > span {
+  background: #ffe100;
+  color: #111827;
+  padding: 5px 9px;
+  border-radius: 4px;
+}
+.desk-body {
+  padding: 14px;
+  line-height: 1.7;
+}
+.desk-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  padding: 16px;
+  margin: 0;
+}
+.desk-facts dt {
+  font-size: 10px;
+  color: #68717c;
+}
+.desk-facts dd {
+  margin: 5px 0 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 750px) {
+  .metric-strip,
+  .desk-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .desk-head {
+    align-items: flex-start;
+  }
+  .desk-filters input {
+    max-width: 100%;
+  }
+}
+
+.desk-sort {
+  margin-left: auto;
+  color: #626b77;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* 业务模块使用同一桌面画布。列表可横向滚动，避免长编号撑开侧栏。 */
+.app-main .business-view,
+.app-main .trade-admin,
+.app-main .factory-panel,
+.app-main .prop-admin {
+  min-width: 0;
+  color: #111827;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.app-main .page h1 {
+  font-size: 22px;
+  line-height: 1.3;
+  margin: 0 0 6px;
+}
+.app-main .page h2 {
+  font-size: 15px;
+  line-height: 1.45;
+}
+.app-main .page h3 {
+  font-size: 13px;
+}
+.app-main .page .sub,
+.app-main .page header .muted,
+.app-main .factory-panel header p {
+  font-size: 11px;
+  color: #626b77;
+  margin: 4px 0 12px;
+  line-height: 1.55;
+}
+.app-main .desk-panel {
+  overflow-x: auto;
+}
+.app-main .desk-panel > .desk-panel-head {
+  margin: 0;
+  padding: 0 13px;
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.app-main .desk-panel .toolbar,
+.app-main .desk-panel .desk-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  padding: 9px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafbfc;
+}
+.app-main .desk-panel .panel {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+.app-main .desk-panel .pager,
+.app-main .desk-panel .paging,
+.app-main .desk-panel div.toolbar:has(button:first-child):not(:has(input, select)) {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 10px 12px;
+  background: white;
+}
+.app-main .desk-panel table:not(.el-table__body, .el-table__header, .el-table__footer) {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 655px;
+  white-space: normal;
+  font-size: 11px;
+}
+.app-main .desk-panel :is(th, td):not(.el-table__cell) {
+  text-align: left;
+  overflow-wrap: anywhere;
+  border: 0;
+  border-bottom: 1px solid #edf0f2;
+  padding: 7px 8px;
+  line-height: 1.45;
+}
+.app-main .desk-panel th:not(.el-table__cell) {
+  height: 31px;
+  background: #f7f8fa;
+  color: #626c79;
+  font-weight: 700;
+}
+.app-main .desk-panel td:not(.el-table__cell) {
+  height: 45px;
+  font-weight: 600;
+}
+.app-main .page .el-table {
+  --el-table-header-bg-color: #f7f8fa;
+  --el-table-header-text-color: #626c79;
+  font-size: 11px;
+}
+.app-main .page .el-table .cell {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.app-main .page .el-table__body td {
+  height: 45px;
+}
+.app-main .desk-panel p:only-child,
+.app-main .desk-panel > p,
+.app-main .desk-panel .panel > p {
+  padding: 8px 13px;
+  color: #626b77;
+}
+.app-main .desk-panel .toolbar label,
+.app-main .desk-panel .desk-filters label {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 6px;
+}
+.app-main .business-view .record-panel,
+.app-main .record-panel,
+.app-main .business-view > form {
+  background: white;
+  border: 1px solid #e0e4e8;
+  border-radius: 7px;
+  padding: 15px;
+  margin: 0 0 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.app-main .business-view fieldset {
+  border: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+  gap: 14px;
+  margin: 12px 0;
+}
+.app-main .business-view fieldset label {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+}
+.app-main .business-view .fact-list {
+  display: grid;
+  grid-template-columns: minmax(85px, 130px) minmax(0, 1fr);
+  gap: 0;
+  margin: 10px 0 16px;
+}
+.app-main .business-view .fact-list :is(dt, dd) {
+  margin: 0;
+  padding: 8px 10px;
+  border-bottom: 1px solid #edf0f2;
+  overflow-wrap: anywhere;
+}
+.app-main .business-view .fact-list dt {
+  background: #f7f8fa;
+  color: #626b77;
+}
+.app-main .page .trade-admin .panel {
+  border-radius: 7px;
+}
+.app-main .page .trade-admin .desk-panel .panel {
+  border: 0;
+}
+.app-main .trade-admin .panel fieldset {
+  min-width: 0;
+}
+.app-main .trade-admin .panel form,
+.app-main .factory-panel .review {
+  background: #fafbfc;
+  border: 1px solid #e0e4e8;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 12px;
+}
+.app-main .trade-admin .panel form label {
+  margin: 7px 0;
+}
+.app-main .trade-admin .side {
+  position: static;
+}
+.app-main .business-view [role="status"]:empty {
+  display: none;
+}
+.app-main dl.metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 0;
+}
+.app-main dl.metric-strip dd {
+  margin: 8px 0 0;
+  white-space: normal;
+}
+.app-main .prop-admin:not(.review-workspace) > .panel {
+  padding: 0;
+  overflow-x: auto;
+}
+.app-main .prop-admin:not(.review-workspace) > .panel > .panel-head {
+  margin: 0;
+  padding: 12px 13px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.app-main .prop-admin:not(.review-workspace) > .panel > .filters {
+  margin: 0;
+  padding: 9px 12px;
+  background: #fafbfc;
+}
+.app-main .business-view button:focus-visible,
+.app-main .trade-admin button:focus-visible {
+  outline: 2px solid #9d8700;
+  outline-offset: 2px;
+}
+@media (max-width: 750px) {
+  .app-main dl.metric-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.route-button {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+}
+
+/* 筛选项按控件的可用宽度换行。标签各用自己的宽度。 */
+.app-main .desk-query {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 12px 14px;
+  margin: 0;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafbfc;
+}
+.app-main .desk-query .el-form-item {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+}
+.app-main .desk-query .el-form-item__label {
+  padding-right: 6px;
+  color: #354050;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.app-main .desk-query .el-form-item__content {
+  width: 168px;
+  min-width: 0;
+}
+.app-main .desk-query .desk-status-filter .el-form-item__content {
+  width: 132px;
+}
+.app-main .desk-query .el-form-item__content:has(.el-date-editor) {
+  width: 188px;
+}
+.app-main .desk-query :is(.el-input, .el-select, .el-date-editor) {
+  width: 100%;
+  min-width: 0;
+}
+.desk-query-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.desk-query-actions .el-button + .el-button {
+  margin-left: 0;
+}
+.app-main .el-table .el-button.desk-row-link {
+  color: #1b2331;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-decoration-color: #c1a900;
+  text-underline-offset: 3px;
+}
+.app-main .el-table .el-button.desk-row-link:hover {
+  text-decoration-color: currentColor;
+}
+.desk-select-menu .el-select-dropdown__item.is-selected {
+  background: #fff8ce;
+  color: #17202d;
+}
+.app-main .el-table .cell.el-tooltip {
+  white-space: nowrap;
+}
+.app-main .el-table .cell.el-tooltip small {
+  display: inline;
+  margin-inline-start: 4px;
+}
+.el-popper.desk-overflow-tip {
+  max-width: min(38rem, calc(100vw - 32px));
+  max-height: 50vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.desk-dialog.el-dialog {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  padding: 0;
+}
+.desk-dialog .el-dialog__header {
+  padding: 16px 50px 14px 20px;
+  border-bottom: 1px solid #e4e7eb;
+}
+.desk-dialog .el-dialog__body {
+  min-height: 0;
+  overflow: auto;
+  padding: 18px 20px;
+}
+.desk-dialog .el-dialog__footer {
+  padding: 12px 20px;
+  border-top: 1px solid #e4e7eb;
+}
+.desk-evidence-image {
+  display: block;
+  margin: auto;
+  max-width: 100%;
+  max-height: 64vh;
+  object-fit: contain;
+}
+
+.desk-pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 12px;
+}
+.desk-pagination .el-pagination.is-background .el-pager li.is-active {
+  background: #ffe100;
+  color: #111827;
+}
+
+.desk-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 16px;
+  padding-top: 12px;
+}
+.desk-form-actions .el-button + .el-button {
+  margin-left: 0;
+}
+.app-main .business-view fieldset {
+  max-width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  align-items: start;
+}
+.app-main .business-view fieldset label:has(textarea) {
+  grid-column: 1/-1;
+}
+.app-main .business-view fieldset .el-date-editor {
+  width: 100%;
+}
+
+.app-main .desk-query .desk-time-interval .el-form-item__content {
+  width: min(374px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+.desk-interval-to {
+  color: #667085;
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .app-main .desk-query .desk-time-interval {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .app-main .desk-query .desk-time-interval .el-form-item__content {
+    width: 100%;
+  }
+}

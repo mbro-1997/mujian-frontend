@@ -1,0 +1,4 @@
+@import "../../styles/planning.wxss";
+@import "../../styles/renter-surfaces.wxss";
+.planning .item-main { align-items:center; }
+.planning .picture { width:56px; height:56px; flex:none; }

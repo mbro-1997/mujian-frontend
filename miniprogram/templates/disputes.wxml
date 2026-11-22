@@ -1,0 +1,51 @@
+<view class="trade">
+  <view class="section row dispute-tabs"><button wx:for="{{tabs}}" wx:key="key" disabled="{{busy || kind===item.key}}" bindtap="chooseTab" data-key="{{item.key}}">{{item.name}}</button></view>
+  <view wx:if="{{kind==='arbitrations'}}" class="section"><picker range="{{stages}}" range-key="name" value="{{stageIndex}}" disabled="{{busy}}" bindchange="chooseStage">裁决阶段 · {{stages[stageIndex].name}} ›</picker></view>
+  <view wx:if="{{message}}" class="feedback">{{message}}<button bindtap="load" disabled="{{busy}}">刷新进度</button></view>
+  <view wx:if="{{!creating && !detail}}" class="section">
+    <button class="dispute-record" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="open" disabled="{{busy}}">
+      <view>{{item.factoryName}} · {{item.listLabel}}</view>
+      <view class="muted order-number">{{item.orderNo}}</view>
+      <view class="muted">{{item.date}}</view>
+    </button>
+    <view wx:if="{{!items.length && !message}}" class="blank">{{busy?'正在读取…':'暂无记录'}}</view>
+    <view wx:if="{{total>15}}" class="row"><button bindtap="changePage" data-step="-1" disabled="{{busy || page===1}}">上一页</button>第 {{page}} 页<button bindtap="changePage" data-step="1" disabled="{{busy || page*15>=total}}">下一页</button></view>
+  </view>
+  <view wx:if="{{detail}}" class="section"><button class="back-to-list" bindtap="backToRecords" disabled="{{busy}}">‹ 返回记录列表</button><view class="heading">{{detail.label}}</view><view wx:if="{{detail.receivableNo}}">补缴单号 {{detail.receivableNo}}</view><view>{{detail.caseNo || detail.orderNo}}</view><button wx:if="{{!orderId}}" bindtap="sourceOrder">查看原订单 ›</button><view>{{detail.summary}}</view>
+    <block wx:if="{{kind==='claims' || kind==='arbitrations'}}">
+      <view class="separator heading">处理进度</view>
+      <view class="progress-step" wx:if="{{kind==='claims'}}"><view class="strong">工厂索赔</view>申请 ¥{{detail.claimed}}<view class="muted">{{detail.date}}</view></view>
+      <view class="progress-step" wx:if="{{detail.reviewRemark || detail.approvedLossFen!=null}}"><view class="strong">审核结果</view><view wx:if="{{detail.approvedLossFen!=null}}">核定损失 ¥{{detail.approved}}</view>{{detail.reviewRemark}}</view>
+      <view class="progress-step" wx:if="{{detail.appealReason}}"><view class="strong">申诉理由</view>{{detail.appealReason}}</view>
+      <view class="progress-step" wx:if="{{detail.requestedEvidence}}"><view class="strong">补证要求</view>{{detail.requestedEvidence}}</view>
+      <view class="progress-step" wx:if="{{detail.decision}}"><view class="strong">{{detail.decisionLabel}}</view>{{detail.decision.summary}}<view wx:if="{{detail.decisionTime}}" class="muted">确认时间 {{detail.decisionTime}}</view></view>
+      <view wx:if="{{detail.deadline}}">回应截止 {{detail.deadline}}</view>
+      <block wx:if="{{detail.deposit || detail.decision || detail.refunds.length || detail.failureReason || detail.availableDepositFen!=null}}">
+        <view class="separator heading">资金与执行</view>
+        <view wx:if="{{detail.deposit}}">押金实付 ¥{{detail.deposit.paid}} · 已扣 ¥{{detail.deposit.deducted}}<view>已退款 ¥{{detail.deposit.refunded}} · 预留 ¥{{detail.deposit.reserved}}</view></view>
+        <view wx:if="{{detail.availableDepositFen!=null}}">可用押金 ¥{{detail.availableDeposit}}</view>
+        <view wx:if="{{detail.decision}}">核定损失 ¥{{detail.decisionLoss}} · 押金抵扣 ¥{{detail.decisionDeposit}} · 应补缴 ¥{{detail.decisionExtra}}</view>
+        <view wx:if="{{detail.failureReason}}">执行待处理　{{detail.failureReason}}</view>
+        <view wx:for="{{detail.refunds}}" wx:key="id">退款 ¥{{item.amount}} · {{item.label}}</view>
+      </block>
+    </block>
+    <view wx:if="{{kind==='compensation-receivables'}}"><block wx:if="{{detail.sourceType==='overdue_return'}}">逾期租金应补 ¥{{detail.rentDue}} · 已补 ¥{{detail.rentPaid}}<view>责任扣款应补 ¥{{detail.liabilityDue}} · 已补 ¥{{detail.liabilityPaid}}</view></block><block wx:else>核定损失 ¥{{detail.loss}} · 押金抵扣 ¥{{detail.deducted}}</block><view>应缴 ¥{{detail.total}} · 已缴 ¥{{detail.paid}} · 剩余 ¥{{detail.outstanding}}</view></view>
+    <button wx:for="{{detail.evidenceIds}}" wx:key="*this" bindtap="evidence" data-id="{{item}}" disabled="{{busy}}">查看材料 {{index+1}}</button>
+  </view>
+  <view wx:if="{{editing || detail.actions.appeal || detail.actions.supplement}}" class="section">
+    <block wx:if="{{editing}}"><view class="heading">归还索赔草稿</view><view wx:for="{{lines}}" wx:key="itemId">{{item.name}} · 应收 {{item.expectedQuantity}} 件
+      <input type="number" value="{{item.quantity}}" bindinput="line" data-i="{{index}}" data-field="quantity" placeholder="受影响件数"/>
+      <picker range="{{issueTypes}}" range-key="name" value="{{item.typeIndex}}" bindchange="line" data-i="{{index}}" data-field="typeIndex">{{issueTypes[item.typeIndex].name}} ›</picker></view>
+      <input type="digit" value="{{amount}}" bindinput="edit" data-field="amount" placeholder="申请赔偿金额（元）"/></block>
+    <textarea value="{{summary}}" maxlength="500" bindinput="edit" data-field="summary" placeholder="填写实际情况、理由或需补充的说明"/>
+    <button wx:if="{{editing || detail.actions.appeal || detail.actions.supplement}}" bindtap="attach" disabled="{{busy || pending}}">添加照片 · 本次 {{photos.length}} 张</button>
+  </view>
+  <view class="section" wx:if="{{creating || editing || pending || detail.actionable}}"><button wx:if="{{editing}}" bindtap="act" data-action="save" disabled="{{busy || pending}}">保存草稿</button>
+    <button wx:if="{{detail.actions.submit}}" bindtap="act" data-action="submit" disabled="{{busy || pending}}">正式提交已保存的索赔</button>
+    <button wx:if="{{detail.actions.confirm}}" bindtap="act" data-action="confirm" disabled="{{busy || pending}}">确认核定金额</button>
+    <button wx:if="{{detail.actions.appeal}}" bindtap="act" data-action="appeal" disabled="{{busy || pending}}">提交申诉</button>
+    <button wx:if="{{detail.actions.supplement}}" bindtap="act" data-action="supplement" disabled="{{busy || pending}}">提交补充材料</button>
+    <button wx:if="{{detail.actions.withdraw}}" bindtap="act" data-action="withdraw" disabled="{{busy || pending}}">撤回索赔</button>
+    <button wx:if="{{detail.actions.pay}}" class="primary" bindtap="act" data-action="pay" disabled="{{busy || pending}}">补缴 ¥{{detail.outstanding}}</button>
+    <button wx:if="{{pending}}" bindtap="act" disabled="{{busy}}">查询原操作</button></view>
+</view>

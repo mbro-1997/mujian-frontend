@@ -1,0 +1,22 @@
+@import "planning-controls.wxss";
+.planning-detail { padding:12px 12px calc(92px + env(safe-area-inset-bottom)); }
+.planning-detail .card { margin:0 0 10px; padding:14px; border:1px solid #eee; border-radius:8px; }
+.planning-detail .title { font-size:20px; line-height:1.25; font-weight:900; overflow-wrap:anywhere; }
+.planning-detail .badge { flex:none; height:25px; padding:0 9px; line-height:25px; border-radius:14px; background:#f3f4f6; color:#6b7280; font-size:11px; font-weight:900; }
+.planning-detail .badge.current { background:#111827; color:#ffe100; }
+.planning-detail .muted { color:#6b7280; font-size:12px; line-height:1.5; }
+.detail-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; overflow-wrap:anywhere; }
+.detail-label { font-size:13px; color:#111827; font-weight:900; }
+.planning-detail .detail-name, .planning-detail .detail-description { border:1px solid #e5e7eb; border-radius:8px; padding:0 12px; background:#f8fafc; font-weight:800; }
+.planning-detail .detail-name { margin:7px 0; height:44px; font-size:18px; }
+.planning-detail .detail-description { height:66px; min-height:66px; margin-top:7px; padding:10px 12px; font-size:12px; line-height:1.45; color:#6b7280; }
+.detail-dates, .detail-price { margin-top:12px; border-radius:8px; padding:12px; }
+.detail-price { background:#f8fafc; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.detail-dates { background:#111827; color:#fff; font-size:16px; font-weight:900; }
+.detail-dates text { display:block; font-size:10px; margin-bottom:3px; color:#ffe100; }
+.planning-detail .item { margin-top:8px; padding:10px; border:1px solid #eee; border-radius:8px; }
+.planning-detail .picture { width:56px; height:52px; border-radius:8px; }
+.planning-detail .item-main { align-items:center; gap:10px; }
+.planning-detail .item-body .title { font-size:14px; }
+.planning-detail .footer { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:8px; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); }
+.planning-detail .footer button.pl-action { min-width:0; height:42px; font-size:13px; padding:0 4px; }
