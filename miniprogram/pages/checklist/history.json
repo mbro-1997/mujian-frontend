@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "历史清单",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "swipe-delete": "/components/swipe-delete/index"
+  }
+}

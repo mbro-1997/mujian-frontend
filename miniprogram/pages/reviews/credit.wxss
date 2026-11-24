@@ -1,3 +1,3 @@
 @import "../../styles/trading.wxss";
 
-@import "../../styles/renter-surfaces.wxss";
+@import "../../styles/surfaces.wxss";

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SkuRead, ImageLocator, Options } from "../../api/prop-types";
-import { money } from "../../api/props";
+import { money, propImageContentUrl } from "../../api/props";
 const p = defineProps<{ fields: SkuRead; options: Options | null; grid?: boolean; hideImages?: boolean }>();
 const emit = defineEmits<{ view: [locator: ImageLocator] }>();
 const label = (group: keyof Options, code: string) =>
@@ -43,7 +43,7 @@ const label = (group: keyof Options, code: string) =>
     <dd class="images">
       <el-button v-for="(image, i) in fields.images" :key="i" @click="emit('view', image.locator)"><img
           v-if="image.preview"
-          :src="image.preview.url"
+          :src="propImageContentUrl(image.locator)"
           :alt="'图片' + (i + 1)"
         /><span v-else>查看原图 {{ i + 1 }}</span></el-button>
     </dd></div>

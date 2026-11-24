@@ -1,3 +1,6 @@
+const { ValidationError, hint } = require("../../services/form-error");
+const successToast = require("../../services/success-toast");
+const { dirty } = require("../../services/planning-page");
 const api = require("../../services/props");
 const { skuInput } = require("../../services/prop-input");
 const empty = {
@@ -17,7 +20,7 @@ const empty = {
 };
 function decimal(value) {
   if (!/^\d+(\.\d{1,2})?$/.test(value))
-    throw Error("尺寸、重量和金额最多两位小数");
+    throw new ValidationError("尺寸、重量和金额最多两位小数");
   const [a, b = ""] = value.split(".");
   return String(Number(a)) + "." + b.padEnd(2, "0");
 }
@@ -25,12 +28,14 @@ function cents(value) {
   const parts = decimal(value).split("."),
     n = Number(parts[0]) * 100 + Number(parts[1]);
   if (!Number.isSafeInteger(n) || n > 2147483647)
-    throw Error("金额超出允许范围");
+    throw new ValidationError("金额超出允许范围");
   return n;
 }
 require("../../session/page")({
   data: {
+    dirty: false,
     fields: empty,
+    assetTypes: [{"key": "assetType", "title": "资产类型 *", "options": [{"code": "A_ASSET", "label": "A 类 · 一物一码"}, {"code": "B_CONSUMABLE", "label": "B 类 · 数量管理"}]}],
     assetType: "A_ASSET",
     mode: "create",
     id: "",
@@ -41,25 +46,25 @@ require("../../session/page")({
     deposit: "",
     packaging: "",
     options: { types: [], styles: [], fireResistance: [] },
-    message: "",
+    loadError: "",
     busy: false,
+    submitting: false,
     locked: false,
     applyRemark: "",
     styleOpen: false,
     selectedStyles: [],
   },
   onLoad(q) {
-    if(wx.enableAlertBeforeUnload) wx.enableAlertBeforeUnload({message:"离开将丢弃尚未提交的填写内容"});
     this.setData({
       id: q.id || "",
       previous: q.previous || "",
       mode: q.mode || "create",
       assetType: q.assetType === "B_CONSUMABLE" ? "B_CONSUMABLE" : "A_ASSET",
     });
-    this.load();
+    return this.load();
   },
   async load() {
-    this.setData({ busy: true });
+    this.setData({ busy: true, loadError: "" });
     try {
       const options = await api.request(
         "me/factory-props/options" +
@@ -97,22 +102,26 @@ require("../../session/page")({
       }
       this.styles();
     } catch (e) {
-      this.setData({ message: e.message, locked: true });
+      this.setData({ loadError: e.message, locked: true });
     } finally {
       this.setData({ busy: false });
     }
   },
   input(e) {
     if (this.data.busy || this.data.locked) return;
+    dirty(this);
     this.setData({ ["fields." + e.currentTarget.dataset.key]: e.detail.value });
   },
   value(e) {
+    if (this.data.busy || this.data.locked) return;
+    dirty(this);
     this.setData({ [e.currentTarget.dataset.key]: e.detail.value });
   },
   chooseType(e) {
     if (this.data.busy || this.data.locked) return;
-    if (!this.data.id)
-      this.setData({ assetType: e.currentTarget.dataset.type });
+    if (this.data.id || this.data.assetType === e.detail.value) return;
+    dirty(this);
+    this.setData({ assetType: e.detail.value });
   },
   select(e) {
     if (this.data.busy || this.data.locked) return;
@@ -124,6 +133,7 @@ require("../../session/page")({
       !(key === "typeCode" && o.code === this.data.fields.typeCode)
     )
       return;
+    dirty(this);
     this.setData({ ["fields." + key]: o.code });
     this.styles();
   },
@@ -163,12 +173,11 @@ require("../../session/page")({
       next.length > 3 ||
       (next.includes("special_asset") && next.length > 1)
     ) {
-      this.setData({
-        message: "最多选择3种风格；特殊资产不能与其他风格同选。",
-      });
+      hint("最多选3种风格，特殊资产须单选");
       return;
     }
-    this.setData({ "fields.styleCodes": next, message: "" });
+    dirty(this);
+    this.setData({ "fields.styleCodes": next });
     this.styles();
   },
   photos() {
@@ -177,6 +186,7 @@ require("../../session/page")({
       count: 4 - this.data.fields.images.length,
       mediaType: ["image"],
       success: (r) => {
+        dirty(this);
         this.setData({
           "fields.images": this.data.fields.images.concat(
             r.tempFiles.map((f) => ({ localPath: f.tempFilePath })),
@@ -187,6 +197,7 @@ require("../../session/page")({
   },
   remove(e) {
     if (this.data.busy || this.data.locked) return;
+    dirty(this);
     this.setData({
       "fields.images": this.data.fields.images.filter(
         (_, i) => i !== Number(e.currentTarget.dataset.index),
@@ -196,7 +207,8 @@ require("../../session/page")({
   back() { this.navigationBack(); },
   async submit() {
     if (this.data.busy || this.data.locked) return;
-    this.setData({ busy: true, message: "" });
+    this.setData({ busy: true, submitting: true, styleOpen: false });
+    let failure;
     const slot = "form-" + (this.data.id || "new");
     try {
       let result = await api.resume(slot);
@@ -213,20 +225,7 @@ require("../../session/page")({
           operation = "edit_sku_options";
         } else {
           const f = skuInput(this.data.fields);
-          for (const k of ["lengthCm", "widthCm", "heightCm", "weightKg"]) {
-            f[k] = decimal(String(f[k]));
-            if (Number(f[k]) <= 0) throw Error("尺寸和重量必须大于0");
-          }
-          const packaging = String(this.data.packaging).trim();
-          if (!/^(0|[1-9][0-9]*)(\.[0-9]{1,4})?$/.test(packaging)) throw Error("包装体积系数最多四位小数");
-          const [whole, fraction = ""] = packaging.split(".");
-          f.packagingFactorBps = Number(whole) * 10000 + Number(fraction.padEnd(4, "0"));
-          if (!Number.isInteger(f.packagingFactorBps) || f.packagingFactorBps < 10000 || f.packagingFactorBps > 1000000) throw Error("包装体积系数须在1～100之间");
-          f.dailyRentPriceFen = cents(this.data.rent);
-          f.depositAmountFen = cents(this.data.deposit);
-          f.remark = f.remark?.trim() || null;
           if (
-            f.dailyRentPriceFen < 1 ||
             !f.propName.trim() ||
             !f.typeCode ||
             !f.fireResistantCode ||
@@ -236,14 +235,29 @@ require("../../session/page")({
             !f.styleCodes.length ||
             !f.images.length
           )
-            throw Error("请填写完整必填资料并添加1～4张图片");
+            throw new ValidationError("请填写完整必填资料并添加1～4张图片");
+          for (const k of ["lengthCm", "widthCm", "heightCm", "weightKg"]) {
+            f[k] = decimal(String(f[k]));
+            if (Number(f[k]) <= 0) throw new ValidationError("尺寸和重量必须大于0");
+          }
+          const packaging = String(this.data.packaging).trim();
+          if (!/^(0|[1-9][0-9]*)(\.[0-9]{1,4})?$/.test(packaging)) throw new ValidationError("包装体积系数最多四位小数");
+          const [whole, fraction = ""] = packaging.split(".");
+          f.packagingFactorBps = Number(whole) * 10000 + Number(fraction.padEnd(4, "0"));
+          if (!Number.isInteger(f.packagingFactorBps) || f.packagingFactorBps < 10000 || f.packagingFactorBps > 1000000) throw new ValidationError("包装体积系数须在1～100之间");
+          f.dailyRentPriceFen = cents(this.data.rent);
+          f.depositAmountFen = cents(this.data.deposit);
+          f.remark = f.remark?.trim() || null;
+          if (f.dailyRentPriceFen < 1) throw new ValidationError("日租金须大于零");
           const quantity = Number(this.data.initialQuantity);
           if (
             !Number.isInteger(quantity) ||
             quantity < 1 ||
             quantity > 2147483647
           )
-            throw Error("初始数量须为正整数");
+            throw new ValidationError("初始数量须为正整数");
+          const applyRemark = this.data.applyRemark.trim() || null;
+          if (this.data.mode === "update" && !applyRemark) throw new ValidationError("请填写申请说明");
           f.images = await api.materialize(
             f.images.map((i) =>
               i.localPath
@@ -256,13 +270,12 @@ require("../../session/page")({
           body = {
             fields: f,
             initialQuantity: quantity,
-            applyRemark: this.data.applyRemark.trim() || null,
+            applyRemark,
           };
           if (this.data.mode === "update") {
             delete f.typeCode; delete f.styleCodes; delete f.transportSuggestion;
             body = { fields: f, expectedSkuVersion: this.data.expectedVersion,
               previousApplicationId: this.data.previous || null, applyRemark: this.data.applyRemark.trim() };
-            if (!body.applyRemark) throw Error("请填写申请说明");
             path = "me/factory-props/" + this.data.id + "/change-applications";
             operation = "update_sku";
           } else if (this.data.previous) {
@@ -282,9 +295,10 @@ require("../../session/page")({
       }
       if(wx.disableAlertBeforeUnload) wx.disableAlertBeforeUnload();
       if (result.targetType === "sku")
-        wx.redirectTo({ url: "/pages/props/detail?id=" + result.skuId });
+        wx.redirectTo({ url: "/pages/props/detail?id=" + result.skuId, success: () => successToast("修改已保存") });
       else
         wx.redirectTo({
+          success: () => successToast("已提交审核"),
           url:
             "/pages/props/review?type=" +
             result.targetType +
@@ -292,9 +306,10 @@ require("../../session/page")({
             result.targetId,
         });
     } catch (e) {
-      this.setData({ message: e.message });
+      failure = e;
     } finally {
-      this.setData({ busy: false });
+      this.setData({ busy: false, submitting: false });
     }
+    if (failure) hint(failure.message);
   },
 });

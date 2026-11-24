@@ -26,6 +26,7 @@ function fixture(pageName, context = {}, realHttp = false) {
   }
   const app = { globalData: { context: null } };
   const wx = {
+    showToast(options) { wx.lastToast = options; },
     getStorageSync: (k) => storage.get(k),
     setStorageSync: (k, v) => storage.set(k, v),
     removeStorageSync: (k) => storage.delete(k),
@@ -292,17 +293,26 @@ test("C changed pending body is blocked and known rejection permits corrected ne
     0,
   );
 });
+test("库存调整使用服务端的库存权限，能编辑资料不代表能调整数量", async () => {
+  const f = fixture("inventory/adjust");
+  f.api.request = async () => ({ canEditOptions: true, canAdjustInventory: false, assetType: "B_CONSUMABLE" });
+  await f.page.load();
+  assert.match(f.page.data.message, /不能调整库存/);
+  f.page.setData({ reason: "盘点" });
+  await f.page.submit();
+  assert.equal(f.pending.length, 0);
+});
 test("C abnormal result has no default and clears when adjustment type changes", async () => {
   const f = fixture("inventory/adjust");
   f.page.setData({
-    sku: { assetType: "B_CONSUMABLE", canEditOptions: true },
+    sku: { assetType: "B_CONSUMABLE", canEditOptions: true, canAdjustInventory: true },
     types: ["increase", "decrease", "abnormal_decrease"],
     reason: "盘点",
   });
   await f.page.type({ detail: { value: 2 } });
   assert.equal(f.page.data.abnormal, "");
   await f.page.submit();
-  assert.match(f.page.data.message, /请选择丢失/);
+  assert.match(f.wx.lastToast.title, /请选择丢失/);
   assert.equal(f.pending.length, 0);
   f.page.abnormal({ detail: { value: 1 } });
   assert.equal(f.page.data.abnormal, "lost");
@@ -380,7 +390,7 @@ test("C filter selection limits three and survives navigation, rental and reset"
   f.page.style({ currentTarget: { dataset: { code: "special_asset" } } });
   f.page.style({ currentTarget: { dataset: { code: "other" } } });
   assert.equal(f.page.data.styleCodes.length, 3);
-  assert.match(f.page.data.message, /最多/);
+  assert.match(f.wx.lastToast.title, /最多/);
   f.page.setData({
     page: 2,
     keyword: "椅",
@@ -899,7 +909,7 @@ test("UI sweep calendar keeps browse filters, creates a checklist, and rejects a
   const count = f.nav.length;
   p.confirm();
   assert.equal(f.nav.length, count);
-  assert.match(p.data.message, /请选择/);
+  assert.match(f.wx.lastToast.title, /请选择/);
   const bad = fixture("props/dates");
   bad.page.onLoad({ return: "https://example.invalid/steal" });
   assert.deepEqual(Object.keys(bad.page.data.filters), []);
@@ -1018,7 +1028,7 @@ test("calendar sequential selection replaces an earlier pickup, starts a fresh r
   p.render();
   select(p.data.month + "-01");
   assert.equal(p.data.endDate, "");
-  assert.match(p.data.message, /120/);
+  assert.match(f.wx.lastToast.title, /120/);
   const start = p.data.startDate;
   select("1900-01-01");
   assert.equal(p.data.startDate, start);
@@ -1208,6 +1218,7 @@ test("browse experience empty batch stops and changed filters discard old respon
 test("browse experience restores batches position and atomically replaces expired pages", async () => {
   const f = browseFixture(),
     p = f.page;
+  const other = { ...p, data: structuredClone(p.data) };
   let run = p.load();
   await tick();
   f.calls[0].resolve(batch(0, 20, 80));
@@ -1220,10 +1231,14 @@ test("browse experience restores batches position and atomically replaces expire
   p.onHide();
   let top;
   f.wx.pageScrollTo = (v) => (top = v.scrollTop);
+  const mountedCard = p.data.items[0];
   await p.onShow();
+  assert.equal(p.data.items[0], mountedCard);
+  assert.equal(top, undefined); // 同一页保留原生滚动位置。
+  await other.load();
   assert.equal(f.calls.length, 2);
-  assert.equal(p.data.items.length, 40);
-  assert.equal(top, 880);
+  assert.equal(other.data.items.length, 40);
+  assert.equal(top, 880); // 新页面仍须重建缓存中的两页并还原位置。
   f.setNow(Date.parse("2026-11-05T12:03:00Z"));
   run = p.onShow();
   await tick();
@@ -1473,4 +1488,95 @@ test("browse experience changed totals rebuild instead of mixing batches", async
   assert.equal(p.data.items.length, 20);
   assert.equal(p.data.page, 1);
   assert.equal(p.data.items[0].id, "sku1");
+});
+
+test("租期列表只更新发生变化的已加入数量，不替换图片或卡片", () => {
+  const p = browseFixture().page;
+  p.data.items = [{id:"one", joinedQuantity:2}, {id:"two", joinedQuantity:0}];
+  p.data.currentChecklist = {id:"list"};
+  p.data.joinedQuantities = {one:3};
+  const writes = [];
+  p.setData = patch => writes.push({...patch});
+  p.updateJoinedQuantities();
+  assert.deepEqual(writes, [{"items[0].joinedQuantity":3}]);
+});
+
+test("扫码轮询保留同一张标签，换码或失去访问权立即清除原资料", async () => {
+  const f = fixture("props/scan/index"), p = f.page;
+  p.setData({ id });
+  const load = p.load();
+  f.pending.shift().resolve({ id, skuId: id, targetType: "SN", status: "bound" });
+  await tick();
+  f.pending.shift().resolve({ id, fields: { propName: "样本道具" } });
+  await load;
+  const reread = p.load();
+  assert.equal(p.data.sku.fields.propName, "样本道具");
+  f.pending.shift().reject(Object.assign(new Error("无权查看"), { status: 403 }));
+  await reread;
+  assert.equal(p.data.qr, null);
+  assert.equal(p.data.sku, null);
+  p.setData({ id: "other-label", sku: { id }, qr: { id } });
+  const changed = p.load();
+  assert.equal(p.data.sku, null);
+  f.pending.shift().reject(new Error("无记录"));
+  await changed;
+});
+
+test("首次上架还未建库存时不查询账本，后续审核不遮住已形成的库存", async () => {
+  const f = fixture("inventory/index"), calls = [];
+  const sku = { assetType: "B_CONSUMABLE", inventorySummary: null, pendingApplicationId: "audit" };
+  f.api.request = async path => {
+    calls.push(path);
+    return path.endsWith("/stock") ? { totalQuantity: 0 } : sku;
+  };
+  f.page.setData({ id: "SKU", stock: { totalQuantity: 4 } });
+  await f.page.load();
+  assert.deepEqual(calls, ["me/factory-props/SKU"]);
+  assert.equal(f.page.data.stock, null);
+  sku.inventorySummary = { totalQuantity: 0, availableQuantity: 0 };
+  await f.page.load();
+  assert.equal(calls.at(-1), "me/factory-props/SKU/stock");
+  assert.equal(f.page.data.stock.totalQuantity, 0);
+});
+
+test("COS outage leaves listing editable and preserves the trace and draft", async () => {
+  const f = fixture("props/form"), page = f.page;
+  Object.assign(page.data, { packaging: "1", rent: "1", deposit: "0" });
+  Object.assign(page.data.fields, {
+    propName: "灯", typeCode: "light", fireResistantCode: "no", sizeDesc: "小",
+    materialDesc: "布", transportSuggestion: "轻放", lengthCm: "1", widthCm: "1",
+    heightCm: "1", weightKg: "1", styleCodes: ["test"], images: [{ localPath: "/tmp/test.jpg" }],
+  });
+  const saving = page.submit();
+  await tick();
+  assert.equal(page.data.submitting, true);
+  page.value({currentTarget: {dataset: {key: "rent"}}, detail: {value: "999"}});
+  await page.submit();
+  assert.equal(page.data.rent, "1");
+  assert.equal(f.uploads.length, 1);
+  f.uploads[0].success({statusCode: 503, data: JSON.stringify({
+    code: "SERVICE_UNAVAILABLE", reasonCode: "OBJECT_STORAGE_UNAVAILABLE", traceId: "sample-trace",
+  })});
+  await saving;
+  assert.equal(page.data.submitting, false);
+  assert.equal(page.data.busy, false);
+  assert.equal(page.data.loadError, "");
+  assert.match(f.wx.lastToast.title, /文件存储暂不可用.*sample-t/);
+  assert.equal(f.wx.lastToast.mask, false);
+  assert.equal(page.data.fields.images.length, 1);
+  assert.equal(f.pending.length, 0);
+});
+
+test("a failed image stops new uploads and waits for the second active image", async () => {
+  const f = fixture();
+  let finished = false;
+  const work = f.api.materialize(["one", "two", "three"].map(localPath => ({localPath})));
+  const check = assert.rejects(work, /文件存储暂不可用/).then(() => { finished = true; });
+  assert.equal(f.uploads.length, 2);
+  f.uploads[0].success({statusCode: 503, data: JSON.stringify({reasonCode:"OBJECT_STORAGE_UNAVAILABLE"})});
+  await tick();
+  assert.equal(finished, false);
+  f.uploads[1].success({statusCode: 200, data: JSON.stringify({code:"OK", data:{uploadId:id}})});
+  await check;
+  assert.equal(f.uploads.length, 2);
 });

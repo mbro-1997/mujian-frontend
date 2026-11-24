@@ -21663,6 +21663,243 @@
         }
       }
     },
+    "/api/admin/prop-materials/content": {
+      "get": {
+        "operationId": "readAdminPropImage",
+        "summary": "读取管理员有权查看的私有图片内容",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "sourceType",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sku",
+                "sku_audit",
+                "qr_exception"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "sourceId",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "section",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "current",
+                "before",
+                "proposed",
+                "evidence"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "index",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-3]$",
+              "description": "图片位置，从 0 起算"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "管理员授权后返回私有道具图片内容",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_MATERIAL_REFERENCE_INVALID"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_LOGIN_REQUIRED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_CLIENT_TYPE_MISMATCH"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PERMISSION_DENIED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_PAYLOAD_TOO_LARGE"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_ACCOUNT_CONTEXT_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_PROP_DATA_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_OBJECT_STORAGE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/prop-materials/view": {
       "post": {
         "operationId": "viewAdminPropImage",

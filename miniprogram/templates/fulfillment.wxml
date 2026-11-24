@@ -1,10 +1,9 @@
 <view class="fulfill">
   <view wx:if="{{message}}" class="alert" role="alert">{{message}}<button bindtap="load" disabled="{{busy}}">刷新进度</button><button wx:if="{{pending}}" bindtap="recover" disabled="{{busy}}">查询原操作</button></view>
-  <view wx:if="{{feedback}}" class="feedback">{{feedback}}</view>
-  <view wx:if="{{!detail && !message}}" class="panel muted">{{busy ? '正在读取履约进度…' : '暂无可查看的履约记录'}}</view>
+  <view wx:if="{{!detail && !message}}" class="panel muted"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取履约进度"/><text wx:else>暂无可查看的履约记录</text></view>
   <block wx:if="{{detail}}">
 <navigator wx:if="{{(view==='returnCheck'||view==='complete') && root.id}}" url="/pages/service/index?type=return_verification&id={{root.id}}">咨询此归还核验 ›</navigator>
-    <scroll-view scroll-x class="stages"><view class="stage-row"><button wx:for="{{stages}}" wx:key="key" class="stage {{view===item.key?'active':''}}" data-view="{{item.key}}" bindtap="changeStage">{{item.label}}</button></view></scroll-view>
+    <list-filters quiet="{{returnRefresh}}" filters="{{stageFilters}}" values="{{ {view:view} }}" disabled="{{busy}}" bindselectfilter="changeStage"/>
     <view class="panel hero">
       <view class="heading"><text>{{view==='outbound'?detail.factoryName:view==='shipment'?(pickup?'工厂取回':'用户送回'):view==='receipt'?'收货核验':view==='returnCheck'?'归还核验':view==='complete'?'核验结果':'履约记录'}}</text><text wx:if="{{view!=='history'}}" class="tag">{{statusText}}</text></view>
       <view class="muted">订单 {{detail.orderNo}} · {{detail.startDate}} 至 {{detail.endDate}}</view>
@@ -22,7 +21,7 @@
         <view class="muted">{{item.assetType==='A_ASSET'?'A 类 · 逐件核对实物码':'B 类 · 按数量核对'}}{{item.complete?' · 已齐全':''}}</view>
         <view wx:if="{{item.requirement}}" class="note">{{item.requirement}}</view>
         <view wx:if="{{item.assetType==='B_CONSUMABLE' && actions.set_quantity}}" class="toolbar">
-          <input type="number" value="{{item.quantityInput}}" data-index="{{index}}" bindinput="quantityInput" aria-label="已核对总数量"/>
+          <input id="field-row-{{index}}-quantityInput" adjust-position="{{false}}" always-embed type="number" value="{{item.quantityInput}}" data-index="{{index}}" bindinput="quantityInput" aria-label="已核对总数量"/>
           <button data-index="{{index}}" bindtap="quantity" disabled="{{busy || pending}}">保存数量</button>
         </view>
       </view>
@@ -46,9 +45,9 @@
     </block>
     <view wx:if="{{stockForm}}" class="panel">
       <view class="heading">{{stockForm.name}} {{stockForm.snCode}}</view>
-      <picker value="{{stockForm.choice}}" range="{{stockChoices}}" range-key="label" data-field="choice" bindchange="editStock">实际处置　{{stockForm.choice==null?'请选择':stockChoices[stockForm.choice].label}} ›</picker>
-      <label>数量<input type="number" value="{{stockForm.quantity}}" disabled="{{stockForm.snId || stockForm.replacesId}}" data-field="quantity" bindinput="editStock"/></label>
-      <textarea maxlength="500" value="{{stockForm.remark}}" data-field="remark" bindinput="editStock" placeholder="填写实际到厂核验或处置情况"/>
+      <dict-select value="{{stockForm.choice}}" range="{{stockChoices}}" range-key="label" data-field="choice" bindchange="editStock" title="实际处置" display="{{stockForm.choice==null?'请选择':stockChoices[stockForm.choice].label}}" quiet="{{returnRefresh}}"/>
+      <label>数量<input id="field-stockForm-quantity" adjust-position="{{false}}" always-embed type="number" value="{{stockForm.quantity}}" disabled="{{stockForm.snId || stockForm.replacesId}}" data-field="quantity" bindinput="editStock"/></label>
+      <textarea id="field-stockForm-remark" adjust-position="{{false}}" maxlength="500" value="{{stockForm.remark}}" data-field="remark" bindinput="editStock" placeholder="填写实际到厂核验或处置情况"/>
       <button bindtap="submitStock" disabled="{{busy || pending}}">确认登记</button><button bindtap="cancelStock">取消</button>
     </view>
     <view wx:if="{{canReport}}" class="panel">
@@ -56,14 +55,15 @@
       <block wx:else>
         <view class="heading">涉及道具与问题</view>
         <view wx:for="{{issueRows}}" wx:key="index" class="item">
-          <picker range="{{items}}" range-key="name" value="{{item.itemIndex}}" data-index="{{index}}" data-field="itemIndex" bindchange="editIssueItem">道具　{{items[item.itemIndex].name}} ›</picker>
-          <picker range="{{issueTypes}}" range-key="label" value="{{item.typeIndex}}" data-index="{{index}}" data-field="typeIndex" bindchange="editIssueItem">问题类型　{{issueTypes[item.typeIndex].label}} ›</picker>
-          <label>受影响数量<input type="number" value="{{item.quantity}}" data-index="{{index}}" data-field="quantity" bindinput="editIssueItem"/></label>
+          <dict-select range="{{items}}" range-key="name" value="{{item.itemIndex}}" data-index="{{index}}" data-field="itemIndex" bindchange="editIssueItem" title="道具" display="{{items[item.itemIndex].name}}" quiet="{{returnRefresh}}"/>
+          <dict-select range="{{issueTypes}}" range-key="label" value="{{item.typeIndex}}" data-index="{{index}}" data-field="typeIndex" bindchange="editIssueItem" title="问题类型" display="{{issueTypes[item.typeIndex].label}}" quiet="{{returnRefresh}}"/>
+          <label>受影响数量<input id="field-row-{{index}}-quantity" adjust-position="{{false}}" always-embed type="number" value="{{item.quantity}}" data-index="{{index}}" data-field="quantity" bindinput="editIssueItem"/></label>
           <button wx:if="{{issueRows.length>1}}" data-index="{{index}}" bindtap="removeIssueItem">移除此项</button>
         </view>
         <button bindtap="addIssueItem">添加一项</button>
-        <textarea maxlength="1000" placeholder="说明发生了什么，哪些道具受到影响" value="{{issueSummary}}" bindinput="editIssueSummary"/>
-        <button bindtap="attachIssuePhoto" disabled="{{busy || pending}}">添加照片{{issuePhotos.length?'（已选 '+issuePhotos.length+' 张）':''}}</button>
+        <textarea id="field-issueSummary" adjust-position="{{false}}" maxlength="1000" placeholder="说明发生了什么，哪些道具受到影响" value="{{issueSummary}}" bindinput="editIssueSummary"/>
+        <view class="mj-photo-drafts" wx:if="{{issuePhotos.length}}"><view wx:for="{{issuePhotos}}" wx:key="id" class="mj-photo-frame"><image src="{{item.src}}" mode="aspectFill"/><photo-remove disabled="{{busy || pending}}" identity="{{item.id}}" data-id="{{item.id}}" bindremove="removeDraftPhoto"/></view></view>
+      <button bindtap="attachIssuePhoto" disabled="{{busy || pending}}">添加照片{{issuePhotos.length?'（已选 '+issuePhotos.length+' 张）':''}}</button>
         <radio-group bindchange="selectIssueEffect">
           <label><radio value="continue" checked="{{issueEffect==='continue'}}"/>继续履约，请客服跟进</label>
           <label><radio value="paused" checked="{{issueEffect==='paused'}}"/>暂停履约，申请客服介入</label>
@@ -86,32 +86,32 @@
         <radio-group wx:if="{{!pickup}}" data-field="handoverMethod" bindchange="edit"><label><radio value="carrier" checked="{{form.handoverMethod==='carrier'}}"/>交给承运人</label><label><radio value="self_delivery" checked="{{form.handoverMethod==='self_delivery'}}"/>自行送回</label></radio-group>
         <label wx:if="{{!pickup}}">交接时间有争议 <switch data-field="disputed" bindchange="edit" checked="{{form.disputed}}"/></label>
         <text class="subhead">{{pickup?'预计到厂时间':(form.handoverMethod==='self_delivery'?'实际开始送回时间':'实际交运时间')}}（北京时间）</text>
-        <view class="pickers"><picker mode="date" value="{{form.date}}" data-field="date" bindchange="edit">{{form.date || '选择日期'}}</picker><picker mode="time" value="{{form.time}}" data-field="time" bindchange="edit">{{form.time || '选择时间'}}</picker></view>
-        <label wx:if="{{!pickup}}">秒（可精确至毫秒）<input maxlength="6" value="{{form.seconds}}" placeholder="00" data-field="seconds" bindinput="edit"/></label>
-        <block wx:if="{{!pickup}}"><input maxlength="128" value="{{form.carrierName}}" placeholder="承运方（如有）" data-field="carrierName" bindinput="edit"/><input maxlength="128" value="{{form.trackingNo}}" placeholder="运单号，或在备注填写交接说明" data-field="trackingNo" bindinput="edit"/></block>
+        <view class="pickers"><picker mode="date" value="{{form.date}}" data-field="date" bindchange="edit"><view class="mj-system-picker"><text>{{form.date || '选择日期'}}</text></view></picker><picker mode="time" value="{{form.time}}" data-field="time" bindchange="edit"><view class="mj-system-picker"><text>{{form.time || '选择时间'}}</text></view></picker></view>
+        <label wx:if="{{!pickup}}">秒（可精确至毫秒）<input id="field-form-seconds" adjust-position="{{false}}" always-embed maxlength="6" value="{{form.seconds}}" placeholder="00" data-field="seconds" bindinput="edit"/></label>
+        <block wx:if="{{!pickup}}"><input id="field-form-carrierName" adjust-position="{{false}}" always-embed maxlength="128" value="{{form.carrierName}}" placeholder="承运方（如有）" data-field="carrierName" bindinput="edit"/><input id="field-form-trackingNo" adjust-position="{{false}}" always-embed maxlength="128" value="{{form.trackingNo}}" placeholder="运单号，或在备注填写交接说明" data-field="trackingNo" bindinput="edit"/></block>
       </block>
       <block wx:else><view class="row"><text>{{pickup?'开始取回':'实际发出'}}</text><text>{{dates.sentAt || '待实际交接'}}</text></view><view wx:if="{{dates.expectedArrivalAt}}" class="row"><text>预计到厂</text><text>{{dates.expectedArrivalAt}}</text></view><view wx:if="{{root.carrierName || root.trackingNo}}">{{root.carrierName}} {{root.trackingNo}}</view></block>
       <view wx:if="{{dates.expectedCheckStartAt}}" class="row"><text>预计核验开始</text><text>{{dates.expectedCheckStartAt}}</text></view>
     </view>
     <view wx:if="{{view==='outbound' || view==='receipt' || view==='shipment' || view==='returnCheck'}}" class="panel">
-      <view wx:if="{{view==='outbound'}}" class="row"><button data-kind="outbound" bindtap="photoKind" disabled="{{busy || photoKind==='outbound'}}">出库照片</button><button data-kind="handover" bindtap="photoKind" disabled="{{busy || photoKind==='handover'}}">交接照片</button></view>
+      <block wx:if="{{view==='outbound'}}"><list-filters quiet="{{returnRefresh}}" filters="{{photoFilters}}" values="{{ {photoKind:photoKind} }}" disabled="{{busy}}" bindselectfilter="photoKind"/></block>
       <view class="heading"><text>{{view==='outbound'?(photoKind==='handover'?'交接照片':'出库照片'):view==='receipt'?'收货照片':view==='shipment'?'包装与交接照片':'归还核验照片'}}</text><text class="tag">{{view==='outbound' && photoKind==='outbound'?'至少 3 张':'选填'}}</text></view>
       <view wx:if="{{canPhoto && view==='outbound' && photoKind==='outbound'}}" class="muted">建议拍摄整体、重点部位和装车情况，便于收货时核对。</view>
       <view class="grid"><view wx:for="{{photos}}" wx:key="id" class="tile">
         <image wx:if="{{item.url}}" mode="aspectFill" src="{{item.url}}" data-id="{{item.id}}" bindtap="preview" aria-label="查看交接照片"/>
         <button wx:else bindtap="preview" data-id="{{item.id}}">查看照片</button>
-        <button wx:if="{{canRemove}}" class="remove" bindtap="remove" data-id="{{item.id}}" disabled="{{busy || pending}}">移除</button>
+        <photo-remove wx:if="{{canRemove}}" identity="{{item.id}}" bindremove="remove" data-id="{{item.id}}" disabled="{{busy || pending}}"/>
       </view><button wx:if="{{canPhoto}}" class="add" bindtap="photo" disabled="{{busy || pending}}">＋ 添加</button></view>
       <view wx:if="{{!photos.length && !canPhoto}}" class="muted">当前节点尚无照片</view>
       <button wx:if="{{morePhotos}}" bindtap="morePhotos" disabled="{{busy}}">查看更多照片</button>
     </view>
-    <view wx:if="{{(view==='outbound' || view==='shipment') && (actions.save || actions.start_pickup || root.remark)}}" class="panel"><view class="heading">备注</view><textarea wx:if="{{actions.save || actions.start_pickup}}" value="{{form.remark}}" data-field="remark" maxlength="500" bindinput="edit" placeholder="填写包装、运输要求或实际交接情况"/><view wx:else>{{root.remark}}</view></view>
+    <view wx:if="{{(view==='outbound' || view==='shipment') && (actions.save || actions.start_pickup || root.remark)}}" class="panel"><view class="heading">备注</view><textarea id="field-form-remark" adjust-position="{{false}}" wx:if="{{actions.save || actions.start_pickup}}" value="{{form.remark}}" data-field="remark" maxlength="500" bindinput="edit" placeholder="填写包装、运输要求或实际交接情况"/><view wx:else>{{root.remark}}</view></view>
     <view wx:if="{{view==='receipt' && actions.confirm}}" class="panel"><view class="heading">核验说明</view>请核对实物的数量和外观。实际收到后可提前确认。</view>
     <view wx:if="{{canRecordPickup && (view==='returnCheck' || view==='shipment')}}" class="panel">
       <view class="heading">实际从买家处接走</view><text>交接时间（北京时间）</text>
-      <view class="pickers"><picker mode="date" value="{{form.actualDate}}" data-field="actualDate" bindchange="edit">{{form.actualDate || '选择日期'}}</picker><picker mode="time" value="{{form.actualTime}}" data-field="actualTime" bindchange="edit">{{form.actualTime || '选择时间'}}</picker></view>
-      <label>秒（可精确至毫秒）<input maxlength="6" placeholder="00" data-field="actualSeconds" bindinput="edit"/></label>
-      <input data-field="actualBasis" maxlength="500" bindinput="edit" placeholder="填写交接人或签收凭据"/><label>交接时间有争议 <switch data-field="disputed" bindchange="edit"/></label>
+      <view class="pickers"><picker mode="date" value="{{form.actualDate}}" data-field="actualDate" bindchange="edit"><view class="mj-system-picker"><text>{{form.actualDate || '选择日期'}}</text></view></picker><picker mode="time" value="{{form.actualTime}}" data-field="actualTime" bindchange="edit"><view class="mj-system-picker"><text>{{form.actualTime || '选择时间'}}</text></view></picker></view>
+      <label>秒（可精确至毫秒）<input id="field-actualSeconds" adjust-position="{{false}}" always-embed maxlength="6" placeholder="00" data-field="actualSeconds" bindinput="edit"/></label>
+      <input id="field-actualBasis" adjust-position="{{false}}" always-embed data-field="actualBasis" maxlength="500" bindinput="edit" placeholder="填写交接人或签收凭据"/><label>交接时间有争议 <switch data-field="disputed" bindchange="edit"/></label>
       <button class="primary" disabled="{{busy || pending}}" bindtap="recordPickup">确认已接走</button>
     </view>
     <view wx:if="{{fee && (view==='returnCheck' || view==='shipment' || view==='complete')}}" class="panel">

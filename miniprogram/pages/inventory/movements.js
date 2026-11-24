@@ -93,6 +93,11 @@ require("../../session/page")({
       if(round===this.listRound)this.setData({ busy: false });
     }
   },
+  resetFilters() {
+    if (this.data.busy) return;
+    this.setData({ source: "", movement: "", startDate: "", endDate: "", page: 1 });
+    return this.load();
+  },
   filter(e) {
     const k = e.currentTarget.dataset.key;
     this.setData({

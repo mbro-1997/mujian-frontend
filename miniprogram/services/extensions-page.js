@@ -1,3 +1,4 @@
+const successToast = require("./success-toast");
 const api = require('./trading');
 const ui = require('./trading-page');
 
@@ -57,6 +58,7 @@ module.exports = function extensionPage(factory) {
           }else result=await api.command(slot,endpoint+'/'+row.id+'/'+name,{expectedVersion:row.version,...(name==='reject'?{reason}:{})});
           if(!current())return;
           if(result && result.parameters)await api.nativePayment(result.parameters);
+          else if(name!=='pay')successToast('操作已提交');
         }finally {
           if(current()){this.setData({pending:api.pending.has(slot)});await this.read(current);}
         }

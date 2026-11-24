@@ -1,3 +1,5 @@
+const evidencePhotos = require('./evidence-photos');
+const { hint, ValidationError } = require("./form-error");
 const api = require('./trading');
 const ui = require('./trading-page');
 const materials = require('./verification');
@@ -11,7 +13,7 @@ const titles = {
   complete: '核验结果',
   history: '履约记录',
 };
-const stages = Object.entries(titles).map(([key, label]) => ({ key, label }));
+const stageFilters = [{ key: "view", title: "履约阶段", options: Object.entries(titles).map(([code, label]) => ({ code, label })) }];
 const nodes = {
   outbound: 'outbound',
   receipt: 'receipt_check',
@@ -163,7 +165,8 @@ module.exports = function fulfillmentPage(factory) {
       id: '',
       view: '',
       factory,
-      stages,
+      stageFilters,
+      photoFilters: [{"key": "photoKind", "title": "照片类型", "options": [{"code": "outbound", "label": "出库照片"}, {"code": "handover", "label": "交接照片"}]}],
       detail: null,
       context: null,
       root: {},
@@ -175,7 +178,6 @@ module.exports = function fulfillmentPage(factory) {
       records: [],
       message: '',
       busy: false,
-      feedback: '',
       issueOpen: false, issueSummary: '', issueEffect: '', issueRows: [], issuePhotos: [],
       issueTypes: [
         { code: 'not_as_described', label: '与描述不符' }, { code: 'quantity_mismatch', label: '数量不符' },
@@ -201,7 +203,7 @@ module.exports = function fulfillmentPage(factory) {
         const {form,fee}=this.data;
         const at=handoverTime(form.actualDate,form.actualTime,form.actualSeconds);
         if(!this.data.canRecordPickup || !at || !blank(form.actualBasis))
-          throw new Error('请填实际接走的北京时间和交接依据');
+          throw new ValidationError('请填实际接走的北京时间和交接依据');
         if(!await ui.confirm('已从买家处接走？','请核对实际接走时间及依据。'))return;
         await this.mutate('/return-shipment/handover',{expectedVersion:fee.version,
           handoverAt:at, basis:form.actualBasis.trim(),disputed:!!form.disputed},'已登记实际接走',current);
@@ -349,7 +351,7 @@ module.exports = function fulfillmentPage(factory) {
       return ui.run(this, async current => {
         const f=this.data.stockForm, quantity=Number(f.quantity);
         if (f.choice == null || !f.remark.trim() || !Number.isInteger(quantity) || quantity<1 || quantity>f.max)
-          throw new Error('请选择实际处置，填写数量和核验说明');
+          throw new ValidationError('请选择实际处置，填写数量和核验说明');
         const selected=this.data.stockChoices[f.choice];
         if (!await ui.confirm('登记实物结果？', f.name+' · '+quantity+' 件 · '+selected.label)) return;
         await this.mutate('/return-check/claim-stock', {claimId:f.claimId,expectedVersion:f.expectedVersion,reservationId:f.reservationId,
@@ -358,7 +360,7 @@ module.exports = function fulfillmentPage(factory) {
       });
     },
     changeStage(e) {
-      if (this.data.busy || this.data.view === e.currentTarget.dataset.view)
+      if (this.data.busy || this.data.view === e.detail.value)
         return;
       const url =
         '/pages/' +
@@ -366,7 +368,7 @@ module.exports = function fulfillmentPage(factory) {
         '/fulfillment?id=' +
         this.data.id +
         '&view=' +
-        e.currentTarget.dataset.view;
+        e.detail.value;
       wx.redirectTo({ url });
     },
     edit(e) {
@@ -382,7 +384,7 @@ module.exports = function fulfillmentPage(factory) {
       });
     },
     photoKind(e) {
-      const kind = e.currentTarget.dataset.kind;
+      const kind = e.detail.value;
       if (
         !['outbound', 'handover'].includes(kind) ||
         this.data.view !== 'outbound' ||
@@ -401,19 +403,7 @@ module.exports = function fulfillmentPage(factory) {
         queryPage(this.rootPath + '/evidence?node=' + node, page),
       );
       if (!current()) return;
-      const photos = await Promise.all(
-        data.items.map(async (item) => {
-          try {
-            const { url } = await api.post(
-              this.rootPath + '/evidence/' + item.id + '/view',
-            );
-            return { id: item.id, url };
-          } catch (error) {
-            if ([401, 403, 404].includes(error.status)) throw error;
-            return { id: item.id, url: '' };
-          }
-        }),
-      );
+      const photos = await evidencePhotos(this.rootPath, data.items);
       if (current())
         this.setData({
           photos: (page === 1 ? [] : this.data.photos).concat(photos),
@@ -463,9 +453,7 @@ module.exports = function fulfillmentPage(factory) {
         const result = await api.command(this.slot, this.rootPath + path, body);
         if (!current()) return;
         if (clearForm) this.dirty = false;
-        this.setData({
-          feedback: result.duplicate ? '此件已核对，数量未重复增加' : feedback,
-        });
+        hint(result.duplicate ? '此件已核对，数量未重复增加' : feedback);
         await this.read(current);
       } catch (error) {
         if (current()) {
@@ -494,9 +482,7 @@ module.exports = function fulfillmentPage(factory) {
       const item = this.data.items[e.currentTarget.dataset.index],
         value = item.quantityInput;
       if (!/^\d+$/.test(value) || Number(value) > item.expectedQuantity) {
-        this.setData({
-          message: '请填写 0 至 ' + item.expectedQuantity + ' 之间的整数',
-        });
+        hint('请填写 0 至 ' + item.expectedQuantity + ' 之间的整数');
         return;
       }
       return this.write(
@@ -557,6 +543,10 @@ module.exports = function fulfillmentPage(factory) {
     },
     editIssueSummary(event) { this.setData({ issueSummary: event.detail.value }); },
     selectIssueEffect(event) { this.setData({ issueEffect: event.detail.value }); },
+    removeDraftPhoto(e) {
+      if (this.data.busy || this.data.pending) return;
+      this.setData({ issuePhotos: this.data.issuePhotos.filter(photo => photo.id !== e.currentTarget.dataset.id) });
+    },
     attachIssuePhoto() {
       return this.device('chooseMedia', { count: 9, mediaType: ['image'], sourceType: ['camera','album'] },
         async (selection, version, current) => {
@@ -564,7 +554,7 @@ module.exports = function fulfillmentPage(factory) {
           for (const file of selection.tempFiles) {
             if (!current()) return;
             const receiptId = await materials.uploadOrder(this.rootPath, node, file.tempFilePath);
-            if (current()) this.setData({ issuePhotos: this.data.issuePhotos.concat(receiptId) });
+            if (current()) this.setData({ issuePhotos: this.data.issuePhotos.concat({ id: receiptId, src: file.tempFilePath }) });
           }
         });
     },
@@ -572,23 +562,24 @@ module.exports = function fulfillmentPage(factory) {
       return ui.run(this, async (current) => {
         const scene = this.data.view === 'receipt' ? 'receipt' : 'in_use';
         const summary = this.data.issueSummary.trim(), effect = this.data.issueEffect;
-        if (!summary || !effect || !this.data.issueRows.length) throw new Error('请填写说明、涉及道具和处理方式');
+        if (!summary || !effect || !this.data.issueRows.length) throw new ValidationError('请填写说明、涉及道具和处理方式');
         const keys = new Set();
         const items = this.data.issueRows.map(row => {
           const item = this.data.items[row.itemIndex], type = this.data.issueTypes[row.typeIndex].code;
           if (!item || !/^[1-9][0-9]*$/.test(row.quantity) || Number(row.quantity) > item.expectedQuantity)
-            throw new Error('受影响数量须在本单道具数量范围内');
+            throw new ValidationError('受影响数量须在本单道具数量范围内');
           const key = item.itemId + ':' + type;
-          if (keys.has(key)) throw new Error('同一道具的同类问题请合并填写数量');
+          if (keys.has(key)) throw new ValidationError('同一道具的同类问题请合并填写数量');
           keys.add(key);
           return { itemId: item.itemId, issueType: type, quantity: Number(row.quantity), description: null };
         });
         const input = { expectedVersion: this.data.issueVersion, scene, summary, effect,
-          primaryIssueType: items[0].issueType, items, evidence: { evidenceIds: [], uploadReceiptIds: this.data.issuePhotos } };
+          primaryIssueType: items[0].issueType, items, evidence: { evidenceIds: [], uploadReceiptIds: this.data.issuePhotos.map(photo => photo.id) } };
         try {
           await api.command(this.slot, this.rootPath + '/issues', input);
           if (!current()) return;
-          this.setData({ issueOpen: false, feedback: effect === 'paused' ? '已提交问题，普通履约已暂停' : '已提交问题，订单继续履约' });
+          this.setData({ issueOpen: false });
+          hint(effect === 'paused' ? '已提交问题，普通履约已暂停' : '已提交问题，订单继续履约');
           await this.read(current);
         } catch (error) {
           if (current()) this.setData({ pending: api.pending.has(this.slot) });
@@ -639,7 +630,7 @@ module.exports = function fulfillmentPage(factory) {
       );
     },
     async remove(e) {
-      if (await ui.confirm('移除草稿照片？', '移除后可重新添加照片。'))
+      if (this.data.canRemove && !this.data.pending)
         return this.write(
           '/evidence/' + e.currentTarget.dataset.id + '/remove',
           {},
@@ -661,7 +652,7 @@ module.exports = function fulfillmentPage(factory) {
           name === 'confirm' &&
           blank(form.remark) !== blank(this.data.root.remark)
         ) {
-          this.setData({ message: '备注有修改，请先暂存后再确认出库' });
+          hint('备注有修改，请先暂存后再确认出库');
           return;
         }
         success = name === 'save' ? '出库草稿已暂存' : '已确认出库';
@@ -671,7 +662,7 @@ module.exports = function fulfillmentPage(factory) {
       } else if (view === 'shipment') {
         const at=handoverTime(form.date,form.time,form.seconds);
         if ((!at && (name !== 'save' || form.date)) || !!form.date !== !!form.time) {
-          this.setData({ message: '请填写完整的日期和北京时间' });
+          hint('请填写完整的日期和北京时间');
           return;
         }
         path =
@@ -687,7 +678,7 @@ module.exports = function fulfillmentPage(factory) {
                 remark: blank(form.remark),
               };
         if(name==='send') {
-          if(!form.handoverMethod){this.setData({message:'请选择实际寄送或自行送回'});return;}
+          if(!form.handoverMethod){hint('请选择实际寄送或自行送回');return;}
           fields.handoverMethod=form.handoverMethod;
           fields.disputed=!!form.disputed;
         }

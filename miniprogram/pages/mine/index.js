@@ -16,9 +16,9 @@ require("../../navigation/root")(3, {
     busy: false,
     ready: false,
     orders: [
-      { label: "待确认", icon: "clock" },
-      { label: "待收货", icon: "box" },
-      { label: "待归还", icon: "return" },
+      { label: "待确认", icon: "clock", view: "pending_accept" },
+      { label: "待收货", icon: "box", view: "pending_receipt" },
+      { label: "待归还", icon: "return", view: "renting" },
       { label: "待评价", icon: "review" },
     ],
     tools: [
@@ -84,7 +84,19 @@ require("../../navigation/root")(3, {
     if (!session.token()) return this.goAccount();
     wx.navigateTo({ url: "/pages/" + d + "/form" });
   },
-  openOrders(){wx.navigateTo({url:"/pages/orders/index"});},
+  openOrders(e) {
+    const view = e.currentTarget.dataset.view;
+    if (!view) {
+      wx.showModal({
+        title: "待评价列表暂未开放",
+        content: "你可以在订单详情的「订单评价」中查看该订单能否评价。",
+        showCancel: false,
+        confirmText: "知道了",
+      });
+      return;
+    }
+    wx.navigateTo({ url: "/pages/orders/index?view=" + view });
+  },
   unavailable() {
     wx.showToast({ title: "此入口暂未开放", icon: "none" });
   },

@@ -2,7 +2,7 @@ const api = require("../../services/factory");
 require("../../session/page")({
   data: { profile: null, fields: null, message: "", busy: false, casesOpen: false, creditSummary: "", categorySummary: "", caseSummary: "" },
   onShow() {
-    this.load();
+    return this.load();
   },
   async load() {
     this.setData({ busy: true });

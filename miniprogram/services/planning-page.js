@@ -1,6 +1,8 @@
+const { ValidationError, hint } = require("./form-error");
 const api = require("./planning"),
   session = require("../session/storage");
 function dirty(page, value = true) {
+  if (value && page.data.dirty) return;
   page.setData({ dirty: value });
   if (value && wx.enableAlertBeforeUnload)
     wx.enableAlertBeforeUnload({ message: "还有未保存的修改，确定离开吗？" });
@@ -37,6 +39,7 @@ async function run(page, action) {
     return await action();
   } catch (error) {
     if (!session.isCurrent(owner)) return;
+    if (error instanceof ValidationError) return hint(error.message);
     if (api.denied(error)) {
       if (page.onPrivateAccessLost) page.onPrivateAccessLost();
       else page.setData({
@@ -60,9 +63,10 @@ async function run(page, action) {
     page.setData({ busy: false });
   }
 }
-function confirm(title, content) {
+function confirm(title, content, options = {}) {
   return new Promise((resolve) =>
     wx.showModal({
+      ...options,
       title,
       content,
       success: (r) => resolve(r.confirm),
@@ -105,8 +109,22 @@ function pdfHidden(page) {
 }
 // 与道具页同样按20项分批提交setData，避免500项详情一次超过小程序包体。
 function replaceItems(page, items, field = "items") {
-  page.setData({ [field]: [] });
-  appendItems(page, items, field);
+  const previous = page.data[field] || [];
+  if (items.length < previous.length) {
+    // Shorten the array without briefly rendering an empty list.
+    page.setData({ [field]: items.slice(0, 20) });
+    appendItems(page, items.slice(20), field);
+    return;
+  }
+  for (let start = 0; start < items.length; start += 20) {
+    const update = {};
+    items.slice(start, start + 20).forEach((item, offset) => {
+      const index = start + offset;
+      if (!previous[index] || JSON.stringify(item) !== JSON.stringify(previous[index]))
+        update[field + "[" + index + "]"] = item;
+    });
+    if (Object.keys(update).length) page.setData(update);
+  }
 }
 function appendItems(page, items, field = "items") {
   const base = page.data[field].length;

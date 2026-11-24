@@ -1,3 +1,5 @@
+const { ValidationError } = require("../../services/form-error");
+const successToast = require("../../services/success-toast");
 const api = require('../../services/trading');
 const ui = require('../../services/trading-page');
 const materials = require('../../services/verification');
@@ -36,6 +38,10 @@ require('../../session/page')({
     return this.load();
   },
   edit(e) { this.setData({summary:e.detail.value}); },
+  removeDraftPhoto(e) {
+      if (this.data.busy || this.data.pending) return;
+      this.setData({ photos: this.data.photos.filter(photo => photo.id !== e.currentTarget.dataset.id) });
+    },
   async attach() {
     if (this.picking || this.data.busy || !this.data.detail) return;
     const owner=session.capture(), issue=this.data.detail;
@@ -49,7 +55,7 @@ require('../../session/page')({
           if (!current()) return;
           const id=await materials.uploadOrder('/api/me/rental-orders/'+issue.orderId,
             issue.scene==='receipt'?'receipt_check':'in_use_report',file.tempFilePath);
-          if (current()) this.setData({photos:this.data.photos.concat(id)});
+          if (current()) this.setData({photos:this.data.photos.concat({ id, src: file.tempFilePath })});
         }
       });
     } catch (error) { if (!this.gone && session.isCurrent(owner)) this.setData({message:'无法添加照片，请重新选择'}); }
@@ -70,12 +76,13 @@ require('../../session/page')({
           }
         } else {
           const summary=this.data.summary.trim();
-          if (!summary) throw new Error('请填写补充说明');
+          if (!summary) throw new ValidationError('请填写补充说明');
           await api.command(slot,'/api/me/issues/'+issue.id+'/supplement',{expectedVersion:issue.version,summary,
-            evidence:{evidenceIds:[],uploadReceiptIds:this.data.photos}});
+            evidence:{evidenceIds:[],uploadReceiptIds:this.data.photos.map(photo => photo.id)}});
         }
         if (!current()) return;
         this.setData({summary:'',photos:[],pending:false});
+        successToast('补充说明已提交');
         await this.read(current);
       } catch(e) {
         if (current()) this.setData({pending:api.pending.has(slot)});

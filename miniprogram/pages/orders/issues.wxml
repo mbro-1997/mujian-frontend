@@ -1,6 +1,6 @@
 <view class="trade">
   <view wx:if="{{message}}" class="feedback">{{message}}<button bindtap="load">刷新</button></view>
-  <view wx:if="{{!items.length && !message}}" class="section">{{busy?'正在读取问题…':'这笔订单尚无问题记录'}}</view>
+  <view wx:if="{{!items.length && !message}}" class="section"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取问题"/><text wx:else>这笔订单尚无问题记录</text></view>
   <view wx:for="{{items}}" wx:key="id" class="section">
     <view class="heading">{{item.scene==='receipt'?'收货问题':'使用中异常'}} · {{item.statusText}}</view>
     <view>{{item.summary}}</view><view class="muted">{{item.createdText}}</view>
@@ -22,7 +22,8 @@
       <view wx:for="{{detail.refunds}}" wx:key="refundId">¥{{item.amount}} · {{item.label}}</view>
     </block>
     <block wx:if="{{detail.canSupplement || pending}}">
-      <textarea value="{{summary}}" bindinput="edit" maxlength="1000" placeholder="填写补充说明" disabled="{{busy || pending}}"/>
+      <textarea id="field-summary" adjust-position="{{false}}" value="{{summary}}" bindinput="edit" maxlength="1000" placeholder="填写补充说明" disabled="{{busy || pending}}"/>
+      <view class="mj-photo-drafts" wx:if="{{photos.length}}"><view wx:for="{{photos}}" wx:key="id" class="mj-photo-frame"><image src="{{item.src}}" mode="aspectFill"/><photo-remove disabled="{{busy || pending}}" identity="{{item.id}}" data-id="{{item.id}}" bindremove="removeDraftPhoto"/></view></view>
       <button bindtap="attach" disabled="{{busy || pending}}">添加照片{{photos.length?'（已选 '+photos.length+' 张）':''}}</button>
       <button bindtap="submit" disabled="{{busy || (!pending && !summary)}}">{{pending?'恢复原操作':'提交补充材料'}}</button>
     </block>

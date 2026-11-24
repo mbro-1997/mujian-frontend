@@ -1,32 +1,32 @@
 <view class="fulfill">
   <view wx:if="{{message}}" class="alert">{{message}}<button bindtap="load" disabled="{{busy}}">刷新</button><button wx:if="{{pending}}" bindtap="recover">查询原操作</button></view>
-  <view wx:if="{{!detail && !message}}" class="panel">{{busy?'正在读取核销信息…':'暂无可查看的运费申报'}}</view>
+  <view wx:if="{{!detail && !message}}" class="panel"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取核销信息"/><text wx:else>暂无可查看的运费申报</text></view>
   <block wx:if="{{detail}}">
     <view class="panel hero"><view class="heading"><text>{{detail.factory}}</text><text class="tag">{{detail.status}}</text></view><view class="muted">订单 {{detail.number}} · 往返统一核销</view><view class="row"><text>运费暂收池</text><text>¥{{detail.pool}}</text></view><view wx:if="{{detail.row.reviewReason}}" class="notice">审核说明 · {{detail.row.reviewReason}}</view></view>
     <view wx:for="{{legs}}" wx:key="transportLegId" wx:for-index="li" wx:for-item="leg" class="panel leg-form"><navigator wx:if="{{leg.transportLegId}}" url="/pages/service/index?type=transport_order&id={{leg.transportLegId}}">咨询此运输段 ›</navigator>
       <view class="heading"><text>{{leg.label}}费用</text><text class="tag">{{leg.chargeLabel}}</text></view>
       <block wx:if="{{leg.chargeMode==='freight_pool'}}">
-        <picker wx:if="{{writable}}" value="{{leg.sourceIndex}}" range="{{sourceNames}}" data-leg="{{li}}" bindchange="source">{{leg.sourceLabel}} ›</picker><view wx:else>{{leg.sourceLabel}}</view>
+        <dict-select wx:if="{{writable}}" value="{{leg.sourceIndex}}" range="{{sourceNames}}" data-leg="{{li}}" bindchange="source" display="{{leg.sourceLabel}}" quiet="{{returnRefresh}}"/><view wx:else>{{leg.sourceLabel}}</view>
         <block wx:if="{{leg.source==='third_party'}}">
-          <input wx:if="{{writable}}" value="{{leg.carrierName}}" data-leg="{{li}}" data-field="carrierName" maxlength="128" bindinput="edit" placeholder="承运平台或承运方"/>
-          <input wx:if="{{writable}}" value="{{leg.carrierOrderNo}}" data-leg="{{li}}" data-field="carrierOrderNo" maxlength="128" bindinput="edit" placeholder="承运订单号"/>
-          <label wx:if="{{writable}}">实际基础费（元）<input type="digit" value="{{leg.base}}" data-leg="{{li}}" data-field="base" bindinput="edit" placeholder="包括明确零收费"/></label>
+          <input id="field-leg-{{li}}-carrierName" adjust-position="{{false}}" always-embed wx:if="{{writable}}" value="{{leg.carrierName}}" data-leg="{{li}}" data-field="carrierName" maxlength="128" bindinput="edit" placeholder="承运平台或承运方"/>
+          <input id="field-leg-{{li}}-carrierOrderNo" adjust-position="{{false}}" always-embed wx:if="{{writable}}" value="{{leg.carrierOrderNo}}" data-leg="{{li}}" data-field="carrierOrderNo" maxlength="128" bindinput="edit" placeholder="承运订单号"/>
+          <label wx:if="{{writable}}">实际基础费（元）<input id="field-leg-{{li}}-base" adjust-position="{{false}}" always-embed type="digit" value="{{leg.base}}" data-leg="{{li}}" data-field="base" bindinput="edit" placeholder="包括明确零收费"/></label>
           <view wx:else>{{leg.carrierName}} · {{leg.carrierOrderNo}} · ¥{{leg.base}}</view>
         </block><view wx:if="{{leg.source==='factory_vehicle'}}" class="row"><text>下单冻结的自有车标准价</text><text>¥{{leg.own}}</text></view>
         <view wx:for="{{leg.fees}}" wx:for-item="fee" wx:for-index="fi" wx:key="index" class="fee">
           <block wx:if="{{writable}}">
-            <picker value="{{fee.typeIndex}}" range="{{feeNames}}" bindchange="feeEdit" data-leg="{{li}}" data-index="{{fi}}" data-field="type">{{fee.label}} ›</picker>
-            <input type="digit" value="{{fee.amount}}" placeholder="费用（元）" data-leg="{{li}}" data-index="{{fi}}" data-field="amount" bindinput="feeEdit"/>
-            <input value="{{fee.description}}" maxlength="255" placeholder="费用说明" data-leg="{{li}}" data-index="{{fi}}" data-field="description" bindinput="feeEdit"/>
+            <dict-select value="{{fee.typeIndex}}" range="{{feeNames}}" bindchange="feeEdit" data-leg="{{li}}" data-index="{{fi}}" data-field="type" display="{{fee.label}}" quiet="{{returnRefresh}}"/>
+            <input id="field-fee-{{li}}-{{fi}}-amount" adjust-position="{{false}}" always-embed type="digit" value="{{fee.amount}}" placeholder="费用（元）" data-leg="{{li}}" data-index="{{fi}}" data-field="amount" bindinput="feeEdit"/>
+            <input id="field-fee-{{li}}-{{fi}}-description" adjust-position="{{false}}" always-embed value="{{fee.description}}" maxlength="255" placeholder="费用说明" data-leg="{{li}}" data-index="{{fi}}" data-field="description" bindinput="feeEdit"/>
             <text class="muted">选择本段附加费凭证</text><checkbox-group bindchange="feePhotos" data-leg="{{li}}" data-index="{{fi}}"><label wx:for="{{fee.options}}" wx:for-item="pic" wx:key="id"><checkbox value="{{pic.id}}" checked="{{pic.checked}}"/>照片 {{index+1}}</label></checkbox-group>
             <button bindtap="removeFee" data-leg="{{li}}" data-index="{{fi}}">删除此项</button>
           </block><view wx:else>{{fee.label}} · ¥{{fee.amount}}<view class="muted">{{fee.description}}</view></view>
         </view><button wx:if="{{writable}}" data-leg="{{li}}" bindtap="addFee">＋ 添加附加费</button>
         <view class="subhead">{{leg.label}}费用凭证</view>
         <view wx:for="{{leg.photos}}" wx:for-item="pic" wx:key="id" class="row">
-          <button bindtap="preview" data-id="{{pic.id}}">查看照片 {{index+1}}</button>
+          <view class="mj-photo-frame"><image wx:if="{{pic.url}}" class="expense-thumb" mode="aspectFill" src="{{pic.url}}" data-id="{{pic.id}}" bindtap="preview" aria-label="查看费用凭证"/><button wx:else class="expense-photo" bindtap="preview" data-id="{{pic.id}}">查看照片 {{index+1}}</button>
+            <photo-remove wx:if="{{writable && !revise && !pic.reused}}" identity="{{pic.id}}" data-id="{{pic.id}}" disabled="{{busy || dirty || pending}}" note="原历史版本的凭证将保留。" bindremove="remove"/></view>
           <button wx:if="{{revise}}" bindtap="reuse" data-id="{{pic.id}}">{{pic.chosen?'取消复用':'本版复用'}}</button>
-          <button wx:if="{{writable && !revise && !pic.reused}}" bindtap="remove" data-id="{{pic.id}}" disabled="{{busy || dirty}}">移除</button>
         </view>
         <view class="pickers" wx:if="{{writable && detail.row.status==='draft'}}"><button bindtap="attach" data-leg="{{li}}" data-scene="carrier_order" disabled="{{busy || pending}}">＋ 价格凭证</button><button bindtap="attach" data-leg="{{li}}" data-scene="extra_fee" disabled="{{busy || pending}}">＋ 附加费凭证</button></view>
       </block><view wx:else class="muted">本段无需平台核销</view><view class="row"><text>{{leg.label}}已保存申报额</text><text>¥{{leg.total}}</text></view>

@@ -1,3 +1,4 @@
+const { ValidationError } = require("../../services/form-error");
 const api = require('../../services/trading'),
   ui = require('../../services/trading-page');
 require('../../session/page')({
@@ -6,6 +7,17 @@ require('../../session/page')({
     detail: null,
     address: null,
     groups: [],
+    deliveryFilters: [
+      { key: 'outboundService', title: '送货到场', options: [
+        { code: 'factory_delivery', label: '工厂配送 · 按车型与路线报价' },
+        { code: 'factory_assisted_call', label: '工厂协助叫车 · 到付，当前不预收' },
+        { code: 'self_pickup', label: '自行取货 · 不收配送费' },
+      ] },
+      { key: 'returnService', title: '使用后归还', options: [
+        { code: 'user_return', label: '自行归还' },
+        { code: 'factory_pickup', label: '工厂上门取回 · 单独核算返程路线' },
+      ] },
+    ],
     quote: null,
     couponId: null,
     couponChosen: false,
@@ -89,7 +101,8 @@ require('../../session/page')({
   },
   choice(e) {
     if (this.data.busy || this.data.pending) return;
-    const { index, field, value } = e.currentTarget.dataset;
+    const { index } = e.currentTarget.dataset;
+    const { field, value } = e.detail;
     if (!['outboundService', 'returnService'].includes(field)) return;
     this.setData({ ['groups[' + index + '].' + field]: value, quote: null, showCoupons: false, step: 1 });
   },
@@ -101,7 +114,7 @@ require('../../session/page')({
     });
   },
   input() {
-    if (!this.data.address) throw new Error('请先选择收货地址');
+    if (!this.data.address) throw new ValidationError('请先选择收货地址');
     return {
       checklistId: this.data.id,
       expectedVersion: this.data.detail.version,

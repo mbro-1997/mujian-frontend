@@ -1,3 +1,4 @@
+const successToast = require("../../services/success-toast");
 const api = require("../../services/props");
 require("../../session/page")({
   data: {
@@ -13,7 +14,7 @@ require("../../session/page")({
     this.setData({ id: q.id || "" });
   },
   onShow() {
-    this.load();
+    return this.load();
   },
   async load() {
     this.setData({ busy: true });
@@ -46,12 +47,13 @@ require("../../session/page")({
   status(e) {
     this.setData({
       dialog: true,
+      message: "",
       action: e.currentTarget.dataset.action,
       reason: "",
     });
   },
   close() {
-    if (!this.data.busy) this.setData({ dialog: false });
+    if (!this.data.busy) this.setData({ dialog: false, message: "" });
   },
   input(e) {
     this.setData({ reason: e.detail.value });
@@ -71,7 +73,7 @@ require("../../session/page")({
         },
       );
       this.setData({ dialog: false });
-      wx.navigateTo({
+      wx.navigateTo({ success: () => successToast("申请已提交"),
         url: "/pages/props/review?type=sku_audit&id=" + r.targetId,
       });
     } catch (e) {

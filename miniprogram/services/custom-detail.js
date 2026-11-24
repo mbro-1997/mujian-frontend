@@ -1,3 +1,5 @@
+const { ValidationError } = require("./form-error");
+const successToast = require("./success-toast");
 const yuanToFen = require("./yuan-input");
 const { displayTime } = require("./display-time");
 const c = require("./custom"),
@@ -96,6 +98,7 @@ function presentation(d) {
     responseTime: displayTime(d.responseDeadlineAt),
     productionTime: displayTime(d.productionStartedAt),
     acceptanceTime: displayTime(d.acceptanceDeadlineAt),
+    pickupPending: (d.deliveries || []).some(row => row.id === d.currentDeliveryId && row.state === "awaiting_pickup_confirmation"),
     refundAmount: c.money(d.refundedFen || 0),
     payLabel: c.labels[d.payment?.status],
     extensions: (d.extensions || []).map(c.display),
@@ -251,6 +254,13 @@ module.exports = (factory) =>
             active: "",
           });
       });
+    },
+    removeDraftFile(e) {
+      if (this.data.busy) return;
+      const { group, id } = e.currentTarget.dataset;
+      const files = group === "report" ? this.data.reportFiles : this.data.editor.files;
+      this.setData({ [group === "report" ? "reportFiles" : "editor.files"]: files.filter(file => file.materialId !== id) });
+      if (group === "editor") this.persist();
     },
     proof() {
       return ui.run(this, async (cur) => {
@@ -453,14 +463,14 @@ module.exports = (factory) =>
             body.addressId =
               q.terms.deliveryMode === "buyer_pickup" ? null : addressId;
             if (q.terms.deliveryMode !== "buyer_pickup" && !addressId)
-              throw new Error("请选择本单收货地址");
+              throw new ValidationError("请选择本单收货地址");
             break;
           }
           case "deliverCustomOrder":
           case "registerCustomPickup":
             if (ed.checked.length !== d.items.length)
-              throw new Error("请逐件核对整单明细");
-            if (!ed.occurredAt) throw new Error("请填写实际交接日期和时间");
+              throw new ValidationError("请逐件核对整单明细");
+            if (!ed.occurredAt) throw new ValidationError("请填写实际交接日期和时间");
             Object.assign(body, {
               materialIds: ed.files.map((r) => r.materialId),
               orderItemIds: ed.checked,
@@ -521,6 +531,7 @@ module.exports = (factory) =>
             return;
           }
         }
+        if (!result.orderId) successToast("操作已提交");
         await this.load(cur);
       });
     },

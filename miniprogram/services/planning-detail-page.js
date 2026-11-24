@@ -1,6 +1,26 @@
+const { hint, ValidationError } = require("./form-error");
+const successToast = require("./success-toast");
 const schemeEdits = require("./scheme-edits");
 const api = require("./planning"),
   ui = require("./planning-page");
+// 手输期间保留文本，失焦或保存时才确定件数。无可租量时原行仍可减量或删除。
+function finishQuantity(page, index) {
+  const row = page.data.items[index];
+  if (row.quantityDraft == null) return;
+  const raw = row.quantityDraft;
+  const limit = row.availability?.maxRentableQuantity ?? 0;
+  const entered = Number(raw);
+  let next = entered, notice = "";
+  if (!/^\d+$/.test(raw) || entered < 1) {
+    next = row.quantity;
+    notice = "请输入大于零的整数";
+  } else if (entered > limit && entered !== row.quantity) {
+    next = limit > 0 ? limit : Math.min(entered, row.quantity);
+    notice = limit > 0 ? "超过上限，已调整为 " + limit + " 件" : "本租期不可增加数量";
+  }
+  page.setData({ ["items[" + index + "].quantity"]: next, ["items[" + index + "].quantityDraft"]: null });
+  if (notice) wx.showToast({ title: notice, icon: "none", mask: false });
+}
 module.exports = function (kind) {
   const plan = kind === "schemes";
   return {
@@ -52,6 +72,17 @@ module.exports = function (kind) {
           shareReady: false,
         });
         if (plan) this.savedScheme = schemeEdits.baseline(detail, rows);
+        if (!plan) {
+          for (const row of rows) row.savedQuantity = row.quantity;
+          // 只有成功重读后，才用新的租期上限更新待恢复的输入。
+          if (this.savedDraft) {
+            const current = new Map(rows.map(row => [row.id, row]));
+            this.savedDraft.values.items = this.savedDraft.values.items.filter(row => current.has(row.id)).map(row => ({
+              ...current.get(row.id), quantity: row.quantity, remark: row.remark,
+              quantityDraft: row.quantityDraft ?? null,
+            }));
+          }
+        }
         ui.replaceItems(this, rows);
         ui.dirty(this, false);
       });
@@ -89,17 +120,23 @@ module.exports = function (kind) {
       if (this.data.busy) return;
       const index = Number(e.currentTarget.dataset.index),
         field = e.currentTarget.dataset.field;
-      this.setData({ ["items[" + index + "]." + field]: e.detail.value });
+      const key = !plan && field === "quantity" ? "quantityDraft" : field;
+      this.setData({ ["items[" + index + "]." + key]: e.detail.value });
       if (plan) this.savedScheme.edit(this.data.items[index]);
       this.editStatus();
     },
+    finishChecklistQuantity(e) {
+      const { index, id } = e.currentTarget.dataset;
+      if (this.data.items[index]?.id === id) finishQuantity(this, index);
+    },
     step(e) {
       if (this.data.busy) return;
-      const index = Number(e.currentTarget.dataset.index),
-        next =
-          Number(this.data.items[index].quantity) +
-          Number(e.currentTarget.dataset.delta);
+      const index = Number(e.currentTarget.dataset.index);
+      if (!plan) finishQuantity(this, index);
+      const row = this.data.items[index], delta = Number(e.currentTarget.dataset.delta);
+      const next = Number(row.quantity) + delta;
       if (next < 1 || next > 2147483647) return;
+      if (!plan && delta > 0 && next > (row.availability?.maxRentableQuantity ?? 0)) return;
       this.setData({ ["items[" + index + "].quantity"]: next });
       if (plan) this.savedScheme.edit(this.data.items[index]);
       this.editStatus();
@@ -131,10 +168,13 @@ module.exports = function (kind) {
           body = { actions: this.savedScheme.actions() };
           if (!body.actions.length) { ui.dirty(this, false); return; }
         } else {
+          this.data.items.forEach((item, index) => finishQuantity(this, index));
           const items = this.data.items.map(item => {
             const quantity = Number(item.quantity);
             if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 2147483647)
-              throw new Error("数量须为有效正整数");
+              throw new ValidationError("数量须为有效正整数");
+            if (quantity > item.savedQuantity && quantity > (item.availability?.maxRentableQuantity ?? 0))
+              throw new ValidationError("数量超过当前租期上限，请调整后保存");
             return { itemId: item.id, quantity, remark: (item.remark || "").trim() || null };
           });
           body = { expectedVersion: this.data.detail.version, items };
@@ -148,7 +188,7 @@ module.exports = function (kind) {
         ui.dirty(this, false);
         saved = true;
       });
-      if (saved) await this.load();
+      if (saved) { successToast("已保存"); await this.load(); }
     },
     async recover() {
       let recovered = false;
@@ -164,7 +204,7 @@ module.exports = function (kind) {
     },
     async archive() {
       if (this.data.dirty) {
-        this.setData({ message: "请先保存修改，再归档。" });
+        hint("请先保存修改，再归档。");
         return;
       }
       if (
@@ -181,7 +221,7 @@ module.exports = function (kind) {
           { expectedVersion: this.data.detail.version },
         ),
       );
-      if (receipt) await this.load();
+      if (receipt) { successToast("已归档"); await this.load(); }
     },
     togglePrice() {
       if (this.data.busy) return;
@@ -192,7 +232,7 @@ module.exports = function (kind) {
     async share() {
       const round = this.round;
       if (this.data.dirty) {
-        this.setData({ message: "请先保存内容，再生成分享。" });
+        hint("请先保存内容，再生成分享。");
         return;
       }
       await ui.run(this, async () => {
@@ -229,7 +269,7 @@ module.exports = function (kind) {
     },
     export() {
       if (this.data.dirty) {
-        this.setData({ message: "请先保存内容，再导出。" });
+        hint("请先保存内容，再导出。");
         return;
       }
       return ui.exportPdf(
@@ -240,7 +280,7 @@ module.exports = function (kind) {
     },
     async activate() {
       if (this.data.dirty) {
-        this.setData({ message: "请先保存修改，再切换清单。" });
+        hint("请先保存修改，再切换清单。");
         return;
       }
       if (
@@ -261,7 +301,7 @@ module.exports = function (kind) {
     },
     select() {
       if (this.data.dirty) {
-        this.setData({ message: "请先保存当前调整，再继续选品。" });
+        hint("请先保存当前调整，再继续选品。");
         return;
       }
       if (plan) wx.switchTab({ url: "/pages/home/index" });
@@ -276,7 +316,7 @@ module.exports = function (kind) {
     },
     createChecklist() {
       if (this.data.dirty) {
-        this.setData({ message: "请先保存方案。" });
+        hint("请先保存方案。");
         return;
       }
       wx.navigateTo({
@@ -288,7 +328,7 @@ module.exports = function (kind) {
       });
     },
     submit() {
-      if(this.data.dirty){this.setData({message:"请先保存清单修改，再进入配送结算。"});return;}
+      if(this.data.dirty){hint("请先保存清单修改，再进入配送结算。");return;}
       if(this.data.detail.currentCheckoutBatchId){wx.navigateTo({url:"/pages/payment/index?id="+this.data.detail.currentCheckoutBatchId});return;}
       if(!this.data.detail.submission.canSubmit){this.setData({message:this.data.reason||"当前清单暂不能提交，请核对状态。"});return;}
       wx.navigateTo({url:"/pages/checkout/index?id="+this.data.id});

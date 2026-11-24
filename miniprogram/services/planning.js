@@ -6,6 +6,7 @@ function changed(path) {
   revision.value++;
   if (/^\/api\/me\/addresses(?:\/|$)/.test(path)) revision.addresses++;
 }
+const listDeletion = /^\/api\/me\/(schemes|checklists)\/[^/]+\/delete$/;
 const priceModes = new Map();
 const pending = new Map(),
   localFiles = new Map();
@@ -110,8 +111,8 @@ async function command(slot, path, body) {
   } catch (error) {
     if (!session.isCurrent(owner)) throw error;
     if (error.outcome === "unknown" || !error.outcome) {
-      // A share receipt alone cannot restore its link. Replay the identical POST.
-      if (path.endsWith("/share")) throw error;
+      // 分享要恢复原链接；整单删除的断网重试也要保留原键和请求体。
+      if (path.endsWith("/share") || listDeletion.test(path)) throw error;
       try {
         const receipt = await get(
           "/api/me/planning-operations/by-request/" + intent.requestId,
@@ -145,7 +146,7 @@ async function recover(slot) {
 async function recoverNext(pathPrefix, skuId) {
   for (const [slot, intent] of pending)
     if (
-      intent.path.startsWith(pathPrefix) &&
+      intent.path.startsWith(pathPrefix) && !listDeletion.test(intent.path) &&
       (!skuId || intent.body.skuId === skuId)
     )
       return recover(slot);

@@ -17,10 +17,11 @@ require("../../session/page")({
     this.setData({
       detail: null,
       items: [],
-      busy: true,
-      invalid: false,
+      busy: !!this.data.token,
+      invalid: !this.data.token,
       message: "",
     });
+    if (!this.data.token) return;
     try {
       const detail = await api.get(
         "/api/public/scheme-shares/" + this.data.token,

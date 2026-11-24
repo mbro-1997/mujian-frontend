@@ -1,3 +1,4 @@
+const { ValidationError } = require("./form-error");
 // One journal per editable detail. The page never needs to diff its full draft.
 const MAX = 2147483647;
 const keyOf = row => row.id || 'new:' + row.display.skuId;
@@ -55,8 +56,8 @@ function baseline(detail, rows) {
     actions() {
       const result = Array.from(pending.values());
       for (const a of result) {
-        if (a.action === 'updateSchemeInfo' && !a.name) throw new Error('请填写方案名称。');
-        if ('quantity' in a && (!Number.isSafeInteger(a.quantity) || a.quantity < 1 || a.quantity > MAX)) throw new Error('数量须为有效正整数');
+        if (a.action === 'updateSchemeInfo' && !a.name) throw new ValidationError('请填写方案名称。');
+        if ('quantity' in a && (!Number.isSafeInteger(a.quantity) || a.quantity < 1 || a.quantity > MAX)) throw new ValidationError('数量须为有效正整数');
         if (a.sortOrder > MAX) throw new Error('道具顺序超出范围，请重新读取方案。');
       }
       return result;

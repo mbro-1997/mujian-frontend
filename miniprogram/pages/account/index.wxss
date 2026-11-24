@@ -123,6 +123,6 @@
 
 
 .account-settings{padding:16px 16px 0}.account-settings-card{background:#fff;border:1px solid #eee;border-radius:8px;margin-bottom:16px;padding:0 16px}.account-setting-row{min-height:54px;display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid #eee;font-size:15px}.account-setting-row:last-child{border-bottom:0}.account-setting-row>text:last-child{color:#6b7280;overflow-wrap:anywhere;text-align:right;min-width:0}.account-settings button.account-logout{width:100%;margin:20px 0;background:#fff;color:#111827;border-radius:8px;min-height:48px}
-.account-settings.renter-account { min-height:100vh; background:var(--mj-canvas); color:var(--mj-ink); }
-.renter-account .account-settings-card { border-color:var(--mj-line); border-radius:var(--mj-card); }
-.renter-account button.account-logout { margin:0 0 16px; border:1px solid var(--mj-line); border-radius:var(--mj-control); }
+.account-settings { min-height:100vh; background:var(--mj-canvas); color:var(--mj-ink); }
+.account-settings .account-settings-card { border-color:var(--mj-line); border-radius:var(--mj-card); }
+.account-settings button.account-logout { margin:0 0 16px; border:1px solid var(--mj-line); border-radius:var(--mj-control); }

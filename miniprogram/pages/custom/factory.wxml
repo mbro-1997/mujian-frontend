@@ -1,12 +1,17 @@
-<view class="custom">
+<view class="public-factory">
   <block wx:if="{{factory}}">
-    <view class="card"><view class="title">{{factory.name}}</view><view wx:if="{{factory.mainBusiness}}" class="muted">{{factory.mainBusiness}}</view></view>
-    <view class="card"><view class="title">选择发起方式</view>
-      <button wx:if="{{reference}}" disabled="{{busy}}" data-mode="reference" bindtap="create">按「{{reference.name}}」的风格定制</button>
-      <button class="primary" disabled="{{busy}}" bindtap="create">从空白需求开始</button>
+    <view class="pf-hero">
+      <view class="pf-identity"><view class="pf-monogram" aria-hidden="true">{{monogram}}</view><view class="pf-name">{{factory.name}}</view></view>
+      <view class="pf-business" wx:if="{{factory.mainBusiness}}"><view class="pf-caption">主营业务</view>{{factory.mainBusiness}}</view>
     </view>
-    <view class="card"><view class="title">案例模板</view><button disabled="{{busy}}" data-mode="template" bindtap="create">预览舞台家具组合 ›</button></view>
+    <view class="pf-section"><view class="pf-title">定制服务</view><view class="pf-copy">提交规格与数量，由工厂报价。定制为购买，成品归你所有。</view>
+      <button class="pf-action" disabled="{{busy}}" bindtap="create">填写定制需求</button>
+    </view>
+    <view class="pf-section"><view class="pf-title">定制参考</view>
+      <button class="pf-link" wx:if="{{reference}}" disabled="{{busy}}" data-mode="reference" bindtap="create"><text class="pf-link-word">参考「{{reference.name}}」发起需求</text><text class="pf-arrow">›</text></button>
+      <button class="pf-link" disabled="{{busy}}" data-mode="template" bindtap="create"><text class="pf-link-word">舞台家具组合模板</text><text class="pf-arrow">›</text></button>
+    </view>
   </block>
-  <view wx:elif="{{busy}}" class="card">正在读取工厂资料…</view>
-  <view wx:if="{{message}}" class="notice">{{message}}<button bindtap="refresh" disabled="{{busy}}">重试</button></view>
+  <view wx:elif="{{busy && !returnRefresh}}" class="pf-section"><mj-loading label="正在读取工厂资料"/></view>
+  <view wx:if="{{message}}" class="pf-section">{{message}}<button bindtap="refresh" disabled="{{busy}}">重试</button></view>
 </view>

@@ -1,0 +1,6 @@
+.progress { display:inline-flex; align-items:center; justify-content:center; gap:8px; color:var(--mj-muted,#5c665d); font-size:13px; line-height:20px; }
+.ring { flex:none; box-sizing:border-box; width:16px; height:16px; border:2px solid var(--mj-line,#dfe4dc); border-top-color:var(--mj-active-ink,#355c43); border-radius:50%; animation:mj-spin .8s linear infinite; }
+@keyframes mj-spin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion:reduce) { .ring { animation:none; } }
+.mask { position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; background:rgba(20,25,22,.38); }
+.mask .progress { padding:16px 20px; border-radius:12px; background:white; color:var(--mj-ink,#242924); }

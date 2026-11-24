@@ -1,1 +1,4 @@
-<view class="empty">{{message || "正在打开道具…"}}</view>
+<view class="mj-read-state">
+  <text wx:if="{{message}}">{{message}}</text>
+  <mj-loading wx:else label="正在打开道具"/>
+</view>

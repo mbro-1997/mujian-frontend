@@ -1,0 +1,7 @@
+:host { display:block; }
+.track { position:relative; overflow:hidden; }
+.face { position:relative; background:white; transition:transform 180ms ease-out; touch-action:pan-y; }
+.face.dragging { transition:none; }
+.track > button.delete, .track > button.delete[disabled] { position:absolute; top:0; right:0; bottom:0; width:22vw; min-width:22vw; max-width:22vw; height:100%; margin:0; padding:0; display:flex; align-items:center; justify-content:center; border:0; border-radius:0; background:#be3634; color:white; font-size:15px; font-weight:600; }
+.delete::after { border:0; }
+@media (prefers-reduced-motion:reduce) { .face { transition:none; } }

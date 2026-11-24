@@ -3,18 +3,8 @@ const account = require("../services/account"),
   factory = require("../services/factory"),
   routes = require("../constants/routes"),
   warehouse = require("./warehouse");
-const menu = [
-  { key: "orders", label: "租赁订单" },
-  { key: "merchant", label: "收款账户" },
-  { key: "custom", label: "定制需求与订单" },
-  { key: "reviews", label: "道具与库存申请" },
-  { key: "ledger", label: "库存流水" },
-  { key: "extension", label: "延期申请" },
-  { key: "claims", label: "索赔与仲裁" },
-  { key: "finance", label: "资金结算" },
-  { key: "ratings", label: "评价管理" },
-  { key: "support", label: "平台客服" },
-];
+const menu = require("./factory-menu");
+const menuRoutes = new Map(menu.flatMap(group => group.items.map(item => [item.key, item.url])));
 module.exports = function (index, renter) {
   const oldShow = renter.onShow;
   const inlineLogin = require("./login-page");
@@ -37,8 +27,9 @@ module.exports = function (index, renter) {
       factoryMenus: menu,
       tradeOverview: null, tradeOrders: [], tradePage: 0, tradeTotal: "0", tradeMessage: "", tradeBusy: false,
     },
-    async onShow() {
-      return this.resolveRoot();
+    onShow() {
+      this.rootRefresh = this.resolveRoot();
+      return this.rootRefresh;
     },
     onHide() {
       this.rootRound = (this.rootRound || 0) + 1;
@@ -79,6 +70,7 @@ module.exports = function (index, renter) {
           require("./state").bind(c, profile.id);
           this.setData({ factoryProfile: profile, rootReady: true });
           this.restoreNavigationState();
+          require("./state").scroll(this);
           if (index === 2) await this.load();
           if (index === 0 && (!this.data.tradePage ||
               this.tradeRevision !== require("../services/trading").revision.orders ||
@@ -109,8 +101,10 @@ module.exports = function (index, renter) {
           owner.token
         )
           return this.resolveRoot();
-        if (session.isCurrent(owner) && round === this.rootRound)
+        if (session.isCurrent(owner) && round === this.rootRound) {
+          this._navigationInstance = null;
           this.setData({ rootMessage: e.message, rootReady: false });
+        }
       } finally {
         if (session.isCurrent(owner) && round === this.rootRound)
           this.setData({ rootLoading: false });
@@ -172,36 +166,25 @@ module.exports = function (index, renter) {
     factoryOrderList(e){wx.navigateTo({url:"/pages/factory/orders?view="+(e.currentTarget.dataset.view||"all")});},
     factoryOpen(e) {
       const key = e.currentTarget.dataset.key;
-      const paths = {
-        orders: "/pages/factory/orders",
-        custom: "/pages/factory/custom",
-        merchant: "/pages/factory/merchant",
-        extension: "/pages/factory/extensions",
-        claims: "/pages/factory/disputes",
-        finance: "/pages/factory/settlements",
-        reviews: "/pages/props/reviews",
-        support: "/pages/service/index",
-        ratings: "/pages/factory/ratings",
-        ledger: "/pages/inventory/select",
-        profile: "/pages/factory/profile",
-        phone: "/pages/factory/phone",
-        rules: "/pages/factory/rules?readOnly=1",
-        account: "/pages/account/index?return=/pages/mine/index",
-      };
-      if (paths[key]) wx.navigateTo({ url: paths[key] });
+      const destination = menuRoutes.get(key);
+      if (destination) wx.navigateTo({ url: destination });
       else wx.showToast({ title: "此服务暂未开放", icon: "none" });
     },
-    factoryCreate(e) {
-      if (
-        this.data.rootLoading ||
-        !this.data.factoryProfile ||
-        this.data.factoryContext.accessMode === "restricted" ||
-        this.data.factoryProfile.factoryStatus !== "active"
-      )
-        return;
+    async factoryCreate(e) {
+      if (this.openingFactoryForm) return;
       const type = e.currentTarget.dataset.type;
-      if (["A_ASSET", "B_CONSUMABLE"].includes(type))
-        wx.navigateTo({ url: "/pages/props/form?assetType=" + type });
+      const owner = session.capture(), round = this.rootRound;
+      this.openingFactoryForm = true;
+      try {
+        if (this.data.rootLoading) await this.rootRefresh;
+        if (!session.isCurrent(owner) || this.rootRound !== round || this.data.rootLoading ||
+            !this.data.rootReady || !this.data.factoryRoot || this.data.factoryContext?.accessMode === "restricted" ||
+            this.data.factoryProfile?.factoryStatus !== "active") return;
+        if (["A_ASSET", "B_CONSUMABLE"].includes(type))
+          wx.navigateTo({ url: "/pages/props/form?assetType=" + type });
+      } finally {
+        this.openingFactoryForm = false;
+      }
     },
     async factoryLogout() {
       try {

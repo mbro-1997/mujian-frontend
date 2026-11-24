@@ -1,3 +1,4 @@
+const uploadBatch = require("./upload-batch");
 const http = require("./http"),
   shared = require("./verification"),
   session = require("../session/storage");
@@ -54,20 +55,7 @@ async function materialize(fields) {
   x.cases.forEach((c) =>
     c.images.forEach((_, i) => slot(c.images, i, "service_case")),
   );
-  let cursor = 0,
-    failure = null;
-  async function work() {
-    while (!failure && cursor < jobs.length) {
-      const task = jobs[cursor++];
-      try {
-        await task();
-      } catch (e) {
-        failure = failure || e;
-      }
-    }
-  }
-  await Promise.all([work(), work()]);
-  if (failure) throw failure;
+  await uploadBatch(jobs);
   session.assertCurrent(owner);
   return x;
 }

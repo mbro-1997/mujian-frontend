@@ -1,7 +1,10 @@
+const { hint } = require("./form-error");
 const api = require("./props"),
   session = require("../session/storage");
 const store = require("./prop-browser-store"),
   inlineLogin = require("../navigation/login-page");
+// 同一查询可有多个页面实例；按实际收到的数据批次辨认当前画面。
+let nextBatch = 0;
 module.exports = {
   ...inlineLogin,
   ...require("../navigation/scheme-picker"),
@@ -89,14 +92,16 @@ module.exports = {
           ? ""
           : "此租期没有当前选品清单，请到清单页选择或新建。",
       });
-      if (this.rawItems) this.renderItems(0, true);
+      this.updateJoinedQuantities();
     } catch (error) {
-      if (round === this.selectionRound && session.isCurrent(owner))
+      if (round === this.selectionRound && session.isCurrent(owner)) {
         this.setData({
           currentChecklist: null,
           joinedQuantities: {},
           planningMessage: error.message,
         });
+        this.updateJoinedQuantities();
+      }
     }
   },
   openChecklist() {
@@ -110,6 +115,7 @@ module.exports = {
     this.scrollTop = event.scrollTop;
   },
   onHide() {
+    if (this.data.styleOpen || this.data.typeOpen) this.setData({ styleOpen: false, typeOpen: false });
     this.remember();
   },
   onUnload() {
@@ -123,6 +129,7 @@ module.exports = {
     store.cache.put(
       store.stateKey(this.activeQuery),
       {
+        batch: this.batch,
         items: this.rawItems,
         page: this.data.page,
         total: this.data.total,
@@ -149,7 +156,10 @@ module.exports = {
     }
     const restore = snapshot && force !== true;
     if (restore) {
-      this.rawItems = snapshot.value.items;
+      const mounted = this.renderedKey === key && this.batch === snapshot.value.batch &&
+        this.data.items.length === snapshot.value.items.length;
+      this.batch = snapshot.value.batch;
+      if (!mounted) this.rawItems = snapshot.value.items;
       this.validatedAt = snapshot.at;
       this.exhausted = snapshot.value.exhausted;
       this.setData({
@@ -161,10 +171,12 @@ module.exports = {
         message: "",
         moreState: this.exhausted ? "end" : "idle",
       });
-      this.renderItems(0, true);
-      this.scrollTop = snapshot.value.top;
-      if (wx.pageScrollTo)
-        wx.pageScrollTo({ scrollTop: this.scrollTop, duration: 0 });
+      if (!mounted) {
+        this.renderItems(0, true);
+        this.scrollTop = snapshot.value.top;
+        if (wx.pageScrollTo)
+          wx.pageScrollTo({ scrollTop: this.scrollTop, duration: 0 });
+      }
     } else if (!snapshot || store.stateKey(query) !== this.renderedKey) {
       this.rawItems = [];
       this.validatedAt = 0;
@@ -255,32 +267,41 @@ module.exports = {
       message: "",
       moreState: this.exhausted ? "end" : "idle",
     });
+    this.batch = ++nextBatch;
     this.renderItems(previousCount, page === 1);
   },
   // 追加只提交新增卡片；恢复缓存分小批渲染，不发送一个无限增长的数组。
   renderItems(start, reset) {
-    if (reset) this.setData({ items: [] });
-    for (
-      let index = start;
-      index < this.rawItems.length;
-      index += store.config.pageSize
-    ) {
-      const update = {};
-      for (
-        let offset = index;
-        offset < Math.min(index + store.config.pageSize, this.rawItems.length);
-        offset += 1
-      ) {
-        const card = api.card(this.rawItems[offset]);
-        update["items[" + offset + "]"] = {
-          ...card,
-          joinedQuantity: this.data.currentChecklist
-            ? this.data.joinedQuantities[card.id] || 0
-            : null,
-        };
-      }
-      this.setData(update);
+    const size = store.config.pageSize;
+    if (reset && !this.rawItems.length) {
+      if (this.data.items.length) this.setData({ items: [] });
+      return;
     }
+    for (let index = start; index < this.rawItems.length; index += size) {
+      const cards = this.rawItems.slice(index, index + size).map(raw => {
+        const card = api.card(raw);
+        return { ...card, joinedQuantity: this.joinedQuantity(card.id) };
+      });
+      // 新批次变短时直接替换首批，移除尾部旧记录，不插入一次空列表渲染。
+      if (reset && index === 0 && this.data.items.length > this.rawItems.length) {
+        this.setData({ items: cards });
+      } else {
+        const update = {};
+        cards.forEach((card, i) => { update["items[" + (index + i) + "]"] = card; });
+        this.setData(update);
+      }
+    }
+  },
+  joinedQuantity(id) {
+    return this.data.currentChecklist ? this.data.joinedQuantities[id] || 0 : null;
+  },
+  updateJoinedQuantities() {
+    const update = {};
+    this.data.items.forEach((card, index) => {
+      const quantity = this.joinedQuantity(card.id);
+      if (quantity !== card.joinedQuantity) update["items[" + index + "].joinedQuantity"] = quantity;
+    });
+    if (Object.keys(update).length) this.setData(update);
   },
   onReachBottom() {
     if (!this.data.factoryRoot) return this.loadMore();
@@ -355,6 +376,7 @@ module.exports = {
       if (wx.stopPullDownRefresh) wx.stopPullDownRefresh();
     }
   },
+  closeFilters() { this.setData({ styleOpen: false, typeOpen: false }); },
   toggleStyles() {
     this.setData({ styleOpen: !this.data.styleOpen, typeOpen: false });
   },
@@ -386,7 +408,7 @@ module.exports = {
     const code = e.currentTarget.dataset.code,
       old = this.data.styleCodes;
     if (!old.includes(code) && old.length >= 3) {
-      this.setData({ message: "最多选择3项风格" });
+      hint("最多选择3项风格");
       return;
     }
     const styleCodes = old.includes(code)

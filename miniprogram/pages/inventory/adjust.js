@@ -1,6 +1,10 @@
+const { ValidationError, showFormError } = require("../../services/form-error");
+const successToast = require("../../services/success-toast");
+const { dirty } = require("../../services/planning-page");
 const api = require("../../services/props");
 require("../../session/page")({
   data: {
+    dirty: false,
     id: "",
     sku: null,
     type: "increase",
@@ -19,9 +23,8 @@ require("../../session/page")({
     message: "",
   },
   onLoad(q) {
-    if(wx.enableAlertBeforeUnload) wx.enableAlertBeforeUnload({message:"离开将丢弃尚未提交的填写内容"});
     this.setData({ id: q.id || "" });
-    this.load();
+    return this.load();
   },
   async load() {
     this.setData({ busy: true });
@@ -32,7 +35,7 @@ require("../../session/page")({
             ? ["increase", "decrease", "repair", "abnormal_decrease"]
             : ["increase", "decrease", "abnormal_decrease"];
       this.setData({ sku, types, labels: types.map((x) => api.names[x]) });
-      if (!sku.canEditOptions)
+      if (!sku.canAdjustInventory)
         this.setData({ message: "当前道具不能调整库存，请返回查看状态。" });
     } catch (e) {
       this.setData({ message: e.message });
@@ -41,6 +44,7 @@ require("../../session/page")({
     }
   },
   async type(e) {
+    dirty(this);
     this.setData({
       type: this.data.types[e.detail.value],
       typeIndex:Number(e.detail.value), abnormalIndex:0,
@@ -96,6 +100,7 @@ require("../../session/page")({
     const selected = this.data.selected.includes(id)
       ? this.data.selected.filter((x) => x !== id)
       : this.data.selected.concat(id);
+    dirty(this);
     this.setData({
       selected,
       items: this.data.items.map((x) => ({
@@ -105,13 +110,15 @@ require("../../session/page")({
     });
   },
   input(e) {
+    dirty(this);
     this.setData({ [e.currentTarget.dataset.key]: e.detail.value });
   },
   abnormal(e) {
+    dirty(this);
     this.setData({ abnormal: ["", "lost", "scrapped"][e.detail.value], abnormalIndex:Number(e.detail.value) });
   },
   async submit() {
-    if (this.data.busy || !this.data.sku?.canEditOptions) return;
+    if (this.data.busy || !this.data.sku?.canAdjustInventory) return;
     this.setData({ busy: true, message: "" });
     try {
       const a = this.data.sku.assetType === "A_ASSET",
@@ -119,13 +126,13 @@ require("../../session/page")({
           adjustmentType: this.data.type,
           reason: this.data.reason.trim(),
         };
-      if (!body.reason) throw Error("请填写调整原因");
+      if (!body.reason) throw new ValidationError("请填写调整原因");
       if (this.data.type === "abnormal_decrease") {
-        if (!this.data.abnormal) throw Error("请选择丢失或报废结果");
+        if (!this.data.abnormal) throw new ValidationError("请选择丢失或报废结果");
         body.abnormalResult = this.data.abnormal;
       }
       if (a && this.data.type !== "increase") {
-        if (!this.data.selected.length) throw Error("请选择具体实物");
+        if (!this.data.selected.length) throw new ValidationError("请选择具体实物");
         body.snIds = this.data.selected;
       } else {
         body.quantity = Number(this.data.quantity);
@@ -134,7 +141,7 @@ require("../../session/page")({
           body.quantity < 1 ||
           body.quantity > 2147483647
         )
-          throw Error("数量必须为正整数");
+          throw new ValidationError("数量必须为正整数");
       }
       const r = await api.command(
         "adjust-" + this.data.id,
@@ -145,11 +152,11 @@ require("../../session/page")({
         body,
       );
       if(wx.disableAlertBeforeUnload)wx.disableAlertBeforeUnload();
-      wx.redirectTo({
+      wx.redirectTo({ success: () => successToast("库存申请已提交"),
         url: "/pages/props/review?type=" + r.targetType + "&id=" + r.targetId,
       });
     } catch (e) {
-      this.setData({ message: e.message });
+      showFormError(this, e);
     } finally {
       this.setData({ busy: false });
     }

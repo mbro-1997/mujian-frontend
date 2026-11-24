@@ -1,2 +1,2 @@
 @import "../../styles/address.wxss";
-@import "../../styles/renter-surfaces.wxss";
+@import "../../styles/surfaces.wxss";

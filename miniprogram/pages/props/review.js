@@ -1,3 +1,4 @@
+const successToast = require("../../services/success-toast");
 const { minuteFields } = require("../../services/display-time");
 const api = require("../../services/props");
 require("../../session/page")({
@@ -15,7 +16,7 @@ require("../../session/page")({
     this.setData({ id: q.id || "", type: q.type || "" });
   },
   onShow() {
-    this.load();
+    return this.load();
   },
   async load() {
     this.setData({ busy: true });
@@ -83,6 +84,7 @@ require("../../session/page")({
         },
       );
       this.setData({ dialog: false });
+      successToast("申请已撤回");
       await this.load();
     } catch (e) {
       this.setData({ message: e.message });

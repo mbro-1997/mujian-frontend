@@ -1,65 +1,12 @@
-<view class="page-pad" bindtouchstart="activity"
-  ><view class="mine-hero"
-    ><view class="mine-avatar factory">厂</view
-    ><view
-      ><view class="mine-name"
-        >{{profile ? profile.materials.factoryName : '工厂服务'}}</view
-      ><view class="mine-description"
-        >{{context ? identity : '登录后管理你的账号'}}<text
-          wx:if="{{restricted}}"
-        >
-          · 账号受限</text
-        ></view
-      ><view class="mine-description">工厂身份与资料入口</view></view
-    ></view
-  ><view wx:if="{{profile.factoryStatus === 'disabled' || profile.factoryStatus === 'suspended'}}" class="feedback">工厂经营{{profile.factoryStatus === 'suspended' ? '已暂停' : '已停用'}}，可查看并修改资料</view><view wx:if="{{message}}" class="feedback">{{message}}</view
-  ><view wx:if="{{!ready}}" class="feedback"
-    >当前账号尚不能进入工厂业务，请先查看账号状态。</view
-  ><view class="mine-section"
-    ><view class="section-title"
-      ><text>工厂订单</text
-      ><text class="muted" bindtap="unavailable">全部订单 ›</text></view
-    ><view class="mine-grid"
-      ><view
-        class="mine-tool"
-        wx:for="{{orders}}"
-        wx:key="label"
-        bindtap="unavailable"
-        ><view class="tool-icon">{{item.icon}}</view><text>{{item.label}}</text></view
-      ></view
-    ><view class="section-note">订单服务暂未开放</view></view
-  ><view class="mine-section"
-    ><view class="section-title"
-      ><text>经营工具</text><text class="muted">预留入口</text></view
-    ><view class="mine-grid"
-      ><view
-        class="mine-tool"
-        wx:for="{{tools}}"
-        wx:key="label"
-        data-label="{{item.label}}" bindtap="tool"
-        ><view class="tool-icon">{{item.icon}}</view><text>{{item.label}}</text></view
-      ></view
-    ></view
-  ><view class="mine-section"
-    ><view class="mine-row" bindtap="profile"
-      ><text>工厂资料</text><text class="chevron">›</text></view
-    ><view class="mine-row" bindtap="goAccount"
-      ><text>账号管理</text><text class="chevron">›</text></view
-    ></view
-  ><view class="action-row"
-    ><button class="secondary" bindtap="load" loading="{{busy}}">
-      刷新状态</button
-    ><button
-      wx:if="{{context}}"
-      class="secondary"
-      bindtap="logout"
-      disabled="{{busy}}"
-    >
-      退出登录</button
-    ><button wx:else class="primary" bindtap="goAccount">
-      登录 / 选择身份
-    </button></view
-  ><view class="action-row"
-    ><button class="secondary" bindtap="back">返回我的</button></view
-  ></view
->
+<view class="factory-page" bindtouchstart="activity">
+  <view class="card">
+    <mj-heading title="工厂服务" subtitle="{{context ? identity : ''}}"/>
+    <mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取账号状态"/>
+    <view wx:elif="{{message}}" class="feedback">{{message}}</view>
+    <view wx:else class="muted">{{restricted ? '账号使用受限，请查看账号状态。' : '请使用已入驻的工厂账号进入工作台。'}}</view>
+    <button class="primary" bindtap="goAccount" disabled="{{busy}}">{{context ? '账号管理' : '登录 / 选择身份'}}</button>
+    <button wx:if="{{context}}" bindtap="logout" disabled="{{busy}}">退出登录</button>
+    <button wx:if="{{message}}" bindtap="load" disabled="{{busy}}">重新读取</button>
+  </view>
+  <button bindtap="back">返回我的</button>
+</view>

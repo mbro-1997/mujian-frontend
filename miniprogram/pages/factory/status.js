@@ -23,7 +23,7 @@ require("../../session/page")({
     });
   },
   onShow() {
-    this.load();
+    return this.load();
   },
   async load() {
     this.setData({ busy: true });

@@ -1,0 +1,5 @@
+<view class="track">
+  <button wx:if="{{enabled}}" class="delete" aria-label="{{label}}" aria-hidden="{{!opened}}" disabled="{{!opened || busy}}" catchtap="remove">删除</button>
+  <view class="face {{dragging ? 'dragging' : ''}}" style="transform:translateX({{dragging ? offset + 'px' : (opened && enabled ? '-22vw' : '0px')}})"
+    bindtouchstart="start" bindtouchmove="move" bindtouchend="end" bindtouchcancel="cancel" bindtap="tap"><slot/></view>
+</view>

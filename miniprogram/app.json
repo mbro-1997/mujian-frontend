@@ -37,6 +37,7 @@
     "pages/plan/detail",
     "pages/plan/share",
     "pages/checklist/detail",
+    "pages/checklist/history",
     "pages/address/index",
     "pages/address/edit",
     "pages/checkout/index",
@@ -74,7 +75,7 @@
     "navigationBarTitleText": "幕间",
     "navigationBarBackgroundColor": "#ffffff",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#f6f6f6",
+    "backgroundColor": "#f3f5f1",
     "onReachBottomDistance": 300
   },
   "tabBar": {
@@ -101,5 +102,12 @@
     ]
   },
   "style": "v2",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "usingComponents": {
+    "photo-remove": "/components/photo-remove/index",
+    "dict-select": "/components/dict-select/index",
+    "list-filters": "/components/list-filters/index",
+    "mj-loading": "/components/mj-loading/index",
+    "mj-heading": "/components/mj-heading/index"
+  }
 }

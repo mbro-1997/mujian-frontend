@@ -34,7 +34,7 @@ require("../../session/page")({
   },
   onUnload() { this.loginActive = false; },
   onShow() {
-    if (session.token()) this.load();
+    if (session.token()) return this.load();
     else this.setData({ loginVisible: true });
   },
   async load() {
@@ -86,11 +86,6 @@ require("../../session/page")({
       this.setData({ busy: false });
     }
     this.load();
-  },
-  verification(e) {
-    wx.navigateTo({
-      url: "/pages/" + e.currentTarget.dataset.domain + "/form",
-    });
   },
   async logout() {
     await account.logout().catch(() => {});

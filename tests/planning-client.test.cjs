@@ -250,6 +250,9 @@ test("version conflict preserves draft and manual refresh permits explicit draft
 test("shared page revalidates each entry, clears invalid content and ignores late old token", async () => {
   const f = fixture("plan/share"),
     p = f.page;
+  await p.onShow();
+  assert.equal(p.data.invalid, true);
+  assert.equal(f.pending.length, 0);
   p.setData({ token: "a".repeat(43) });
   const first = p.onShow();
   await tick();
@@ -864,4 +867,63 @@ test("mixed changes use stable IDs, merge repeat edits and preserve sort slots a
   [tied[1],tied[2]]=[tied[2],tied[1]];journal.move(tied,1,2);
   assert.deepEqual(journal.actions().map(a=>a.itemId),['a1','a3','a4','a5']);
   [tied[1],tied[2]]=[tied[2],tied[1]];journal.move(tied,2,1);assert.equal(journal.dirty,false);
+});
+
+test("历史清单按 history 独立分页，返回保留页码；工厂无法借登录回跳读取该列表", async () => {
+  const route = "pages/checklist/history";
+  const f = fixture("checklist/history", { roleCode: "demander" }), p = f.page;
+  p.route = route;
+  await p.onLoad({});
+  const first = p.onShow();
+  await tick();
+  assert.equal(f.pending[0].args[0], "/api/me/checklists?page=1&pageSize=20&scope=history");
+  const rows = Array.from({length: 20}, (_, i) => ({id: String(i), name: "历史清单 " + i, status: "converted_to_order"}));
+  f.pending[0].resolve({items: rows, total: "21"});
+  await first;
+  const next = p.onReachBottom();
+  assert.equal(f.pending[1].args[0], "/api/me/checklists?page=2&pageSize=20&scope=history");
+  f.pending[1].resolve({items: [{...rows[0], id}], total: "21"});
+  await next;
+  p.open({ currentTarget: { dataset: { id } } });
+  assert.equal(f.nav.at(-1), "/pages/checklist/detail?id=" + id);
+  p.onHide();
+  await p.onShow();
+  assert.equal(p.data.items.length, 21);
+  assert.equal(p.data.page, 2);
+  assert.equal(f.pending.length, 2);
+  const select = f.load("navigation/login-target.js").select;
+  assert.equal(select({roleCode: "demander"}, "/" + route), "/" + route);
+  assert.equal(select({roleCode: "supplier"}, "/" + route), "/pages/home/index");
+});
+
+test("清单按租期上限校正手输，历史超量仍可减量，零库存不产生零件行", () => {
+  const f = fixture("checklist/detail"), p = f.page, notices = [];
+  f.wx.showToast = ({ title }) => notices.push(title);
+  const event = { currentTarget: { dataset: { index: 0, id: sku, field: "quantity" } } };
+  function input(value) { p.itemField({ ...event, detail: { value } }); }
+  function step(delta) { p.step({ currentTarget: { dataset: { index: 0, delta } } }); }
+  function row(quantity, maxRentableQuantity) {
+    p.setData({ items: [{ ...entry(), quantity, savedQuantity: quantity, availability: { maxRentableQuantity } }] });
+  }
+  row(2, 5);
+  input("7");
+  assert.equal(p.data.items[0].quantityDraft, "7");
+  p.finishChecklistQuantity(event);
+  assert.equal(p.data.items[0].quantity, 5);
+  assert.match(notices.pop(), /超过上限.*5/);
+  step(1);
+  assert.equal(p.data.items[0].quantity, 5);
+  row(5, 3);
+  p.finishChecklistQuantity(event);
+  assert.equal(p.data.items[0].quantity, 5);
+  step(-1);
+  step(1);
+  assert.equal(p.data.items[0].quantity, 4);
+  row(3, 0);
+  input("7");
+  p.finishChecklistQuantity(event);
+  assert.equal(p.data.items[0].quantity, 3);
+  step(-1);
+  assert.equal(p.data.items[0].quantity, 2);
+  assert.equal(f.pending.length, 0);
 });

@@ -8,6 +8,7 @@ function fixture(domain = "student", statusPage = false) {
     navigations = [];
   let pageOptions;
   const wx = {
+    showToast(options) { wx.lastToast = options; },
     getStorageSync: (k) => storage.get(k),
     setStorageSync: (k, v) => storage.set(k, v),
     removeStorageSync: (k) => storage.delete(k),

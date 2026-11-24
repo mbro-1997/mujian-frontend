@@ -1,0 +1,1 @@
+<button class="hit" aria-label="{{label}}" aria-disabled="{{disabled}}" hover-class="none" catchtap="ask"><view class="cross"/></button>

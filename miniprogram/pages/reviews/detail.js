@@ -1,3 +1,4 @@
+const successToast = require("../../services/success-toast");
 const { request } = require("../../services/http");
 const ui = require("../../services/trading-page");
 require("../../session/page")({
@@ -10,6 +11,7 @@ require("../../session/page")({
     stars: [1, 2, 3, 4, 5],
     orderCaption: "",
     reviewerRole: "",
+    tagsOpen: false,
     selected: [],
     content: "",
     busy: false,
@@ -88,6 +90,7 @@ require("../../session/page")({
   edit(e) {
     this.setData({ content: e.detail.value });
   },
+  toggleTags() { this.setData({ tagsOpen: !this.data.tagsOpen }); },
   tag(e) {
     if (this.data.busy) return;
     const name = e.currentTarget.dataset.name;
@@ -108,7 +111,10 @@ require("../../session/page")({
         tags: this.data.selected,
         content: this.data.content.trim() || null,
       });
-      if (current()) this.setData({ review });
+      if (current()) {
+        this.setData({ review });
+        successToast("评价已提交");
+      }
     });
   },
 });

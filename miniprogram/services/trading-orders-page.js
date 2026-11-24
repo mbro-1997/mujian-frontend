@@ -16,8 +16,9 @@ module.exports = function (factory) {
       factory,
       busy: false,
       message: '',
-      tabs: [
-        { code: 'all', label: '全部' },
+      orderFilters: [{ key: 'view', title: '订单状态', options: [
+        { code: 'all', label: '全部状态' },
+        ...(factory ? [{ code: 'factory_pending', label: '待处理' }] : []),
         { code: 'pending_accept', label: '待接单' },
         { code: 'accepted', label: '待出库' },
         ...[
@@ -32,10 +33,14 @@ module.exports = function (factory) {
         { code: 'cancelled', label: '已终止' },
         { code: 'exceptions', label: '异常与争议' },
         { code: 'refund_exception', label: '退款异常' },
-      ],
+      ] }],
     },
     onLoad(q) {
-      if (q.view) this.setData({ view: q.view });
+      if (q.view) {
+        // 从「我的」重新进列表时，显式筛选优先于上一次列表的缓存；详情返回不会触发 onLoad。
+        require('../navigation/state').forget(this);
+        this.setData({ view: q.view });
+      }
     },
     onShow() {
       ui.show(this);
@@ -128,7 +133,7 @@ module.exports = function (factory) {
     filter(e) {
       if (this.data.busy) return;
       this.setData({
-        view: e.currentTarget.dataset.view,
+        view: e.detail.value,
         page: 0,
         items: [],
         total: '0',

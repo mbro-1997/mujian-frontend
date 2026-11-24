@@ -43,6 +43,7 @@ require('../../session/page')({
       api.command('merchant-onboard', '/api/me/factory-wechat-account/onboarding', {
         expectedVersion: this.data.detail.version,
       }),
+      '开户申请已提交',
     );
     if (result) return this.load();
   },

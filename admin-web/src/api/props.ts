@@ -1,7 +1,18 @@
 import { api, refreshCsrf, ApiError } from "./http";
 import { capture, assertCurrent } from "../session/boundary";
 import { me } from "../session/state";
-import type { CommandResult, ReviewResult, UploadResult } from "./prop-types";
+import type { CommandResult, ImageLocator, ReviewResult, UploadResult } from "./prop-types";
+
+/** 通过管理端同源接口读取图片，浏览器请求自动携带现有管理会话。 */
+export function propImageContentUrl(locator: ImageLocator) {
+  const parameters = new URLSearchParams({
+    sourceType: locator.sourceType,
+    sourceId: locator.sourceId,
+    section: locator.section,
+    index: String(locator.index),
+  });
+  return "/api/admin/prop-materials/content?" + parameters.toString();
+}
 export const names: Record<string, string> = {
   sku_audit: "SKU 资料 / 上下架",
   sn_adjustment: "A 类实物调整",

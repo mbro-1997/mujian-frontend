@@ -1,1 +1,136 @@
-<view class="navigation-return" wx:if="{{!nativeBackAvailable}}" bindtap="navigationBack">‹ 返回</view><view class="prop-page" bindtouchstart="activity"><view class="feedback error" wx:if="{{message}}">{{message}}</view><view class="feedback" wx:if="{{locked}}">当前状态不能修改。请返回资料页查看审核状态。</view><view class="panel"><view class="section-title">{{mode==='edit'?'编辑免审资料':'基础信息'}}</view><block wx:if="{{mode!=='edit'}}"><view class="form-row"><label>道具名称 *</label><input value="{{fields.propName}}" data-key="propName" bindinput="input" maxlength="128" disabled="{{busy||locked}}"/></view><view wx:if="{{mode!=='update'}}" class="form-row"><label>资产类型 *</label><view class="field-grid two"><view class="chip {{assetType==='A_ASSET'?'active':''}}" data-type="A_ASSET" bindtap="chooseType">A 类资产型<view class="muted">一物一码，逐件追踪</view></view><view class="chip {{assetType==='B_CONSUMABLE'?'active':''}}" data-type="B_CONSUMABLE" bindtap="chooseType">B 类数量型<view class="muted">按 SKU 数量管理</view></view></view></view></block><view wx:if="{{mode!=='update'}}" class="form-row"><label>风格 *</label><view class="form-style-field"><view class="form-style-selected" bindtap="toggleStyles"><view class="form-selected-tags"><text wx:if="{{!selectedStyles.length}}" class="muted">请选择风格</text><text wx:for="{{selectedStyles}}" wx:key="code" class="form-selected-tag">{{item.label}}</text></view><text>{{styleOpen?'⌃':'⌄'}}</text></view><scroll-view wx:if="{{styleOpen}}" scroll-y class="form-style-options"><view wx:for="{{styleOptions}}" wx:key="code" class="form-style-option {{item.selected?'active':''}} {{item.choiceDisabled?'disabled':''}}" data-code="{{item.code}}" bindtap="style"><text>{{item.label}}{{!item.enabled?'（已停用）':''}}</text><text class="form-style-check">{{item.selected?'✓':''}}</text></view></scroll-view></view><view class="muted">最多3项；特殊资产须单选。停用原项可保留，新增不可选。</view></view><view class="field-grid two"><view wx:if="{{mode!=='update'}}" class="form-row"><label>类型 *</label><picker range="{{options.types}}" value="{{typeIndex}}" range-key="label" data-key="typeCode" data-group="types" bindchange="select" disabled="{{busy||locked}}"><view class="select">{{typeLabel}} ▾</view></picker></view><view wx:if="{{mode!=='edit'}}" class="form-row"><label>是否阻燃 *</label><picker range="{{options.fireResistance}}" value="{{fireIndex}}" range-key="label" data-key="fireResistantCode" data-group="fireResistance" bindchange="select" disabled="{{busy||locked}}"><view class="select">{{fireLabel}} ▾</view></picker></view></view></view><view class="panel"><view class="section-title">规格参数</view><block wx:if="{{mode!=='edit'}}"><view class="form-row"><label>尺寸描述 *</label><input value="{{fields.sizeDesc}}" data-key="sizeDesc" bindinput="input" maxlength="128"/></view><view class="field-grid"><view class="form-row"><label>长 cm *</label><input type="digit" value="{{fields.lengthCm}}" data-key="lengthCm" bindinput="input"/></view><view class="form-row"><label>宽 cm *</label><input type="digit" value="{{fields.widthCm}}" data-key="widthCm" bindinput="input"/></view><view class="form-row"><label>高 cm *</label><input type="digit" value="{{fields.heightCm}}" data-key="heightCm" bindinput="input"/></view></view><view class="field-grid two"><view class="form-row"><label>材质 *</label><input value="{{fields.materialDesc}}" data-key="materialDesc" bindinput="input" maxlength="128"/></view><view class="form-row"><label>重量 kg *</label><input type="digit" value="{{fields.weightKg}}" data-key="weightKg" bindinput="input"/></view></view><view class="form-row"><label>包装体积系数 *</label><input type="digit" value="{{packaging}}" data-key="packaging" bindinput="value" placeholder="如 1.20，按实际包装填写"/><view class="muted">仅用于估算包装后体积，审核通过后生效；旧资料未知时请补充。</view></view></block><view wx:if="{{mode!=='update'}}" class="form-row"><label>运输建议 *</label><textarea value="{{fields.transportSuggestion}}" data-key="transportSuggestion" bindinput="input" maxlength="255"/></view></view><block wx:if="{{mode!=='edit'}}"><view class="panel"><view class="section-title">{{mode==='update'?'价格':'价格与初始库存'}}</view><view class="field-grid two"><view class="form-row"><label>租金 元/天 *</label><input type="digit" value="{{rent}}" data-key="rent" bindinput="value"/></view><view class="form-row"><label>押金 元 *</label><input type="digit" value="{{deposit}}" data-key="deposit" bindinput="value"/></view></view><view wx:if="{{mode!=='update'}}" class="form-row"><label>初始数量 *</label><input type="number" value="{{initialQuantity}}" data-key="initialQuantity" bindinput="value"/></view><view wx:if="{{mode!=='update'}}" class="muted">{{assetType==='A_ASSET'?'审核通过后生成实物与标签，贴标确认后进入可租库存。':'审核通过后登记数量库存，扫码只确认识别。'}}</view></view><view class="panel"><view class="section-title">图片 · 1～4张</view><view class="upload-grid"><view wx:for="{{fields.images}}" wx:key="index"><image class="upload" src="{{item.localPath||item.preview.url}}" mode="aspectFill"/><text data-index="{{index}}" bindtap="remove">移除</text></view><button class="upload" wx:if="{{fields.images.length<4}}" bindtap="photos">＋</button></view><view class="form-row"><label>备注</label><textarea value="{{fields.remark}}" data-key="remark" bindinput="input" maxlength="255"/></view><view class="form-row"><label>申请说明</label><textarea value="{{applyRemark}}" data-key="applyRemark" bindinput="value" maxlength="255"/></view></view></block><view class="footer-actions"><button class="secondary-btn" bindtap="back">取消</button><button class="primary-btn" bindtap="submit" loading="{{busy}}" disabled="{{busy||locked}}">{{mode==='edit'?'保存修改':'提交审核'}}</button></view></view>
+<view class="navigation-return" wx:if="{{!nativeBackAvailable}}" bindtap="navigationBack">‹ 返回</view>
+<view class="prop-page" bindtouchstart="activity">
+  <view class="feedback error" wx:if="{{loadError}}">{{loadError}}</view>
+  <view class="feedback" wx:elif="{{locked}}">当前状态不能修改。请返回资料页查看审核状态。</view>
+  <view wx:if="{{busy && !options.types.length && !loadError}}" class="mj-read-state">
+    <mj-loading label="正在读取道具资料"/>
+  </view>
+  <view class="panel">
+    <view class="section-title">{{mode==='edit'?'编辑免审资料':'基础信息'}}</view>
+    <block wx:if="{{mode!=='edit'}}">
+      <view class="form-row">
+        <label>道具名称 *</label>
+        <input id="field-propName" value="{{fields.propName}}" data-key="propName" bindinput="input" maxlength="128" disabled="{{busy||locked}}"/>
+      </view>
+      <view wx:if="{{mode!=='update'}}" class="form-row">
+        <list-filters quiet="{{returnRefresh}}" filters="{{assetTypes}}" values="{{ {assetType:assetType} }}" disabled="{{busy || locked || !!id}}" bindselectfilter="chooseType"/>
+      </view>
+    </block>
+    <view wx:if="{{mode!=='update'}}" class="form-row">
+      <label>风格 *</label>
+      <view wx:if="{{styleOpen}}" class="mj-dropdown-dismiss" catchtap="toggleStyles">
+      </view>
+      <view class="form-style-field mj-dropdown-anchor {{styleOpen?'mj-dropdown-open':''}}">
+        <view class="form-style-selected" bindtap="toggleStyles">
+          <view class="form-selected-tags">
+            <text wx:if="{{!selectedStyles.length}}" class="muted">请选择风格</text>
+            <text wx:for="{{selectedStyles}}" wx:key="code" class="form-selected-tag">{{item.label}}</text>
+          </view>
+          <text>{{styleOpen?'⌃':'⌄'}}</text>
+        </view>
+        <scroll-view wx:if="{{styleOpen}}" scroll-y class="form-style-options mj-dropdown-panel">
+          <view wx:for="{{styleOptions}}" wx:key="code" class="form-style-option {{item.selected?'active':''}} {{item.choiceDisabled?'disabled':''}}" data-code="{{item.code}}" bindtap="style">
+            <text>{{item.label}}{{!item.enabled?'（已停用）':''}}</text>
+            <text class="form-style-check">{{item.selected?'✓':''}}</text>
+          </view>
+        </scroll-view>
+      </view>
+      <view class="muted">最多3项；特殊资产须单选。停用原项可保留，新增不可选。</view>
+    </view>
+    <view class="field-grid two">
+      <view wx:if="{{mode!=='update'}}" class="form-row">
+        <label>类型 *</label>
+        <dict-select range="{{options.types}}" value="{{typeIndex}}" range-key="label" data-key="typeCode" data-group="types" bindchange="select" disabled="{{busy||locked}}" display="{{typeLabel}}" quiet="{{returnRefresh}}"/>
+      </view>
+      <view wx:if="{{mode!=='edit'}}" class="form-row">
+        <label>是否阻燃 *</label>
+        <dict-select range="{{options.fireResistance}}" value="{{fireIndex}}" range-key="label" data-key="fireResistantCode" data-group="fireResistance" bindchange="select" disabled="{{busy||locked}}" display="{{fireLabel}}" quiet="{{returnRefresh}}"/>
+      </view>
+    </view>
+  </view>
+  <view class="panel">
+    <view class="section-title">规格参数</view>
+    <block wx:if="{{mode!=='edit'}}">
+      <view class="form-row">
+        <label>尺寸描述 *</label>
+        <input disabled="{{busy || locked}}" id="field-sizeDesc" value="{{fields.sizeDesc}}" data-key="sizeDesc" bindinput="input" maxlength="128"/>
+      </view>
+      <view class="field-grid">
+        <view class="form-row">
+          <label>长 cm *</label>
+          <input disabled="{{busy || locked}}" id="field-lengthCm" type="digit" value="{{fields.lengthCm}}" data-key="lengthCm" bindinput="input"/>
+        </view>
+        <view class="form-row">
+          <label>宽 cm *</label>
+          <input disabled="{{busy || locked}}" id="field-widthCm" type="digit" value="{{fields.widthCm}}" data-key="widthCm" bindinput="input"/>
+        </view>
+        <view class="form-row">
+          <label>高 cm *</label>
+          <input disabled="{{busy || locked}}" id="field-heightCm" type="digit" value="{{fields.heightCm}}" data-key="heightCm" bindinput="input"/>
+        </view>
+      </view>
+      <view class="field-grid two">
+        <view class="form-row">
+          <label>材质 *</label>
+          <input disabled="{{busy || locked}}" id="field-materialDesc" value="{{fields.materialDesc}}" data-key="materialDesc" bindinput="input" maxlength="128"/>
+        </view>
+        <view class="form-row">
+          <label>重量 kg *</label>
+          <input disabled="{{busy || locked}}" id="field-weightKg" type="digit" value="{{fields.weightKg}}" data-key="weightKg" bindinput="input"/>
+        </view>
+      </view>
+      <view class="form-row">
+        <label>包装体积系数 *</label>
+        <input disabled="{{busy || locked}}" id="field-packaging" type="digit" value="{{packaging}}" data-key="packaging" bindinput="value" placeholder="如 1.20，按实际包装填写"/>
+        <view class="muted">仅用于估算包装后体积，审核通过后生效；旧资料未知时请补充。</view>
+      </view>
+    </block>
+    <view wx:if="{{mode!=='update'}}" class="form-row">
+      <label>运输建议 *</label>
+      <textarea disabled="{{busy || locked}}" id="field-transportSuggestion" value="{{fields.transportSuggestion}}" data-key="transportSuggestion" bindinput="input" maxlength="255"/>
+    </view>
+  </view>
+  <block wx:if="{{mode!=='edit'}}">
+    <view class="panel">
+      <view class="section-title">{{mode==='update'?'价格':'价格与初始库存'}}</view>
+      <view class="field-grid two">
+        <view class="form-row">
+          <label>租金 元/天 *</label>
+          <input disabled="{{busy || locked}}" id="field-rent" type="digit" value="{{rent}}" data-key="rent" bindinput="value"/>
+        </view>
+        <view class="form-row">
+          <label>押金 元 *</label>
+          <input disabled="{{busy || locked}}" id="field-deposit" type="digit" value="{{deposit}}" data-key="deposit" bindinput="value"/>
+        </view>
+      </view>
+      <view wx:if="{{mode!=='update'}}" class="form-row">
+        <label>初始数量 *</label>
+        <input disabled="{{busy || locked}}" id="field-initialQuantity" type="number" value="{{initialQuantity}}" data-key="initialQuantity" bindinput="value"/>
+      </view>
+      <view wx:if="{{mode!=='update'}}" class="muted">{{assetType==='A_ASSET'?'审核通过后生成实物与标签，贴标确认后进入可租库存。':'审核通过后登记数量库存，扫码只确认识别。'}}</view>
+    </view>
+    <view class="panel">
+      <view class="section-title">图片 · 1～4张</view>
+      <view class="upload-grid">
+        <view class="mj-photo-frame" wx:for="{{fields.images}}" wx:key="index">
+          <image class="upload" src="{{item.localPath||item.preview.url}}" mode="aspectFill"/>
+          <photo-remove identity="{{item.localPath || item.locator || item.uploadId}}" data-index="{{index}}" disabled="{{busy || locked}}" bindremove="remove"/>
+        </view>
+        <button class="upload" wx:if="{{fields.images.length<4}}" bindtap="photos">＋</button>
+      </view>
+      <view class="form-row">
+        <label>备注</label>
+        <textarea disabled="{{busy || locked}}" id="field-remark" value="{{fields.remark}}" data-key="remark" bindinput="input" maxlength="255"/>
+      </view>
+      <view class="form-row">
+        <label>申请说明</label>
+        <textarea disabled="{{busy || locked}}" id="field-applyRemark" value="{{applyRemark}}" data-key="applyRemark" bindinput="value" maxlength="255"/>
+      </view>
+    </view>
+  </block>
+  <view class="footer-actions">
+    <button class="secondary-btn" disabled="{{submitting}}" bindtap="back">取消</button>
+    <button class="primary-btn" bindtap="submit" disabled="{{busy||locked}}">{{mode==='edit'?'保存修改':'提交审核'}}</button>
+  </view>
+</view>
+<mj-loading wx:if="{{submitting}}" blocking label="{{mode==='edit'?'正在保存修改':'正在提交审核'}}"/>

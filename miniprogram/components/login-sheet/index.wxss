@@ -16,7 +16,7 @@
   border-radius: 24px 24px 0 0;
   background: #fff;
   padding: 34px 24px calc(28px + env(safe-area-inset-bottom));
-  color: #111827;
+  color: var(--mj-ink,#242924);
   box-sizing: border-box;
 }
 .close {
@@ -24,8 +24,11 @@
   right: 20px;
   top: 14px;
   font-size: 27px;
-  line-height: 30px;
-  color: #6b7280;
+  width:44px;
+  height:44px;
+  line-height:44px;
+  text-align:center;
+  color: var(--mj-muted,#5c665d);
 }
 .title {
   font-size: 22px;
@@ -34,8 +37,9 @@
   margin: 10px 0 24px;
 }
 .login {
-  border-radius: 28px;
-  background: #ffe52c;
+  border-radius: var(--mj-control,10px);
+  min-height:44px;
+  background: var(--mj-accent,#ffe444);
   font-size: 17px;
   font-weight: 700;
   margin-bottom: 22px;
@@ -61,7 +65,7 @@
 .description {
   font-size: 12px;
   line-height: 1.7;
-  color: #6b7280;
+  color: var(--mj-muted,#5c665d);
 }
 .error {
   font-size: 13px;

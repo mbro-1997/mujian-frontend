@@ -1,0 +1,20 @@
+@import "planning-list.wxss";
+.pl-checklist { --action-h:44px; min-height:100vh; padding:18px var(--mj-edge) calc(88px + env(safe-area-inset-bottom)); background:var(--mj-canvas); color:var(--mj-ink); }
+.pl-checklist .pl-hero { border:0; padding:0 0 6px; background:transparent; }
+.pl-checklist .pl-heading { font-size:25px; font-weight:700; }
+.pl-checklist .pl-copy,.pl-checklist .pl-note { color:var(--mj-muted); font-weight:500; line-height:1.55; }
+.pl-summary { padding:14px 14px 0; }
+.pl-checklist .pl-card .pl-actions { margin:12px 14px 14px; }
+.pl-checklist .pl-card { padding:0; overflow:hidden; border-color:var(--mj-line); border-radius:var(--mj-card); }
+.pl-checklist .pl-title { font-size:16px; font-weight:700; }
+.pl-checklist .pl-badge { border-radius:6px; height:auto; padding:3px 7px; line-height:1.4; }
+.pl-checklist .pl-current { background:var(--mj-active-bg); color:var(--mj-active-ink); }
+.pl-checklist .pl-action { border-radius:var(--mj-control); font-weight:650; color:var(--mj-ink); }
+.pl-checklist .pl-main { background:var(--mj-accent); }
+.pl-checklist .pl-metrics,.pl-checklist .pl-actions { margin-top:12px; }
+.pl-checklist .pl-metric text { font-size:11px; color:var(--mj-muted); }
+
+.pl-checklist .pl-history { border:1px solid var(--mj-line); background:white; }
+.pl-checklist-history { box-sizing:border-box; padding-bottom:calc(18px + env(safe-area-inset-bottom)); }
+.pl-checklist-history .pl-card:first-child { margin-top:0; }
+.pl-checklist-history .pl-actions { grid-template-columns:1fr; }

@@ -4,8 +4,14 @@ const tabs = [
   "/pages/checklist/index",
   "/pages/mine/index",
 ];
-const renter = ["首页", "方案", "清单", "我的"];
-const factory = ["首页", "发布", "仓库", "我的"];
+// 图片随小程序包提供；共享外观的首页、我的在两种身份下使用同一资源。
+const icons = {
+  home: "/assets/tabs/home.svg", plan: "/assets/tabs/plan.svg",
+  checklist: "/assets/tabs/checklist.svg", person: "/assets/tabs/person.svg",
+  plus: "/assets/tabs/plus.svg", box: "/assets/tabs/box.svg",
+};
+const renter = [["首页", icons.home], ["方案", icons.plan], ["清单", icons.checklist], ["我的", icons.person]];
+const factory = [["首页", icons.home], ["发布", icons.plus], ["仓库", icons.box], ["我的", icons.person]];
 const id = (v) => /^[0-9a-f]{12}4[0-9a-f]{3}[89ab][0-9a-f]{15}$/.test(v);
 const oneOf =
   (...values) =>
@@ -71,6 +77,7 @@ const definitions = {
     params: { token: (v) => /^[A-Za-z0-9_-]{43}$/.test(v) },
     required: ["token"],
   },
+  "/pages/checklist/history": { params: {} },
   "/pages/checklist/detail": { params: { id }, required: ["id"] },
   "/pages/address/index": { params: { select: oneOf("1") } },
   "/pages/address/edit": { params: { id } },
@@ -190,13 +197,7 @@ function safeReturn(p) {
 module.exports = {
   tabs,
   safeReturn,
-  items: (c) =>
-    tabs.map((path, i) => ({
-      path,
-      text: (c && c.roleCode === "supplier" ? factory : renter)[i],
-      icon:
-        c && c.roleCode === "supplier"
-          ? ["home", "plus", "box", "person"][i]
-          : "circle",
-    })),
+  items: (context) =>
+    (context?.roleCode === "supplier" ? factory : renter)
+      .map(([text, icon], i) => ({ path: tabs[i], text, icon })),
 };

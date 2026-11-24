@@ -1,6 +1,6 @@
-<view class="trade review-page {{reviewerRole==='demander'?'renter-review':''}}">
+<view class="trade review-page">
   <view wx:if="{{message}}" class="feedback">{{message}}<button bindtap="load" disabled="{{busy}}">查询当前结果</button></view>
-  <view wx:if="{{busy && !entry && !review}}" class="blank">正在读取评价…</view>
+  <view wx:if="{{busy && !entry && !review}}" class="blank"><mj-loading label="正在读取评价"/></view>
   <view wx:if="{{entry || review}}" class="section review-summary">
     <view class="review-heading"><view class="heading">{{orderCaption || ((review.businessType || type)==='custom_order'?'定制订单':'租赁订单')}}</view>
       <text wx:if="{{review || entry.canReview}}" class="badge">{{review?'已评价':'可评价'}}</text></view>
@@ -19,10 +19,10 @@
     <view class="section"><view class="heading">整体体验</view>
       <view class="stars"><button wx:for="{{stars}}" wx:key="*this" disabled="{{busy}}" class="star {{item<=rating?'star-on':''}}" data-rating="{{item}}" aria-label="{{item}}星{{item===rating?'，当前评分':''}}" bindtap="rate">{{item<=rating?'★':'☆'}}</button></view>
     </view>
-    <view wx:if="{{choices.length}}" class="section"><view class="heading">评价标签</view><view class="review-tags">
+    <view wx:if="{{tagsOpen}}" class="mj-dropdown-dismiss" catchtap="toggleTags"></view><view wx:if="{{choices.length}}" class="section mj-dropdown-anchor {{tagsOpen?'mj-dropdown-open':''}}"><button class="review-tag-trigger" disabled="{{busy}}" aria-expanded="{{tagsOpen}}" bindtap="toggleTags"><view class="mj-selected-label">评价标签 · {{selected.length?'已选 '+selected.length+' 项':'请选择'}}</view> <text>▾</text></button><view wx:if="{{tagsOpen}}" class="review-tags mj-dropdown-panel">
       <button wx:for="{{choices}}" wx:key="name" class="{{item.selected?'selected':''}}" disabled="{{busy}}" data-name="{{item.name}}" bindtap="tag" aria-label="{{item.name}}{{item.selected?'，已选择':'，未选择'}}"><text>{{item.name}}</text><text class="tag-state">{{item.selected?'已选择 ✓':'未选择'}}</text></button>
     </view></view>
-    <view class="section"><view class="heading">文字评价</view><textarea placeholder="补充评价（选填）" maxlength="1000" value="{{content}}" bindinput="edit" disabled="{{busy}}"/></view>
+    <view class="section"><view class="heading">文字评价</view><textarea id="field-content" adjust-position="{{false}}" placeholder="补充评价（选填）" maxlength="1000" value="{{content}}" bindinput="edit" disabled="{{busy}}"/></view>
     <view class="footer"><button class="primary" disabled="{{busy}}" bindtap="submit">提交评价</button></view>
   </block>
   <view wx:elif="{{entry && !busy}}" class="blank">本单当前无法提交新评价</view>

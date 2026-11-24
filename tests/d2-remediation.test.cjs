@@ -24,7 +24,7 @@ for(const d of ['realname','student']){
  for(const slot of [0,1]) test(d+' required slot '+slot+' is blocked before any upload',async()=>{
   const f=fixture(d);f.page.userId='user-A';filled(f);f.page.data.current={canSubmit:true,consent:{version:d+'-material-v1'}};
   f.page.data.photos=d==='student'?['front','back','supplement']:['front','back'];delete f.page.data.photos[slot];
-  const submission=f.page.submit();await tick();assert.equal(f.uploads.length,0);await submission;assert.equal(f.pending.length,0);assert.match(f.page.data.message,/照片|材料/);
+  const submission=f.page.submit();await tick();assert.equal(f.uploads.length,0);await submission;assert.equal(f.pending.length,0);assert.equal(f.page.data.message,"");assert.match(f.wx.lastToast.title,/照片|材料/);assert.equal(f.wx.lastToast.mask,false);
  });
  test(d+' recovery late failure cannot repopulate another account',async()=>{
   const f=fixture(d);f.page.userId='user-A';f.page.data.requestId=key;const recovery=f.page.recover();f.session.replace('owner-B');

@@ -1,2 +1,5 @@
 .prop-page button.warehouse-scan { display:flex; align-items:center; justify-content:space-between; width:100%; margin:0; padding:16px 0; min-height:53px; color:#111827; font-size:14px; background:transparent; border-radius:0; border-bottom:1px solid #f0f0f0; text-align:left; }
 .prop-page .empty.warehouse-empty { background:#fff; border:1px solid #eee; border-radius:12px; padding:22px 12px; }
+.warehouse-quantities { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:10px 0; }
+.warehouse-quantities > view { padding:8px 10px; background:var(--mj-soft); border-radius:8px; font-size:16px; font-weight:650; font-variant-numeric:tabular-nums; }
+.warehouse-quantities text { display:block; font-size:11px; color:var(--mj-muted); font-weight:500; }

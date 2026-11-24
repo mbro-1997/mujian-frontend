@@ -1,1 +1,39 @@
-<template name="warehouse"><view class="prop-page" bindtouchstart="activity"><view class="panel warehouse-filters"><view class="heading">{{selection?'选择道具 · 库存流水':'仓库'}}</view><button wx:if="{{!selection}}" class="warehouse-scan" bindtap="scan">扫描道具标签<text>›</text></button><view wx:if="{{selection}}" class="muted">A 类选择实物查看状态记录；B 类查看数量增减流水。</view><view class="tabs"><text class="tab {{assetType===''?'active':''}}" data-type="" bindtap="asset">全部类型</text><text class="tab {{assetType==='A_ASSET'?'active':''}}" data-type="A_ASSET" bindtap="asset">A 类</text><text class="tab {{assetType==='B_CONSUMABLE'?'active':''}}" data-type="B_CONSUMABLE" bindtap="asset">B 类</text></view><view class="tabs"><text class="tab {{tab===''?'active':''}}" data-tab="" bindtap="filter">全部</text><text class="tab {{tab==='pending'?'active':''}}" data-tab="pending" bindtap="filter">待审核</text><text class="tab {{tab==='online'?'active':''}}" data-tab="online" bindtap="filter">已上架</text><text class="tab {{tab==='offline'?'active':''}}" data-tab="offline" bindtap="filter">已下架</text></view><view class="warehouse-search"><input class="warehouse-input" placeholder="SKU 编号 / 道具名称" value="{{keyword}}" bindinput="searchInput" bindconfirm="search"/><button class="warehouse-submit" bindtap="search">搜索</button></view></view><view wx:if="{{message}}" class="feedback error">{{message}}<button bindtap="load">重试</button></view><view wx:elif="{{busy}}" class="empty">正在加载</view><view wx:elif="{{!items.length}}" class="empty warehouse-empty">暂无符合条件的道具</view><view class="panel" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="open"><view class="row"><text class="heading">{{item.fields.propName}}</text><text class="pill">{{item.pendingApplicationId?'审核中':item.state}}</text></view><view class="muted">{{item.assetType==='A_ASSET'?'A 类 · 一物一码':'B 类 · 数量库存'}}</view><view class="muted">{{item.skuCode}} · {{item.factoryName}}</view><view wx:if="{{item.inventorySummary}}">总量 {{item.inventorySummary.totalQuantity}} / 可用 {{item.inventorySummary.availableQuantity}}</view><view wx:else class="muted">尚未形成库存</view><view class="row link">{{selection?(item.assetType==='A_ASSET'?'选择实物 · 查看状态记录 →':'查看数量流水 →'):'查看资料与库存 →'}}</view></view><view wx:if="{{total>20 || page>1}}" class="pager warehouse-pager"><button class="warehouse-page-button" bindtap="prev" disabled="{{page===1}}">上一页</button><text>{{page}} · 共 {{total}} 条</text><button class="warehouse-page-button" bindtap="next" disabled="{{page*20>=total}}">下一页</button></view></view></template>
+<template name="warehouse">
+  <view class="prop-page" bindtouchstart="activity">
+    <view class="panel warehouse-filters">
+      <mj-heading title="{{selection?'选择道具 · 库存流水':'库存道具'}}"/>
+      <button wx:if="{{!selection}}" class="warehouse-scan" bindtap="scan">扫描道具标签<text>›</text>
+      </button>
+      <view wx:if="{{selection}}" class="muted">A 类选择实物查看状态记录；B 类查看数量增减流水。</view>
+      <list-filters resettable="{{assetType || tab || keyword || submittedKeyword}}" bindresetfilters="resetWarehouse" filters="{{warehouseFilters}}" values="{{ {assetType:assetType, tab:tab} }}" keyword="{{keyword}}" placeholder="SKU 编号 / 道具名称"
+        bindselectfilter="selectWarehouseFilter" bindkeyword="searchInput" bindsearch="search"/>
+    </view>
+    <view wx:if="{{message}}" class="feedback error">{{message}}<button bindtap="load">重试</button>
+    </view>
+    <view wx:elif="{{busy && !warehouseLoaded}}" class="empty">
+      <mj-loading label="正在加载"/>
+    </view>
+    <view wx:elif="{{!items.length}}" class="empty warehouse-empty">暂无符合条件的道具</view>
+    <view class="panel" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="open">
+      <view class="row">
+        <text class="heading">{{item.fields.propName}}</text>
+        <text class="pill">{{item.pendingApplicationId?'审核中':item.state}}</text>
+      </view>
+      <view class="muted">{{item.assetType==='A_ASSET'?'A 类 · 一物一码':'B 类 · 数量库存'}}</view>
+      <view class="muted">{{item.skuCode}} · {{item.factoryName}}</view>
+      <view wx:if="{{item.inventorySummary}}" class="warehouse-quantities">
+        <view>
+          <text>库存总量</text>{{item.inventorySummary.totalQuantity}}</view>
+        <view>
+          <text>当前可用</text>{{item.inventorySummary.availableQuantity}}</view>
+      </view>
+      <view wx:else class="muted">尚未形成库存</view>
+      <view class="row link">{{selection?(item.assetType==='A_ASSET'?'选择实物 · 查看状态记录 →':'查看数量流水 →'):'查看资料与库存 →'}}</view>
+    </view>
+    <view wx:if="{{total>20 || page>1}}" class="pager warehouse-pager">
+      <button class="warehouse-page-button" bindtap="prev" disabled="{{page===1}}">上一页</button>
+      <text>{{page}} · 共 {{total}} 条</text>
+      <button class="warehouse-page-button" bindtap="next" disabled="{{page*20>=total}}">下一页</button>
+    </view>
+  </view>
+</template>

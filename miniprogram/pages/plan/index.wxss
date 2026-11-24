@@ -12,9 +12,9 @@
 .scheme-board .scheme-new{padding:0 14px;background:var(--mj-accent);color:#242713;border-radius:12px}
 .scheme-filter-row{position:relative;margin:14px 0 12px}.scheme-board .status-trigger{justify-content:flex-start;padding:0 12px;gap:7px;background:#fff;border:1px solid var(--mj-line);border-radius:9px}
 .status-trigger text{font-size:12px;color:var(--mj-muted)}.chev{width:7px;height:7px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:translateY(-2px) rotate(45deg)}.chev.up{transform:rotate(225deg)}
-.scheme-reset{background:transparent;color:var(--mj-muted);padding:0 9px}.scheme-options{position:absolute;top:48px;left:0;width:174px;padding:4px;z-index:3;background:white;border:1px solid var(--mj-line);border-radius:10px;box-shadow:0 7px 20px #192e201a}
+.scheme-board .scheme-reset{background:var(--mj-paper);color:var(--mj-ink);padding:0 16px;border:1px solid var(--mj-line);border-radius:var(--mj-control)}.scheme-options{position:absolute;top:48px;left:0;width:174px;padding:4px;z-index:3;background:white;border:1px solid var(--mj-line);border-radius:10px;box-shadow:0 7px 20px #192e201a}
 .scheme-options button{width:100%;display:flex;justify-content:space-between;align-items:center;background:white;padding:0 12px}
-.scheme-card{background:white;border:1px solid var(--mj-line);border-radius:14px;margin:10px 0;padding:14px}.scheme-open{min-width:0;min-height:44px}.scheme-title{font-size:17px;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.scheme-card{background:white;border:1px solid var(--mj-line);border-radius:14px;margin:10px 0;overflow:hidden}.scheme-open{padding:14px;min-width:0;min-height:44px}.scheme-title{font-size:17px;font-weight:700;min-width:0;overflow-wrap:anywhere}
 .scheme-state{flex:none;border-radius:6px;padding:2px 7px;font-size:11px;color:#626962;background:#edeeec}.scheme-state.editing{color:var(--mj-active-ink);background:var(--mj-active-bg)}
 .scheme-description{margin:5px 0 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mj-muted);font-size:13px}
 .scheme-budget{justify-content:flex-start;flex-wrap:wrap;min-width:0}.scheme-budget .amount{font-size:15px;color:var(--mj-ink);font-weight:700}

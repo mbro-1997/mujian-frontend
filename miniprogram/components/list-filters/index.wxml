@@ -1,0 +1,21 @@
+<view class="filter-set {{fieldMode ? 'field-mode' : ''}}">
+  <view wx:if="{{open >= 0}}" class="dismiss" catchtap="close" aria-hidden="true"></view>
+  <view class="selectors {{stacked || filters.length === 1 ? 'single' : ''}} {{open >= 0 ? 'expanded' : ''}}">
+    <button wx:for="{{filters}}" wx:key="key" class="selector {{open === index ? 'active' : ''}} {{quiet ? 'quiet' : ''}}"
+      data-index="{{index}}" disabled="{{disabled}}" catchtap="toggle" aria-expanded="{{open === index}}" aria-label="{{item.title ? item.title + '，' : ''}}{{labels[index]}}">
+      <text wx:if="{{item.title}}" class="label">{{item.title}}</text><view class="value"><text class="selected-label">{{labels[index]}}</text><view class="arrow"></view></view>
+    </button>
+    <scroll-view wx:if="{{open >= 0}}" scroll-y class="options {{above ? 'above' : ''}}" style="height:{{panelHeight}}px">
+      <button wx:for="{{filters[open].options}}" wx:key="code" data-index="{{index}}" catchtap="choose"
+        disabled="{{item.disabled}}" class="option {{item.code === values[filters[open].key] ? 'selected' : ''}}">
+        <text>{{item.label}}</text><text wx:if="{{item.code === values[filters[open].key]}}" aria-hidden="true">✓</text>
+      </button>
+    </scroll-view>
+  </view>
+  <view wx:if="{{placeholder}}" class="search-row">
+    <input adjust-position="{{false}}" always-embed class="search-input" placeholder="{{placeholder}}" value="{{keyword}}" confirm-type="search" maxlength="{{maxlength}}"
+      aria-label="{{placeholder}}" bindinput="input" bindconfirm="search"/>
+    <button class="search-submit {{quiet ? 'quiet' : ''}}" disabled="{{disabled}}" bindtap="search">搜索</button>
+  </view>
+  <button wx:if="{{resettable}}" class="reset" bindtap="reset" disabled="{{disabled}}">重置筛选</button>
+</view>

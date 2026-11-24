@@ -19,7 +19,6 @@ import type {
   QrException,
   Options,
   ImageLocator,
-  ImageView,
   SnPage,
   SnSummary,
   Stock,
@@ -97,7 +96,7 @@ const asset = ref<OwnedSku | null>(null),
   reservations = ref<ReservationPage | null>(null),
   availability = ref<Availability | null>(null),
   qr = ref<Qr | null>(null),
-  picture = ref<ImageView | null>(null),
+  picture = ref<string | null>(null),
   reason = ref(""),
   startDate = ref(""),
   endDate = ref(""),
@@ -443,22 +442,12 @@ async function predict() {
     if (view.current(owner) && sequence === detailSequence && request === forecastSequence) fail(e);
   }
 }
-async function image(locator: ImageLocator) {
-  const owner = view.capture(),
-    sequence = detailSequence;
-  const active = () => view.current(owner) && sequence === detailSequence;
-  try {
-    await refreshCsrf();
-    const r = await api<ImageView>("/api/admin/prop-materials/view", "POST", locator);
-    if (!active()) return;
-    picture.value = r;
-    clearTimeout(pictureTimer);
-    pictureTimer = setTimeout(() => {
-      picture.value = null;
-    }, Math.max(0, Date.parse(r.expiresAt) - Date.now()));
-  } catch (e) {
-    if (active()) fail(e);
-  }
+function image(locator: ImageLocator) {
+  picture.value = commands.propImageContentUrl(locator);
+  clearTimeout(pictureTimer);
+  pictureTimer = setTimeout(() => {
+    picture.value = null;
+  }, 120_000);
 }
 async function decide(approve: boolean) {
   const target = review.value || exception.value;
@@ -1196,7 +1185,7 @@ onMounted(async () => {
             <el-button v-else @click="loadQr(exception.originalQrId)">查看原码状态</el-button>
             <div class="evidence">
               <el-button v-for="(e, i) in exception.evidence" :key="i" @click="image(e.locator)">
-                <img v-if="e.preview" :src="e.preview.url" alt="异常证据" />
+                <img v-if="e.preview" :src="commands.propImageContentUrl(e.locator)" alt="异常证据" />
                 <span v-else>授权查看证据 {{ i + 1 }}</span>
               </el-button>
             </div>
@@ -1399,7 +1388,7 @@ onMounted(async () => {
       align-center
       append-to-body
       @close="picture = null">
-      <ElImage v-if="picture" :src="picture.url" class="asset-original" fit="contain" alt="授权原图">
+      <ElImage v-if="picture" :src="picture" class="asset-original" fit="contain" alt="授权原图">
         <template #error>图片加载失败，请关闭后重新查看</template>
       </ElImage>
     </ElDialog>

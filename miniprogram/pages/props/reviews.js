@@ -24,7 +24,7 @@ require("../../session/page")({
     this.setData({ skuId: q.skuId || "" });
   },
   onShow() {
-    this.load();
+    return this.load();
   },
   async load() {
     this.setData({ categoryIndex: Math.max(0,this.data.categories.indexOf(this.data.category)), assetIndex: Math.max(0,this.data.assetTypes.indexOf(this.data.assetType)), statusIndex: Math.max(0,this.data.statuses.indexOf(this.data.status)) });
@@ -65,6 +65,11 @@ require("../../session/page")({
   asset(e) {
     this.setData({ assetType: this.data.assetTypes[e.detail.value], page: 1 });
     this.load();
+  },
+  resetFilters() {
+    if (this.data.busy) return;
+    this.setData({ category: "", assetType: "", status: "all", page: 1 });
+    return this.load();
   },
   filter(e) {
     this.setData({ status: this.data.statuses[e.detail.value], page: 1 });

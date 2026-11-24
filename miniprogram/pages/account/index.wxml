@@ -24,7 +24,7 @@
         ><text class="chevron">›</text></view
       ></view
     ><view class="role-note">身份绑定后不可在小程序内切换。工厂入驻需平台邀请码。</view></view
-  ><view wx:elif="{{!action}}" class="page-pad"><view wx:if="{{!loginVisible}}" class="state-detail">{{busy?'正在读取账号状态':'账号状态尚未加载'}}<button wx:if="{{!busy}}" bindtap="load">重试</button></view></view><view wx:elif="{{summary && (action === 'ENTER_DEMANDER_HOME' || action === 'ENTER_FACTORY_HOME')}}" class="account-settings {{summary.roleCode==='demander'?'renter-account':''}}"><view class="account-settings-card"><view class="account-setting-row"><text>手机</text><text>{{summary.phoneMasked}}</text></view><view class="account-setting-row"><text>微信账号</text><text>{{summary.wechatBound ? '已绑定' : '未绑定'}}</text></view><view class="account-setting-row"><text>账号身份</text><text>{{summary.roleCode === 'supplier' ? '工厂' : '租赁方'}}</text></view></view><button class="account-logout" bindtap="logout" disabled="{{busy}}">退出登录</button><view class="account-settings-card" wx:if="{{summary.roleCode !== 'supplier'}}"><view class="account-setting-row" data-domain="realname" bindtap="verification"><text>实名认证</text><text>›</text></view><view class="account-setting-row" data-domain="student" bindtap="verification"><text>学生认证</text><text>›</text></view></view></view><view wx:else class="page-pad"
+  ><view wx:elif="{{!action}}" class="page-pad"><view wx:if="{{!loginVisible}}" class="state-detail"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取账号状态"/><text wx:else>账号状态尚未加载</text><button wx:if="{{!busy}}" bindtap="load">重试</button></view></view><view wx:elif="{{summary && (action === 'ENTER_DEMANDER_HOME' || action === 'ENTER_FACTORY_HOME')}}" class="account-settings"><view class="account-settings-card"><view class="account-setting-row"><text>手机</text><text>{{summary.phoneMasked}}</text></view><view class="account-setting-row"><text>微信账号</text><text>{{summary.wechatBound ? '已绑定' : '未绑定'}}</text></view><view class="account-setting-row"><text>账号身份</text><text>{{summary.roleCode === 'supplier' ? '工厂' : '租赁方'}}</text></view></view><button class="account-logout" bindtap="logout" disabled="{{busy}}">退出登录</button></view><view wx:else class="page-pad"
     ><view class="status-card"
       ><view class="muted"
         >{{action === 'ENTER_RESTRICTED_HOME' ? '账号状态' : action ===
@@ -45,7 +45,7 @@
         '身份状态以当前账号信息为准。'}}</view
       ></view
     ><view class="status-card" wx:if="{{summary}}"><view class="mine-row">绑定手机 <text>{{summary.phoneMasked}}</text></view><view class="mine-row">微信 <text>{{summary.wechatBound ? '已绑定' : '未绑定'}}</text></view><view wx:if="{{summary.roleCode!=='supplier'}}" class="mine-row" data-domain="realname" bindtap="verification">实名认证 <text>›</text></view><view wx:if="{{summary.roleCode!=='supplier'}}" class="mine-row" data-domain="student" bindtap="verification">学生认证 <text>›</text></view><button class="secondary" bindtap="logout">退出登录</button></view><view class="action-row"
-      ><button class="primary" bindtap="load" loading="{{busy}}">
+      ><button class="primary" bindtap="load" loading="{{busy && !returnRefresh}}">
         刷新状态</button
       ><button
         wx:if="{{action === 'ENTER_FACTORY_HOME' || action === 'COMPLETE_FACTORY_PROFILE' || action === 'WAIT_FACTORY_REVIEW' || action === 'REVISE_FACTORY_APPLICATION'}}"

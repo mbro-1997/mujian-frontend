@@ -1,3 +1,15 @@
-<import src="../../navigation/factory-root.wxml"/><view wx:if="{{rootMessage}}" class="feedback error">{{rootMessage}}<button bindtap="resolveRoot">重试</button></view><view wx:elif="{{!rootReady}}" class="empty">正在恢复身份</view><template wx:elif="{{factoryRoot}}" is="factory-root" data="{{rootLoading,rootIndex,factoryProfile,factoryContext,factoryMenus,tradeOverview,tradeOrders,tradePage,tradeTotal,tradeMessage,tradeBusy,items,message,busy,tab,keyword,page,total,assetType,selection}}"/><block wx:else><block wx:if="{{factoryContext.roleCode==='demander'}}">
-  <include src="../../templates/planning-list.wxml"/>
+<import src="../../navigation/factory-root.wxml"/><view wx:if="{{rootMessage}}" class="feedback error">{{rootMessage}}<button bindtap="resolveRoot">重试</button></view><view wx:elif="{{!rootReady}}" class="empty"><mj-loading label="正在恢复身份"/></view><template wx:elif="{{factoryRoot}}" is="factory-root" data="{{rootLoading,rootIndex,factoryProfile,factoryContext,factoryMenus,tradeOverview,tradeOrders,tradePage,tradeTotal,tradeExhausted,tradeMessage,tradeBusy,items,message,busy,tab,keyword,submittedKeyword,page,total,assetType,selection,warehouseFilters,warehouseLoaded}}"/><block wx:else><block wx:if="{{factoryContext.roleCode==='demander'}}">
+  <view class="pl-screen pl-checklist">
+  <view class="pl-hero">
+    <view class="pl-intro">
+      <view class="pl-heading">我的清单</view>
+      <view class="pl-copy">每张清单绑定一段租赁时间。最多保留 3 张未转订单清单，只有当前清单可以继续选品。</view>
+    </view>
+    <view class="pl-actions">
+      <button class="pl-action pl-main" bindtap="create">选择租期新建清单</button>
+      <button class="pl-action pl-history" bindtap="openHistory">查看历史清单</button>
+    </view>
+  </view>
+  <include src="../../templates/checklist-rows.wxml"/>
+  </view>
 </block><block wx:else><import src="../../navigation/renter-empty.wxml"/><template is="renter-empty" data="{{loggedIn:factoryContext,subject:'清单'}}"/></block><login-sheet visible="{{loginVisible}}" return-path="/pages/checklist/index" bindclose="closeLogin" bindauthenticated="loginSucceeded"/></block>

@@ -1,7 +1,7 @@
 <view class="custom">
- <view class="tabs"><button data-kind="requirements" bindtap="tab" class="{{kind==='requirements'?'selected':''}}">定制需求</button><button data-kind="orders" bindtap="tab" class="{{kind==='orders'?'selected':''}}">购买订单</button></view>
- <view class="bar"><picker range="{{choices}}" value="{{filterIndex}}" bindchange="filter" disabled="{{busy}}">{{filterLabel || '全部状态'}} ▾</picker><button wx:if="{{!factory && kind==='requirements'}}" class="create-demand" bindtap="create">新建需求</button></view>
+ <list-filters resettable="{{kind !== 'requirements' || status}}" bindresetfilters="resetFilters" quiet="{{returnRefresh}}" filters="{{filterGroups}}" values="{{ {kind:kind} }}" disabled="{{busy}}" bindselectfilter="tab"/>
+ <view class="bar"><dict-select title="业务状态" range="{{choices}}" value="{{filterIndex}}" bindchange="filter" disabled="{{busy}}" display="{{filterLabel || '全部状态'}}" quiet="{{returnRefresh}}"/><button wx:if="{{!factory && kind==='requirements'}}" class="create-demand" bindtap="create">新建需求</button></view>
  <view class="notice" wx:if="{{message}}">{{message}}<button bindtap="retry">重试</button></view>
  <view class="card" wx:for="{{rows}}" wx:key="id" data-id="{{item.id}}" bindtap="open"><view class="bar"><text class="title">{{item.title || item.number}}</text><text class="row-status">{{item.label}}</text></view><view class="muted">{{item.updatedTime}}</view><view wx:if="{{item.amount}}">¥{{item.amount}}</view></view>
- <view class="muted list-empty" wx:if="{{!busy && !rows.length && !message}}">暂无符合条件的记录</view><view wx:if="{{busy}}">正在读取</view><button wx:if="{{!exhausted && rows.length < total}}" bindtap="more">加载更多</button>
+ <view class="muted list-empty" wx:if="{{(!busy || returnRefresh) && !rows.length && !message}}">暂无符合条件的记录</view><view wx:if="{{busy && !returnRefresh}}"><mj-loading label="正在读取"/></view><button wx:if="{{!exhausted && rows.length < total}}" bindtap="more">加载更多</button>
 </view>

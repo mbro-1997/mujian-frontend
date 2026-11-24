@@ -1,7 +1,9 @@
 @import "common.wxss";
 
-.form-style-field{border:1px solid #eef0f3;border-radius:8px;overflow:hidden;background:#fff}
+.form-style-field{border:1px solid #eef0f3;border-radius:8px;background:#fff}
 .form-style-selected{min-height:42px;box-sizing:border-box;background:#f8fafc;display:grid;grid-template-columns:minmax(0,1fr) 22px;align-items:center;gap:8px;padding:8px 10px}
-.form-selected-tags{display:flex;gap:5px;flex-wrap:wrap;min-width:0}.form-selected-tag{padding:3px 7px;border-radius:12px;background:#fff7cc;font-size:11px;font-weight:900;overflow-wrap:anywhere}
+.form-selected-tags{display:flex;gap:5px;min-width:0}.form-selected-tag{padding:3px 7px;border-radius:12px;background:#fff7cc;font-size:11px;font-weight:900;display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .form-style-options{max-height:216px}.form-style-option{min-height:36px;box-sizing:border-box;padding:7px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #f1f5f9;font-size:13px;font-weight:900;overflow-wrap:anywhere}
 .form-style-option.disabled{color:#c1c7d0;background:#fafafa}.form-style-check{width:20px;height:20px;box-sizing:border-box;flex-shrink:0;border:1px solid #d1d5db;border-radius:50%;text-align:center;line-height:18px}.form-style-option.active .form-style-check{background:#ffe100;border-color:#ffe100;color:#111827}
+
+.form-style-options { height:216px; }

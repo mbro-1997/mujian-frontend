@@ -1,3 +1,4 @@
+const { UploadError } = require("./form-error");
 const http = require("./http"),
   session = require("../session/storage"),
   env = require("../config/environment");
@@ -27,7 +28,7 @@ function uploadOrder(root, node, path) {
 function uploadPrivate(endpoint, path, formData, field, requestId) {
   const owner = session.capture();
   return new Promise((resolve, reject) => {
-    if (!env.baseUrl) return reject(new Error("尚未配置服务地址"));
+    if (!env.baseUrl) return reject(new UploadError("尚未配置上传服务地址"));
     wx.uploadFile({
       url: env.baseUrl + endpoint,
       filePath: path,
@@ -40,34 +41,25 @@ function uploadPrivate(endpoint, path, formData, field, requestId) {
           return reject(new session.StaleSessionError());
         try {
           const n = JSON.parse(r.data);
-          if (
-            r.statusCode === 200 &&
-            n.code === "OK" &&
-            n.data &&
-            /^[0-9a-f]{32}$/.test(n.data[field])
-          )
-            {
-              if(requestId && !require("./response-contract").accepts(endpoint,"POST",200,n)) throw new Error("材料响应格式异常");
-              resolve(requestId ? n.data : n.data[field]);
-            }
-          else
-            reject(
-              Object.assign(
-                new Error(
-                  "材料上传未完成，请检查图片或稍后重试。" +
-                    (n.traceId ? " 追踪号：" + n.traceId : ""),
-                ),
-                { reason: n.reasonCode, status: r.statusCode },
-              ),
-            );
-        } catch (e) {
-          reject(e);
+          if (r.statusCode !== 200 || n.code !== "OK") {
+            const message = n.reasonCode === "OBJECT_STORAGE_UNAVAILABLE"
+              ? "文件存储暂不可用，请稍后重试"
+              : "材料上传失败，请检查文件后重试";
+            return reject(new UploadError(message, r.statusCode, n.reasonCode, n.traceId));
+          }
+          if (!n.data || !/^[0-9a-f]{32}$/.test(n.data[field]) ||
+              (requestId && !require("./response-contract").accepts(endpoint, "POST", 200, n))) {
+            return reject(new UploadError("上传结果未确认，请重试", r.statusCode, null, n.traceId));
+          }
+          resolve(requestId ? n.data : n.data[field]);
+        } catch {
+          reject(new UploadError("上传结果未确认，请重试", r.statusCode));
         }
       },
       fail: () =>
         reject(
           session.isCurrent(owner)
-            ? new Error("材料上传结果未确认，请稍后重试。")
+            ? new UploadError("上传结果未确认，请稍后重试")
             : new session.StaleSessionError(),
         ),
     });

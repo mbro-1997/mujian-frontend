@@ -11,11 +11,11 @@ function fixture(role='supplier'){
 test('two role roots have four tabs; factory home loads its overview and pending orders once on ordinary return',async()=>{
  const f=fixture();const home=f.page('home/index');await home.onShow();assert.equal(home.data.factoryRoot,true);assert.equal(f.page.tab.items.map(x=>x.text).join(','),'首页,发布,仓库,我的');assert.deepEqual(f.requests,["/api/me/factory-orders/overview","/api/me/factory-orders?view=factory_pending&page=1"]);
  home.onHide();await home.onShow();assert.equal(f.requests.length,2);
- const mine=f.page('mine/index');await mine.onShow();assert.equal(mine.data.factoryRoot,true);assert.equal(mine.data.factoryMenus.filter(x=>x.key==='ledger').length,1);mine.factoryOpen({currentTarget:{dataset:{key:'rules'}}});assert.equal(f.nav.pop(),'/pages/factory/rules?readOnly=1');
+ const mine=f.page('mine/index');await mine.onShow();assert.equal(mine.data.factoryRoot,true);assert.equal(mine.data.factoryMenus.flatMap(group=>group.items).filter(x=>x.key==='ledger').length,1);mine.factoryOpen({currentTarget:{dataset:{key:'rules'}}});assert.equal(f.nav.pop(),'/pages/factory/rules?readOnly=1');
  const r=fixture('demander');await r.page('plan/index').onShow();assert.equal(r.page.tab.items.map(x=>x.text).join(','),'首页,方案,清单,我的');
 });
 test('warehouse uses server asset/status/auditing filters; stale page replies never win',async()=>{
- const f=fixture();const w=f.page('checklist/index');await w.onShow();w.setData({keyword:'木',page:3,tab:'pending'});await w.asset({currentTarget:{dataset:{type:'A_ASSET'}}});await new Promise(r=>setImmediate(r));const q=f.requests.at(-1);assert.match(q,/assetType=A_ASSET/);assert.match(q,/auditing=true/);assert.doesNotMatch(q,/skuStatus=pending/);assert.match(q,/page=1/);
+ const f=fixture();const w=f.page('checklist/index');await w.onShow();w.setData({keyword:'木',page:3,tab:'pending'});await w.selectWarehouseFilter({detail:{field:'assetType',value:'A_ASSET'}});await new Promise(r=>setImmediate(r));const q=f.requests.at(-1);assert.match(q,/assetType=A_ASSET/);assert.match(q,/auditing=true/);assert.doesNotMatch(q,/skuStatus=pending/);assert.match(q,/page=1/);
  w.setData({tab:'offline'});await w.load();assert.match(f.requests.at(-1),/skuStatus=offline/);
 });
 test('warehouse query/page/scroll restores per factory and clears on logout',async()=>{
@@ -43,3 +43,50 @@ test('no-stack SKU inventory and scoped application list return to their source 
 test('cold scan restores server identity before QR resolution and refuses demander without private request',async()=>{const f=fixture('demander'),p=f.page('props/scan/index');p.onLoad({code:'123456789abc4def8123456789abcdef'});p.onShow();await new Promise(r=>setImmediate(r));assert.equal(f.requests.length,0);assert.equal(p.data.loginRequired,true);assert.match(p.data.message,/工厂账号/);p.onUnload();});
 
 for(const name of ['props/reviews','inventory/movements'])test(name+' ignores late results after filter changes',async()=>{const f=fixture(),p=f.page(name);await p.onLoad({id:'sku'});let pending=[];f.table[name==='props/reviews'?'/api/me/prop-reviews?':'/api/me/factory-props/sku/movements?']=()=>new Promise(resolve=>pending.push(resolve));const a=p.load(),b=p.load();pending[1]({items:[],pendingCounts:{total:'2'},total:'2'});await b;pending[0]({items:[],pendingCounts:{total:'9'},total:'9'});await a;assert.equal(p.data.total,'2');});
+
+test('explicit renter order shortcut starts on page one without restoring a different search; returning from a child retains the current list', async () => {
+  const f = fixture('demander');
+  const first = f.page('orders/index');
+  await first.onLoad({ view: 'pending_accept' });
+  await first.onShow();
+  first.setData({ keyword: '旧单号', submittedKeyword: '旧单号' });
+  first.onPageScroll({ scrollTop: 310 });
+  first.onHide();
+
+  const fresh = f.page('orders/index');
+  await fresh.onLoad({ view: 'pending_receipt' });
+  await fresh.onShow();
+  assert.equal(fresh.data.view, 'pending_receipt');
+  assert.equal(fresh.data.submittedKeyword, '');
+  assert.equal(f.requests.at(-1), '/api/me/rental-orders?view=pending_receipt&page=1');
+  assert.notEqual(f.scroll.at(-1), 310);
+  const count = f.requests.length;
+  fresh.onHide();
+  await fresh.onShow();
+  assert.equal(fresh.data.view, 'pending_receipt');
+  assert.equal(f.requests.length, count);
+});
+
+test('仓库同条件刷新保留可见卡片，切换筛选立即清除旧行并忽略迟到响应', async () => {
+  const f = fixture();
+  const warehouse = f.page('inventory/select');
+  const pending = [];
+  f.table['/api/me/factory-props?'] = () => new Promise(resolve => pending.push(resolve));
+  const sample = id => ({ items: [{ id, skuStatus: 'online' }], total: '1' });
+  const initial = warehouse.load();
+  pending.shift()(sample('original'));
+  await initial;
+
+  const refresh = warehouse.load();
+  assert.equal(warehouse.data.items[0].id, 'original');
+  warehouse.setData({ assetType: 'B_CONSUMABLE' });
+  const filtered = warehouse.load();
+  assert.equal(warehouse.data.items.length, 0);
+  const [oldResponse, newResponse] = pending;
+  newResponse(sample('filtered'));
+  await filtered;
+  oldResponse(sample('stale'));
+  await refresh;
+  assert.equal(warehouse.data.items[0].id, 'filtered');
+  assert.equal(warehouse.data.busy, false);
+});

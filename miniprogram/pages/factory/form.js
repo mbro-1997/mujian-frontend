@@ -1,3 +1,5 @@
+const { hint, UploadError } = require("../../services/form-error");
+const successToast = require("../../services/success-toast");
 const checkboxSelection = require("../../services/checkbox-selection");
 const api = require("../../services/factory"),
   account = require("../../services/account"),
@@ -29,7 +31,7 @@ require("../../session/page")({
   },
   onLoad(q) {
     this.setData({ mode: q.mode === "change" ? "change" : "onboarding" });
-    this.load();
+    return this.load();
   },
   async load() {
     this.setData({ busy: true });
@@ -136,7 +138,7 @@ require("../../session/page")({
         if (!session.isCurrent(owner)) return;
         const images = r.tempFiles.map((f) => ({ localPath: f.tempFilePath }));
         if (r.tempFiles.some((f) => f.size > 5 * 1024 * 1024)) {
-          this.setData({ message: "每张图片不能超过5MiB，请重新选择。" });
+          hint("每张图片不能超过5MiB，请重新选择。");
           return;
         }
         const key =
@@ -199,20 +201,14 @@ require("../../session/page")({
       !fields.factoryAvatar ||
       !fields.businessLicense ||
       !fields.factoryPhotos.length ||
-      !fields.specialtyCategoryIds.length ||
-      !Number.isInteger(fields.workerCount) ||
-      fields.workerCount < 0 ||
-      !/^[0-9A-Z]{18}$/.test(fields.unifiedSocialCreditCode) ||
-      fields.cases.some(
-        (c) => !c.title.trim() && !c.description.trim() && !c.images.length,
-      )
-    ) {
-      this.setData({
-        message:
-          "请填写必填资料，信用代码为18位大写字母或数字；每组案例至少填写标题、说明或图片之一。",
-      });
-      return;
-    }
+      !fields.specialtyCategoryIds.length
+    ) return hint("请补全工厂必填资料和图片");
+    if (!Number.isInteger(fields.workerCount) || fields.workerCount < 0)
+      return hint("工人数须为非负整数");
+    if (!/^[0-9A-Z]{18}$/.test(fields.unifiedSocialCreditCode))
+      return hint("信用代码须为18位字母或数字");
+    if (fields.cases.some(c => !c.title.trim() && !c.description.trim() && !c.images.length))
+      return hint("请给空白案例添加标题、说明或图片");
     const d = {
       mode: this.data.mode,
       fields,
@@ -234,8 +230,9 @@ require("../../session/page")({
         this.setData({ busy: true, message: "" });
         try {
           await api.submit(d);
-          wx.redirectTo({ url: "/pages/factory/status?mode=change" });
+          wx.redirectTo({ success: () => successToast("变更申请已提交"), url: "/pages/factory/status?mode=change" });
         } catch (e) {
+          if (e instanceof UploadError) return hint(e.message);
           this.setData({ message: e.message });
         } finally {
           this.setData({ busy: false });

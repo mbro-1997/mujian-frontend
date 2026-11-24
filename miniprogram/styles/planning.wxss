@@ -194,7 +194,7 @@ page {
 }
 .planning .quantity input {
   width: 98rpx;
-  padding: 8rpx;
+  padding: 0 8rpx;
   text-align: center;
 }
 .planning .quantity button {

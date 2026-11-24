@@ -1,7 +1,7 @@
 // 手机与电脑连接同一局域网。换网络时只需更新 lanHost，再编译和预览。
 const network = {
   mode: "lan",
-  lanHost: "192.168.1.2",
+  lanHost: "192.168.1.4",
   apiPort: 18080,
   debugPort: 19431,
 };

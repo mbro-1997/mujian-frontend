@@ -19,9 +19,9 @@
   <block wx:else>
     <view class="section hero"><view class="heading">需要协助的事情</view><view class="muted">选择要咨询的业务，可将对应业务卡片发送给微信客服。</view></view>
     <view class="section service-list"><view class="row"><text class="heading">最近业务</text><text class="muted">仅本人可见</text></view>
-    <view wx:if="{{busy && !items.length}}" class="blank">正在读取…</view>
+    <view wx:if="{{busy && !returnRefresh && !items.length}}" class="blank"><mj-loading label="正在读取"/></view>
     <button class="service-item" wx:for="{{items}}" wx:key="sourceKey" data-index="{{index}}" bindtap="select" disabled="{{busy}}"><view class="muted">{{item.sourceLabel}}</view><view class="item-title">{{item.title}}</view><view>{{item.statusLabel}} ›</view></button>
-    <view wx:if="{{!busy&&!message&&!items.length}}" class="blank">暂无可关联的业务</view></view>
+    <view wx:if="{{(!busy || returnRefresh) && !message && !items.length}}" class="blank">暂无可关联的业务</view></view>
     <view class="section"><view class="heading">其他帮助</view><button class="service-direct" open-type="contact" bindcontact="returned" binderror="failed">没有对应业务，直接咨询 ›</button></view>
   </block>
   <view wx:if="{{message}}" class="feedback">{{message}}<button wx:if="{{!source}}" bindtap="retryList" disabled="{{busy}}">重试</button></view>

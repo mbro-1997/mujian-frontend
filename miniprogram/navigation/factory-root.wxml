@@ -1,13 +1,13 @@
 <import src="warehouse.wxml"/>
 <template name="factory-root">
 <view class="factory-root" bindtouchstart="activity">
-<view wx:if="{{rootLoading&&!factoryProfile}}" class="empty">正在加载工厂状态</view>
-<view wx:if="{{factoryProfile}}" class="factory-identity"><view class="factory-avatar">厂</view><view><view class="factory-name">{{factoryProfile.materials.factoryName}}</view><view class="muted">工厂工作台 · {{factoryProfile.factoryStatus==='active'?'已入驻':factoryProfile.factoryStatus==='suspended'?'经营暂停':'工厂已停用'}}</view></view></view>
+<view wx:if="{{rootLoading&&!factoryProfile}}" class="empty"><mj-loading label="正在加载工厂状态"/></view>
+<view wx:if="{{factoryProfile}}" class="factory-identity"><view class="factory-avatar">厂</view><view><view class="factory-name">{{factoryProfile.materials.factoryName}}</view><view class="muted">{{factoryProfile.factoryStatus==='active'?'已入驻':factoryProfile.factoryStatus==='suspended'?'经营暂停':'工厂已停用'}}</view></view></view>
 <view wx:if="{{factoryContext.accessMode==='restricted'||(factoryProfile&&factoryProfile.factoryStatus!=='active')}}" class="feedback">当前账号或工厂使用受限。已有资料与记录按权限查看，业务操作以页面可用动作为准。</view>
 <block wx:if="{{rootIndex===0}}">
   <view class="panel">
-    <view class="factory-section-head"><text class="heading">租赁订单</text>
-      <button class="factory-text-action" bindtap="factoryOrderList">全部订单{{tradeOverview?' '+tradeOverview.allOrderCount:''}} ›</button></view>
+    <mj-heading title="租赁订单">
+      <button class="factory-text-action" bindtap="factoryOrderList">全部订单{{tradeOverview?' '+tradeOverview.allOrderCount:''}} ›</button></mj-heading>
     <view class="factory-order-grid">
       <view data-view="pending_accept" bindtap="factoryOrderList">{{tradeOverview?tradeOverview.pendingAcceptCount:'—'}}<text>待接单</text></view>
       <view data-view="pending_outbound" bindtap="factoryOrderList">{{tradeOverview?tradeOverview.pendingOutboundCount:'—'}}<text>待出库</text></view>
@@ -18,8 +18,8 @@
   </view>
   <view wx:if="{{tradeMessage}}" class="feedback">{{tradeMessage}}<button bindtap="factoryOrdersRetry">重试读取</button></view>
   <view class="panel">
-    <view class="factory-section-head"><text class="heading">租赁订单 · 待处理</text>
-      <button class="factory-text-action" data-view="factory_pending" bindtap="factoryOrderList">查看全部 ›</button></view>
+    <mj-heading title="待处理租赁订单">
+      <button class="factory-text-action" data-view="factory_pending" bindtap="factoryOrderList">查看全部 ›</button></mj-heading>
     <view wx:for="{{tradeOrders}}" wx:key="id" class="factory-task" data-id="{{item.id}}" bindtap="factoryOrder">
       <view class="factory-task-top"><text class="pill">{{item.label}}</text><text class="muted">租赁订单</text></view>
       <view class="factory-task-title">{{item.orderNo}}</view>
@@ -28,13 +28,31 @@
         <button class="factory-task-action" data-id="{{item.id}}" catchtap="factoryOrder">查看订单</button></view>
     </view>
     <view wx:if="{{!tradeOrders.length && !tradeMessage}}" class="factory-home-state">
-      <view>{{tradeBusy?'正在读取待处理订单…':'暂无待处理订单'}}</view>
-      <text wx:if="{{!tradeBusy}}" class="muted">后续需要处理的租赁订单会显示在这里。</text>
+      <view><mj-loading wx:if="{{tradeBusy && !tradePage}}" label="正在读取待处理订单"/><text wx:else>暂无待处理订单</text></view>
+
     </view>
     <button wx:if="{{!tradeExhausted && tradeOrders.length<tradeTotal}}" bindtap="factoryOrdersMore" disabled="{{tradeBusy}}">加载更多待处理订单</button>
   </view>
 </block>
-<block wx:elif="{{rootIndex===1}}"><view class="heading">发布道具</view><view class="muted factory-intro">选择道具类型，提交资料与初始库存，审核通过后上架。</view><button class="factory-publish panel" data-type="A_ASSET" bindtap="factoryCreate" disabled="{{rootLoading||!factoryProfile||factoryProfile.factoryStatus!=='active'||factoryContext.accessMode==='restricted'}}"><view class="heading">A 类道具</view><view class="muted">一物一码 · 按实物管理</view><text>填写道具资料 ›</text></button><button class="factory-publish panel" data-type="B_CONSUMABLE" bindtap="factoryCreate" disabled="{{rootLoading||!factoryProfile||factoryProfile.factoryStatus!=='active'||factoryContext.accessMode==='restricted'}}"><view class="heading">B 类道具</view><view class="muted">同款同规格 · 按数量管理</view><text>填写道具资料 ›</text></button><view class="muted">提交记录可在“我的 → 道具与库存申请”查看。</view></block>
-<template wx:elif="{{rootIndex===2}}" is="warehouse" data="{{items,message,busy,tab,keyword,page,total,assetType,selection}}"/>
-<block wx:elif="{{rootIndex===3}}"><view class="panel factory-menu"><view wx:for="{{factoryMenus}}" wx:key="key" class="factory-menu-row" data-key="{{item.key}}" bindtap="factoryOpen"><text>{{item.label}}</text><text class="muted">{{item.stage||'›'}}</text></view></view><view class="panel factory-menu"><view class="factory-menu-row" data-key="profile" bindtap="factoryOpen">工厂资料 <text>›</text></view><view class="factory-menu-row" data-key="phone" bindtap="factoryOpen">联系电话 <text>›</text></view><view class="factory-menu-row" data-key="account" bindtap="factoryOpen">账号管理 <text>›</text></view><view class="factory-menu-row" data-key="rules" bindtap="factoryOpen">平台规则 <text>›</text></view></view><button class="secondary-btn" bindtap="factoryLogout">退出登录</button></block>
+<block wx:elif="{{rootIndex===1}}">
+  <mj-heading title="发布道具" subtitle="选择管理方式，填写资料后提交审核。"/>
+  <button wx:for="{{['A','B']}}" wx:key="*this" class="factory-publish" data-type="{{item==='A'?'A_ASSET':'B_CONSUMABLE'}}"
+    bindtap="factoryCreate" hover-stay-time="{{0}}" disabled="{{!factoryProfile||factoryProfile.factoryStatus!=='active'||factoryContext.accessMode==='restricted'}}">
+    <text class="asset-letter {{item==='B'?'quantity':''}}">{{item}}</text>
+    <view class="publish-copy"><view class="heading">{{item}} 类道具</view><text class="muted">{{item==='A'?'逐件追踪实物，每件都有独立标签。':'按同款规格记录库存数量。'}}</text></view>
+    <text class="arrow">›</text>
+  </button>
+</block>
+<template wx:elif="{{rootIndex===2}}" is="warehouse" data="{{items,message,busy,tab,keyword,submittedKeyword,page,total,assetType,selection,warehouseFilters,warehouseLoaded}}"/>
+<block wx:elif="{{rootIndex===3}}">
+  <block wx:for="{{factoryMenus}}" wx:key="title" wx:for-item="group">
+    <view class="menu-title">{{group.title}}</view>
+    <view class="panel factory-menu mine-grid">
+      <view wx:for="{{group.items}}" wx:key="key" class="mine-tool" aria-role="button" data-key="{{item.key}}" bindtap="factoryOpen">
+        <view class="tool-icon tool-{{item.icon}}" aria-hidden="true"></view><text>{{item.label}}</text>
+      </view>
+    </view>
+  </block>
+  <button class="secondary-btn" bindtap="factoryLogout">退出登录</button>
+</block>
 </view></template>

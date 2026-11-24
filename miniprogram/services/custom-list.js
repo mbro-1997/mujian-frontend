@@ -4,6 +4,7 @@ module.exports = (factory) =>
   require('../session/page')({
     data: {
       factory,
+      filterGroups: [{"key": "kind", "title": "业务类型", "options": [{"code": "requirements", "label": "定制需求"}, {"code": "orders", "label": "购买订单"}]}],
       kind: 'requirements',
       loadedRevision: -1,
       status: '',
@@ -83,10 +84,15 @@ module.exports = (factory) =>
         wx.stopPullDownRefresh()
       );
     },
+    resetFilters() {
+      if (this.data.busy) return;
+      this.setData({ kind: 'requirements', status: '', rows: [], page: 0, total: 0, exhausted: false });
+      return this.load(false);
+    },
     tab(e) {
       if (this.data.busy) return;
       this.setData({
-        kind: e.currentTarget.dataset.kind,
+        kind: e.detail.value,
         status: '',
         page: 0,
         rows: [],

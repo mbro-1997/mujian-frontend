@@ -50,7 +50,7 @@ if(process.argv.includes('--d2-nav')){
  const tabCss=read('custom-tab-bar/index.wxss').replace(/([^{}]+)\{([^{}]*)\}/g,(_,selectors,body)=>selectors.split(',').map(x=>x.trim()==='.tabbar'?x:'.tabbar '+x.trim()).join(',')+'{'+body+'}');
  const css=baseCss+'\n'+tabCss;
  const rows=fs.readFileSync(path.join(output,'nav-owned-asset-http.jsonl'),'utf8').trim().split('\n').map(JSON.parse);const response=rows.find(x=>x.path.startsWith('/api/me/factory-props?')&&x.status===200&&x.body.data.items.length);
- const menus=[['custom','定制需求与订单','暂未开放'],['reviews','道具与库存申请',''],['ledger','库存流水',''],['extension','延期申请','暂未开放'],['claims','索赔与仲裁','暂未开放'],['finance','资金结算','暂未开放'],['ratings','评价管理','暂未开放'],['support','平台客服','暂未开放']].map(([key,label,stage])=>({key,label,stage}));
+ const menus=require('../miniprogram/navigation/factory-menu');
  const items=response.body.data.items.map(x=>({...x,state:({online:'已上架',offline:'已下架',draft:'待完善'})[x.skuStatus]}));
  const states={rootIndex:0,rootLoading:false,factoryProfile:{factoryStatus:'active',materials:{factoryName:'幕间工厂 · 工作台'}},factoryContext:{accessMode:'normal'},factoryMenus:menus,items,message:'',busy:false,tab:'',keyword:'',page:1,total:response.body.data.total,assetType:'',selection:false,selected:0,hidden:false,navItems:require('../miniprogram/constants/routes').items({roleCode:'supplier'}),events:[]};
  const handlerNames=[...new Set([...template.matchAll(/@(?:click|touchstart)="(\w+)"/g)].map(x=>x[1]))];

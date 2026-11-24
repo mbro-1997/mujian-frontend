@@ -8,7 +8,7 @@ function available() {
 }
 
 async function authorization() {
-  if (env.mobileDebug) {
+  if (env.wechatPreviewDebug) {
     const result = await new Promise((resolve, reject) => wx.login({
       timeout: 8000,
       success: resolve,
@@ -46,7 +46,7 @@ async function switchAccount(role, { logoutFirst = false } = {}) {
       url: env.debugEndpoint + "/sessions/" + role, method: "POST",
       header: { Authorization: auth },
     });
-    if (env.mobileDebug && issued.statusCode === 403)
+    if (env.wechatPreviewDebug && issued.statusCode === 403)
       throw new Error("请使用与本机微信开发者工具相同的微信账号打开开发预览。");
     if (issued.statusCode !== 200 || !issued.data?.token)
       throw new Error(issued.statusCode === 409 ? "测试账号或工厂状态已变化，请核对开发库。" : "调试服务不可用，请重新运行调试账号命令。");

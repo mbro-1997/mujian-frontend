@@ -45,7 +45,7 @@ function select(context, requested) {
     return !rental || context.roleCode === "demander" ? url : home;
   }
   if (
-    /^\/pages\/(plan\/(detail|create|select)|custom\/(index|detail|form|factory)|checklist\/detail|address\/(index|edit)|props\/dates|orders\/(detail|index|issues|extensions|disputes|fulfillment)|refund\/detail)$/.test(
+    /^\/pages\/(plan\/(detail|create|select)|custom\/(index|detail|form|factory)|checklist\/(detail|history)|address\/(index|edit)|props\/dates|orders\/(detail|index|issues|extensions|disputes|fulfillment)|refund\/detail)$/.test(
       path,
     )
   )

@@ -1,4 +1,4 @@
-<import src="../../navigation/factory-root.wxml"/><view class="mine-page"><view wx:if="{{rootMessage}}" class="feedback error">{{rootMessage}}<button bindtap="resolveRoot">重试</button></view><view wx:elif="{{!rootReady}}" class="empty">正在恢复身份</view><template wx:elif="{{factoryRoot}}" is="factory-root" data="{{rootLoading,rootIndex,factoryProfile,factoryContext,factoryMenus,tradeOverview,tradeOrders,tradePage,tradeTotal,tradeMessage,tradeBusy,items,message,busy,tab,keyword,page,total,assetType,selection}}"/><block wx:else><view class="with-tabs" bindtouchstart="activity"
+<import src="../../navigation/factory-root.wxml"/><view class="mine-page"><view wx:if="{{rootMessage}}" class="feedback error">{{rootMessage}}<button bindtap="resolveRoot">重试</button></view><view wx:elif="{{!rootReady}}" class="empty"><mj-loading label="正在恢复身份"/></view><template wx:elif="{{factoryRoot}}" is="factory-root" data="{{rootLoading,rootIndex,factoryProfile,factoryContext,factoryMenus,tradeOverview,tradeOrders,tradePage,tradeTotal,tradeExhausted,tradeMessage,tradeBusy,items,message,busy,tab,keyword,submittedKeyword,page,total,assetType,selection,warehouseFilters,warehouseLoaded}}"/><block wx:else><view class="with-tabs" bindtouchstart="activity"
   ><view class="mine-hero"
     ><view class="mine-avatar"
       >{{context ? (context.roleCode === 'supplier' ? '厂' : '租') :
@@ -18,12 +18,12 @@
   ><view class="mine-section"
     ><view class="section-title"
       ><text>我的租赁</text
-      ><text class="muted" bindtap="openOrders">全部订单 ›</text></view
+      ><text class="muted" data-view="all" bindtap="openOrders">全部订单 ›</text></view
     ><view class="mine-grid"
       ><view
         class="mine-tool"
         wx:for="{{orders}}"
-        wx:key="label"
+        wx:key="label" data-view="{{item.view}}"
         bindtap="openOrders"
         ><view class="tool-icon tool-{{item.icon}}" aria-hidden="true"></view><text>{{item.label}}</text></view
       ></view
@@ -47,7 +47,7 @@
       ><text>账号管理</text><text class="chevron">›</text></view
     ></view
   ><view class="action-row"
-    ><button class="secondary" bindtap="load" loading="{{busy}}">
+    ><button class="secondary" bindtap="load" loading="{{busy && !returnRefresh}}">
       刷新状态</button
     ><button
       wx:if="{{context}}"

@@ -1,4 +1,4 @@
-/* 仅由租赁方的独立页面导入；工厂虽使用部分相同 WXML，不导入此文件。 */
+/* 按页面使用的结构应用同一套卡片、表单、筛选与操作栏样式。 */
 page, .custom, .verify-page { background: var(--mj-canvas); color: var(--mj-ink); }
 .trade, .trade.order-list, .custom, .planning, .verify-page, .fulfill, .product-page {
   padding-left: var(--mj-edge); padding-right: var(--mj-edge);
@@ -28,12 +28,10 @@ page, .custom, .verify-page { background: var(--mj-canvas); color: var(--mj-ink)
   margin: 12px 0; padding: 32px 16px; background: var(--mj-paper); border: 1px solid var(--mj-line);
   border-radius: var(--mj-card); text-align: center; font-size: 14px; color: var(--mj-muted); line-height: 1.55;
 }
-.trade .order-filter.selected, .custom .tabs .selected, .trade .toolbar .selected { background: var(--mj-active-bg); color: var(--mj-active-ink); }
-.trade .order-filter { min-height: 44px; padding: 8px 12px; border-radius: 9px; font-weight: 600; }
-.trade .order-filter-line { border: 0; padding: 0; }
-.trade .order-searchbar button, .trade .order-search, .custom .bar picker, .trade textarea, .planning .field input,
+.custom .tabs .selected, .trade .toolbar .selected { background: var(--mj-active-bg); color: var(--mj-active-ink); }
+.custom .bar picker, .trade textarea, .planning .field input,
 .planning .field textarea, .verify-page .input { border-radius: var(--mj-control); }
-.trade .order-search, .planning .field input, .planning .field textarea, .verify-page .input { background: white; border-color: var(--mj-line); }
+.planning .field input, .planning .field textarea, .verify-page .input { background: white; border-color: var(--mj-line); }
 .trade .blank .clear-order { display: block; width: auto; margin: 8px auto 0; padding: 8px 12px; min-height: 44px; background: transparent; color: var(--mj-active-ink); font-weight: 650; }
 .custom .tabs { background: #e8ece6; border-radius: 12px; padding: 3px; gap: 3px; }
 .custom .tabs button { background: transparent; font-weight: 600; }
@@ -55,3 +53,10 @@ page, .custom, .verify-page { background: var(--mj-canvas); color: var(--mj-ink)
 }
 .planning .footer > button:only-child { width:100%; }
 .order-card .order-open { justify-content:flex-end; color:var(--mj-active-ink); }
+/* 各业务页共享，金额、风险色及原生控件语义由具体页面保留。 */
+.fulfill .foot, .trade .footer, .planning .footer { box-sizing:border-box; }
+.fulfill .foot button { min-width:0; min-height:var(--mj-tap); border-radius:var(--mj-control); }
+.fulfill .row > text:last-child, .trade .row > view, .custom .bar > view { min-width:0; overflow-wrap:anywhere; }
+
+.planning input, .custom input, .trade input, .fulfill input, .factory-page input { padding-top:0; padding-bottom:0; }
+.custom picker { padding-top:0; padding-bottom:0; }

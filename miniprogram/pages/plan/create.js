@@ -1,3 +1,5 @@
+const { ValidationError } = require("../../services/form-error");
+const successToast = require("../../services/success-toast");
 const api = require("../../services/planning"),
   ui = require("../../services/planning-page");
 require("../../session/page")({
@@ -24,7 +26,7 @@ require("../../session/page")({
   async save() {
     if (!this.data.contextReady || this.data.limit || this.data.pendingCreate) return;
     await ui.run(this, async () => {
-      if (!this.data.name.trim()) throw new Error("请填写方案名称");
+      if (!this.data.name.trim()) throw new ValidationError("请填写方案名称");
       const receipt = await api.command("create-scheme", "/api/me/schemes", {
         name: this.data.name.trim(),
         description: this.data.description.trim() || null,
@@ -42,11 +44,15 @@ require("../../session/page")({
   },
   created(id) {
     ui.dirty(this, false);
+    const success = () => successToast("创建成功");
     if (this.skuId) {
       this.getOpenerEventChannel?.()?.emit("schemeCreated", { id });
-      wx.navigateBack();
+      wx.navigateBack({ success });
     } else {
-      wx.redirectTo({ url: "/pages/plan/detail?id=" + id });
+      const previous = typeof getCurrentPages === "function" ? getCurrentPages().slice(-2)[0] : null;
+      if (previous?.route === "pages/plan/index" && previous.data.filter === "archived")
+        previous.setData({ filter: "all", page: 0, statusOpen: false });
+      wx.switchTab({ url: "/pages/plan/index", success });
     }
   },
   back() {

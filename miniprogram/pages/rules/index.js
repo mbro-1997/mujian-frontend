@@ -12,7 +12,7 @@ require("../../session/page")({
   onLoad(q) {
     this.setData({ register: q.register === "1" });
     this.documentId = q.id || "";
-    this.load();
+    return this.load();
   },
   async load() {
     this.setData({ busy: true, message: "" });

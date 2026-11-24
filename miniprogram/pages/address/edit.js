@@ -1,3 +1,5 @@
+const { ValidationError } = require("../../services/form-error");
+const successToast = require("../../services/success-toast");
 const api = require("../../services/planning"),
   ui = require("../../services/planning-page");
 require("../../session/page")({
@@ -82,7 +84,7 @@ require("../../session/page")({
         !body.detailAddress ||
         !/^1[3-9]\d{9}$/.test(body.phone)
       )
-        throw new Error("请填写完整地址及有效大陆手机号");
+        throw new ValidationError("请填写完整地址及有效大陆手机号");
       if (d.id) body.expectedVersion = d.version;
       await api.command(
         "address-save:" + (d.id || "new"),
@@ -90,7 +92,7 @@ require("../../session/page")({
         body,
       );
       ui.dirty(this, false);
-      wx.navigateBack();
+      wx.navigateBack({ success: () => successToast("地址已保存") });
     });
   },
   recover() {
@@ -100,7 +102,7 @@ require("../../session/page")({
       );
       if (receipt) {
         ui.dirty(this, false);
-        wx.navigateBack();
+        wx.navigateBack({ success: () => successToast("地址已保存") });
       }
     });
   },

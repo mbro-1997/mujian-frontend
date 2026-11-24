@@ -1,8 +1,8 @@
 <view class="trade order-list">
-  <scroll-view scroll-x class="order-filters" enhanced show-scrollbar="{{false}}" scroll-into-view="order-filter-{{view==='pending_outbound'?'accepted':view}}">
-    <view class="order-filter-line"><button wx:if="{{view==='factory_pending'}}" id="order-filter-factory_pending" class="order-filter selected" aria-pressed="{{true}}">待处理</button><button wx:for="{{tabs}}" wx:key="code" id="order-filter-{{item.code}}" class="order-filter {{view===item.code || (view==='pending_outbound' && item.code==='accepted')?'selected':''}}" aria-pressed="{{view===item.code || (view==='pending_outbound' && item.code==='accepted')}}" data-view="{{item.code}}" bindtap="filter">{{item.label}}</button></view>
-  </scroll-view>
-  <view class="order-searchbar"><input class="order-search" value="{{keyword}}" bindinput="keyword" bindconfirm="search" placeholder="搜索订单号" maxlength="128" confirm-type="search"/><button bindtap="search" disabled="{{busy}}" class="primary">搜索</button></view>
+  <view class="order-controls">
+    <list-filters resettable="{{view !== 'all' || keyword || submittedKeyword}}" bindresetfilters="clearFilters" quiet="{{returnRefresh}}" filters="{{orderFilters}}" values="{{ {view:view === 'pending_outbound' ? 'accepted' : view} }}"
+      maxlength="{{128}}" disabled="{{busy}}" keyword="{{keyword}}" placeholder="搜索订单号" bindselectfilter="filter" bindkeyword="keyword" bindsearch="search"/>
+  </view>
   <navigator wx:if="{{factory}}" class="order-secondary" url="/pages/factory/extensions">工厂延期申请 ›</navigator>
   <view wx:if="{{message}}" class="feedback">{{message}}<button bindtap="retry">重试读取</button></view>
   <view wx:for="{{items}}" wx:key="id" class="order-card" data-id="{{item.id}}" bindtap="open">
@@ -12,6 +12,6 @@
     <view wx:if="{{item.refundedFen>0 || item.deductedFen>0 || item.terminationRefund}}" class="order-refund"><view wx:if="{{item.refundedFen>0}}">已退回 ¥{{item.refunded}}</view><view wx:if="{{item.deductedFen>0}}">已扣取消费 ¥{{item.deducted}}，不在退款内</view><view wx:if="{{item.terminationRefund}}">{{item.terminationRefund}}</view></view>
     <view class="order-stage" wx:if="{{factory}}"><text>当前阶段</text><text>{{item.label}} ›</text></view><view wx:else class="order-stage order-open">查看订单详情 ›</view>
   </view>
-  <view wx:if="{{!items.length && !message}}" class="blank">{{busy?'正在读取订单…':factory?'当前分类暂无订单':submittedKeyword?'没有匹配的订单':view==='all'?'暂无订单':'当前分类暂无订单'}}<button wx:if="{{!factory && !busy && (submittedKeyword || view!=='all')}}" class="clear-order" bindtap="clearFilters">查看全部订单</button></view>
-  <view wx:if="{{items.length && busy}}" class="blank">正在加载…</view>
+  <view wx:if="{{!items.length && !message}}" class="blank"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取订单"/><text wx:else>{{factory?'当前分类暂无订单':submittedKeyword?'没有匹配的订单':view==='all'?'暂无订单':'当前分类暂无订单'}}</text><button wx:if="{{!factory && (!busy || returnRefresh) && (submittedKeyword || view!=='all')}}" class="clear-order" bindtap="clearFilters">查看全部订单</button></view>
+  <view wx:if="{{items.length && busy && !returnRefresh}}" class="blank"><mj-loading label="正在加载"/></view>
 </view>

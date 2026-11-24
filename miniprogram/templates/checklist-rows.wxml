@@ -1,0 +1,32 @@
+  <view wx:if="{{message}}" class="pl-feedback">{{message}}
+    <button wx:if="{{retryDeleteId}}" class="pl-action" data-id="{{retryDeleteId}}" disabled="{{busy}}" bindtap="deleteRow">重试删除</button>
+    <button wx:else class="pl-action" bindtap="retry">重新读取</button>
+    <button wx:if="{{!isHistory && !retryDeleteId}}" class="pl-action" bindtap="recover">查询原操作结果</button>
+  </view>
+  <view wx:elif="{{!items.length}}" class="pl-empty"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在加载"/><text wx:else>{{isHistory?'暂无历史清单':'暂无清单'}}</text></view>
+
+  <view wx:for="{{items}}" wx:key="id" class="pl-card">
+    <swipe-delete data-id="{{item.id}}" label="删除清单" enabled="{{!isHistory && (item.status==='selecting' || item.status==='suspended')}}"
+      opened="{{swipeId===item.id}}" busy="{{busy}}" bindreveal="revealRow" bindremove="deleteRow">
+      <view class="pl-summary">
+        <view class="pl-head">
+          <view class="pl-intro"><view class="pl-title">{{item.listTitle}}</view>
+            <view wx:if="{{item.note}}" class="pl-note">{{item.note}}</view>
+          </view>
+          <text class="pl-badge {{item.status==='editing'||item.status==='selecting'?'pl-current':''}}">{{item.statusLabel}}</text>
+        </view>
+        <view class="pl-metrics">
+          <view class="pl-metric"><text>道具</text>{{item.quantityTotal}} 件</view>
+          <view class="pl-metric"><text>日租</text>{{item.dailyText}}</view>
+          <view wx:if="{{item.status==='suspended'}}" class="pl-metric"><text>租期</text>{{item.rentalDays}}天</view>
+          <view wx:else class="pl-metric"><text>押金</text>{{item.depositText}}</view>
+        </view>
+      </view>
+    </swipe-delete>
+    <view class="pl-actions">
+      <button class="pl-action {{item.status==='selecting'?'pl-main':''}}" data-id="{{item.id}}" bindtap="open">查看清单</button>
+      <button wx:if="{{!isHistory && item.status==='selecting' && (!checklistContext || checklistContext.currentChecklist && checklistContext.currentChecklist.id===item.id)}}" class="pl-action" data-id="{{item.id}}" bindtap="continue">继续选品</button>
+      <button wx:elif="{{!isHistory && item.status==='suspended'}}" class="pl-action pl-main" data-id="{{item.id}}" bindtap="activate">切换为当前</button>
+    </view>
+  </view>
+  <view wx:if="{{items.length && !message && items.length < total}}" class="pl-empty"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在加载"/><text wx:else>上拉加载更多</text></view>

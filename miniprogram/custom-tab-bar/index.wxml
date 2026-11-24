@@ -5,6 +5,6 @@
     class="tab {{selected === index ? 'active' : ''}}"
     data-index="{{index}}"
     bindtap="switchTab"
-    ><view class="tab-icon icon-{{item.icon}}"></view><text>{{item.text}}</text></view
+    ><view class="tab-icon"><image src="{{item.icon}}" mode="aspectFit" aria-hidden="{{true}}"/></view><text>{{item.text}}</text></view
   ></view
 >

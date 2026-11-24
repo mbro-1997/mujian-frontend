@@ -15,7 +15,12 @@
 .review-tags text{display:block;font-weight:700}
 .review-tags .tag-state{margin-top:4px;font-size:12px;color:#626d7b}
 .review-page .primary{background:#111827;color:#ffe100;text-align:center;border-radius:8px}
-.review-page.renter-review { min-height:100vh; padding-left:var(--mj-edge); padding-right:var(--mj-edge); color:var(--mj-ink); background:var(--mj-canvas); }
-.renter-review .section { border-color:var(--mj-line); border-radius:var(--mj-card); }
-.renter-review .review-tags button.selected { border-color:var(--mj-active-ink); background:var(--mj-active-bg); }
-.renter-review button.primary:not([disabled]) { background:var(--mj-accent); color:var(--mj-ink); }
+.review-page { min-height:100vh; padding-left:var(--mj-edge); padding-right:var(--mj-edge); color:var(--mj-ink); background:var(--mj-canvas); }
+.review-page .section { border-color:var(--mj-line); border-radius:var(--mj-card); }
+.review-page .review-tags button.selected { border-color:var(--mj-active-ink); background:var(--mj-active-bg); }
+.review-page button.primary:not([disabled]) { background:var(--mj-accent); color:var(--mj-ink); }
+@import "../../styles/surfaces.wxss";
+
+.review-page button.review-tag-trigger { display:flex;align-items:center;justify-content:space-between;width:100%;padding:8px 12px;min-height:44px;background:var(--mj-soft);color:var(--mj-ink);text-align:left; }
+.review-page .review-tags { display:grid;grid-template-columns:1fr;gap:0;max-height:42vh;overflow-y:auto; }
+.review-page .review-tags button { display:flex;align-items:center;justify-content:space-between;min-height:44px;border:0;border-bottom:1px solid var(--mj-line);border-radius:0; }

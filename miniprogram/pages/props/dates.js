@@ -1,3 +1,5 @@
+const { hint } = require("../../services/form-error");
+const successToast = require("../../services/success-toast");
 const planning = require("../../services/planning");
 const calendar = require("../../services/rental-calendar"),
   routes = require("../../constants/routes"),
@@ -91,7 +93,7 @@ require("../../session/page")({
     ) {
       this.setData({ startDate: value, endDate: "", message: "" });
     } else if (!calendar.allowed(this.data.startDate, value)) {
-      this.setData({ message: "请选择不早于开始日期、含首尾1～120天的租期。" });
+      hint("请选择不早于开始日期、含首尾1～120天的租期。");
       return;
     } else this.setData({ endDate: value, message: "" });
     this.render();
@@ -107,6 +109,7 @@ require("../../session/page")({
       );
       if (!receipt) throw new Error("没有待确认的创建操作");
       wx.redirectTo({
+        success: () => successToast("清单已创建"),
         url: "/pages/checklist/detail?id=" + receipt.resourceId,
       });
     });
@@ -115,7 +118,7 @@ require("../../session/page")({
   async confirm() {
     if (this.data.busy) return;
     if (!calendar.allowed(this.data.startDate, this.data.endDate)) {
-      this.setData({ message: "请选择今天起、含首尾1～120天的租期。" });
+      hint("请选择今天起、含首尾1～120天的租期。");
       return;
     }
     if (!session.token()) {
@@ -152,6 +155,7 @@ require("../../session/page")({
         body,
       );
       wx.redirectTo({
+        success: () => successToast("清单已创建"),
         url: this.data.schemeId
           ? "/pages/checklist/detail?id=" + receipt.resourceId
           : "/pages/props/browse?" +

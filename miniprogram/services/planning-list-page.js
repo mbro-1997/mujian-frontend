@@ -1,3 +1,4 @@
+const successToast = require("./success-toast");
 const uniqueRows = require("./unique-rows");
 const api = require("./planning"),
   ui = require("./planning-page"),
@@ -7,6 +8,7 @@ const schemeStatuses = [
   { value: "editing", label: "编辑中" },
   { value: "archived", label: "已归档" },
 ];
+const readWindow = require("./read-list-window");
 const checklistNotes = {
   selecting: "选品中，可继续添加道具，也可以在清单详情里调整已有道具数量。",
   suspended: "已挂起。切换为当前清单后，可以继续选品和调整数量。",
@@ -37,12 +39,12 @@ function listRow(row) {
   };
 }
 
-module.exports = function (kind) {
+module.exports = function (kind, scope = "active") {
   const plan = kind === "schemes",
     tab = plan ? "plan" : "checklist";
   return {
     data: {
-      isSchemeList: plan,
+      isHistory: !plan && scope === "history",
       schemeStatuses,
       statusOpen: false,
       items: [],
@@ -50,7 +52,10 @@ module.exports = function (kind) {
       total: "0",
       busy: false,
       message: "",
-      filter: plan ? "all" : "active",
+      ...(plan ? { filter: "all" } : {}),
+      ...(!plan && scope === "active" ? { checklistContext: null } : {}),
+      swipeId: "",
+      retryDeleteId: "",
       loginVisible: false,
     },
     async onShow() {
@@ -62,25 +67,23 @@ module.exports = function (kind) {
     onSessionReset() {
       this.round = (this.round || 0) + 1;
       this.seenRevision = -1;
+      this.refreshChecklistContext = false;
     },
     async loadPlanning(event, append = false) {
       if (this.data.busy) return;
       const owner = session.capture(),
         round = (this.round = (this.round || 0) + 1);
-      this.setData({ busy: true, message: "" });
+      this.setData({ busy: true, message: "", swipeId: "" });
       try {
         const revision = api.revision.value;
-        const page = append ? this.data.page + 1 : 1;
-        const result = await api.get(
-          "/api/me/" +
-            kind +
-            "?page=" +
-            page +
-            "&pageSize=20&" +
-            (plan ? "status" : "scope") +
-            "=" +
-            this.data.filter,
-        );
+        const start = append ? this.data.page + 1 : 1;
+        const last = Math.max(start, this.data.page);
+        const result = await readWindow(start, last, page => api.get(
+          "/api/me/" + kind + "?page=" + page + "&pageSize=20&" +
+          (plan ? "status=" + this.data.filter : "scope=" + scope)
+        ), () => round === this.round && session.isCurrent(owner));
+        if (!result) return;
+        const page = result.page;
         if (round !== this.round || !session.isCurrent(owner)) return;
         const added = uniqueRows(result.items, append ? this.data.items : []).map(listRow);
         if (append && result.total !== this.data.total) {
@@ -95,6 +98,14 @@ module.exports = function (kind) {
         this.setData({ page, total: result.total });
         this.retryAppend = false;
         this.setData({ exhausted: this.exhausted });
+        if (!plan && scope === "active") {
+          if (this.refreshChecklistContext) {
+            const context = await api.get("/api/me/planning-context");
+            if (round !== this.round || !session.isCurrent(owner)) return;
+            this.setData({ checklistContext: context });
+            this.refreshChecklistContext = false;
+          } else if (this.data.checklistContext) this.setData({ checklistContext: null });
+        }
         this.seenRevision = revision;
       } catch (error) {
         if (round === this.round) {
@@ -120,6 +131,57 @@ module.exports = function (kind) {
       if (!this.exhausted && this.data.items.length < Number(this.data.total))
         return this.loadPlanning(null, true);
     },
+    onHide() {
+      this.setData({ swipeId: "", statusOpen: false });
+    },
+    revealRow(e) {
+      this.setData({ swipeId: e.detail.opened ? e.currentTarget.dataset.id : "" });
+    },
+    async deleteRow(e) {
+      const id = e.currentTarget.dataset.id;
+      const row = this.data.items.find(item => item.id === id);
+      const statuses = plan ? ["editing", "archived"] : ["selecting", "suspended"];
+      if (!row || !statuses.includes(row.status) || scope !== "active" ||
+          this.data.busy || this.confirmingDelete || this.data.factoryRoot) return;
+      const owner = session.capture();
+      const label = plan ? "方案" : "清单";
+      const slot = "delete-" + (plan ? "scheme:" : "checklist:") + id;
+      const path = "/api/me/" + kind + "/" + id + "/delete";
+      const body = api.pending.get(slot)?.body || { expectedVersion: row.version };
+      this.confirmingDelete = true;
+      this.setData({ swipeId: "" });
+      try {
+        const confirmed = await ui.confirm("删除" + label + "？",
+          "「" + row.listTitle + "」将永久删除，无法恢复。" + (plan ? "此前发出的分享链接将失效。" : ""),
+          { confirmText: "确认删除", confirmColor: "#af3429" });
+        if (!confirmed || !session.isCurrent(owner) || this.data.factoryRoot || this.data.busy) return;
+        this.setData({ busy: true, message: "", retryDeleteId: "" });
+        let failure;
+        try {
+          await api.command(slot, path, body);
+          if (!session.isCurrent(owner)) return;
+          this.setData({ items: this.data.items.filter(item => item.id !== id),
+            total: String(Math.max(0, Number(this.data.total) - 1)) });
+          successToast(label + "已删除");
+        } catch (error) {
+          if (!session.isCurrent(owner)) return;
+          failure = error;
+          if (error.status !== 409 && error.status !== 404) {
+            this.setData({ message: error.message, retryDeleteId: api.pending.has(slot) ? id : "" });
+            return;
+          }
+        } finally {
+          if (session.isCurrent(owner)) this.setData({ busy: false });
+        }
+        if (!plan) this.refreshChecklistContext = true;
+        await this.loadPlanning();
+        if (failure?.status === 409 && session.isCurrent(owner) && !this.data.message)
+          this.setData({ message: failure.reason === "VERSION_CONFLICT"
+            ? label + "已变化，请核对后重新确认删除。" : failure.message });
+      } finally {
+        this.confirmingDelete = false;
+      }
+    },
     toggleStatus() {
       if (!this.data.busy) this.setData({ statusOpen: !this.data.statusOpen });
     },
@@ -131,9 +193,6 @@ module.exports = function (kind) {
       if (this.data.busy) return;
       this.setData({ statusOpen: false });
       return this.data.filter === "all" ? this.loadPlanning() : this.setListFilter("all");
-    },
-    filter(e) {
-      return this.setListFilter(e.currentTarget.dataset.value);
     },
     setListFilter(value) {
       if (this.data.busy || value === this.data.filter) return;
@@ -171,7 +230,10 @@ module.exports = function (kind) {
           { expectedVersion: row.version },
         ),
       );
-      if (receipt) await this.loadPlanning();
+      if (receipt) {
+        successToast("已切换当前清单");
+        await this.loadPlanning();
+      }
     },
     continue(e) {
       const row = this.data.items.find(
@@ -191,7 +253,10 @@ module.exports = function (kind) {
         receipt = await api.recoverNext("/api/me/" + kind + "/");
         if (!receipt) throw new Error("没有待确认的原操作");
       });
-      if (receipt) await this.loadPlanning();
+      if (receipt) {
+        if (!plan && scope === "active") this.refreshChecklistContext = true;
+        await this.loadPlanning();
+      }
     },
     closeLogin() {
       this.setData({ loginVisible: false });

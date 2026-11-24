@@ -35,7 +35,7 @@ require("../../../session/page")({
   },
   onShow() {
     this.visible = true;
-    if (this.data.code || this.data.id) this.load();
+    if (this.data.code || this.data.id) return this.load();
   },
   onHide() {
     this.visible = false;
@@ -58,7 +58,9 @@ require("../../../session/page")({
   async load() {
     const round = this.loadRound = (this.loadRound || 0) + 1;
     clearTimeout(this.timer);
-    this.setData({ qr: null, sku: null, stock: null, instanceState: "" });
+    const target = this.data.id || this.data.code;
+    const empty = { qr: null, sku: null, stock: null, instanceState: "" };
+    if (!session.token() || !target || target !== this.shownTarget) this.setData(empty);
     if (!session.token()) {
       this.setData({
         loginRequired: true,
@@ -75,7 +77,7 @@ require("../../../session/page")({
         session.assertCurrent(owner);
         if (round !== this.loadRound) return;
         if (context.roleCode !== "supplier") {
-          this.setData({loginRequired: true, identityMismatch: true, message:"请使用已入驻的原工厂账号查看此标签。"});
+          this.setData({...empty, loginRequired: true, identityMismatch: true, message:"请使用已入驻的原工厂账号查看此标签。"});
           return;
         }
       }
@@ -92,6 +94,7 @@ require("../../../session/page")({
           ? await api.request("me/factory-props/" + qr.skuId + "/stock")
           : null;
       if (round !== this.loadRound) return;
+      this.shownTarget = target;
       this.setData({
         qr,
         sku,
@@ -192,6 +195,7 @@ require("../../../session/page")({
     }
   },
   async save() {
+    if (this.data.busy || !this.data.qr?.id) return;
     const owner = session.capture();
     this.setData({ message: "" });
     try {

@@ -1,16 +1,18 @@
 const api = require("../../services/factory");
 require("../../session/page")({
   data: { message: "", capability: null },
-  async onShow() {
+  onShow() { return this.load(); },
+  async load() {
+    this.setData({ message: "" });
     try {
       this.setData({
         capability: await api.request("factory-phone/capability"),
       });
     } catch (e) {
-      this.setData({ message: e.message });
+      this.setData({ capability: null, message: e.message });
     }
   },
   back() {
-    wx.navigateBack();
+    this.navigationBack();
   },
 });

@@ -1,0 +1,3 @@
+.line { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:32px; }
+.copy { min-width:0; }.title { color:var(--mj-ink,#242924); font-weight:700; font-size:17px; line-height:1.4; overflow-wrap:anywhere; }
+.subtitle { margin-top:4px; font-size:13px; line-height:1.5; color:var(--mj-muted,#5c665d); }

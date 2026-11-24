@@ -1,3 +1,5 @@
+const { ValidationError } = require("../../services/form-error");
+const successToast = require("../../services/success-toast");
 const c = require("../../services/custom"),
   ui = require("../../services/trading-page");
 
@@ -165,10 +167,10 @@ require("../../session/page")({
   },
   async persist(current, reload = false) {
     const { form, id, version, low, high } = this.data;
-    if (!form.factoryId) throw new Error("请先选择承接工厂");
+    if (!form.factoryId) throw new ValidationError("请先选择承接工厂");
     const range = [amount(low), amount(high)];
     if (range.every((v) => v != null) && range[0] > range[1])
-      throw new Error("预算下限不能大于上限");
+      throw new ValidationError("预算下限不能大于上限");
     const items = (form.items || []).map(({ rowKey, ...i }) =>
       compact({ ...i, quantity: i.quantity ? Number(i.quantity) : undefined }),
     );
@@ -228,15 +230,17 @@ require("../../session/page")({
     });
   },
   save(e) {
+    const submit = !!e.currentTarget.dataset.submit;
     return ui.run(this, async (current) => {
       const r = await this.persist(current);
       if (!current()) return;
-      if (e.currentTarget.dataset.submit)
+      if (submit)
         await c.apply(c.root(false, "requirements", r.resourceId) + "/submit", {
           expectedVersion: r.resourceVersion,
         });
       if (current())
         wx.redirectTo({
+          success: () => successToast(submit ? "需求已提交" : "草稿已保存"),
           url: "/pages/custom/detail?kind=requirements&id=" + r.resourceId,
         });
     });

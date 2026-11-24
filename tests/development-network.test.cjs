@@ -51,6 +51,7 @@ function debugRuntime({ version = "develop", mode = "lan", platform = "ios" } = 
   const wx = {
     getAccountInfoSync: () => ({ miniProgram: { envVersion: version } }),
     getDeviceInfo: () => ({ platform }),
+    login: o => o.success({ code: "one-time-code-" + ++logins }),
     getStorageSync: k => storage.get(k),
     setStorageSync: (k, v) => storage.set(k, v),
     removeStorageSync: k => storage.delete(k),
@@ -75,7 +76,6 @@ function debugRuntime({ version = "develop", mode = "lan", platform = "ios" } = 
     module: service, wx, require: name => ({ "../config/environment": env, "../session/storage": session, "./account": account })[name],
   });
   let logins = 0;
-  wx.login = o => o.success({ code: "one-time-code-" + ++logins });
   wx.request = o => {
     calls.push({ url: o.url, auth: o.header.Authorization });
     if (o.method === "POST") o.success({ statusCode: 200, data: { userId: "user", token: o.url.split("/").pop() } });
@@ -142,7 +142,7 @@ function buttons(runtime) {
   };
 }
 
-for (const platform of ["devtools", "ios", "android"]) {
+for (const platform of ["devtools", "ios", "android", "mac", "windows"]) {
   test(platform + " 游客直接登录，已有会话点任一测试按钮先注销再签发", async () => {
     const r = debugRuntime({ platform });
     r.storage.set("mj.localDebugPair", { origin: r.env.baseUrl, secret: "b".repeat(64) });

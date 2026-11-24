@@ -1,3 +1,8 @@
 @import "../../templates/fulfillment.wxss";
 .leg-form picker,.fee { margin-top:18rpx; padding:14rpx; background:#f8fafc; border-radius:8rpx; }
 .leg-form label { display:block; margin:12rpx 0; }
+@import "../../styles/surfaces.wxss";
+
+.fulfill button.expense-photo { min-height:60px; padding-left:40px; }
+
+.expense-thumb { width:88px; height:88px; border-radius:8px; }

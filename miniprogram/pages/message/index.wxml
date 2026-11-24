@@ -1,1 +1,1 @@
-<view class="empty">正在返回首页</view>
+<view class="mj-read-state"><mj-loading label="正在返回首页"/></view>

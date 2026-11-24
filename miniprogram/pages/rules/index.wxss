@@ -1,2 +1,7 @@
 .rule-page{padding:18px 16px calc(30px + env(safe-area-inset-bottom));line-height:1.8}.hero{padding:22px;background:#fff8cc;border-radius:12px}.title{font-weight:900;font-size:24px;margin:8px 0}.eyebrow,.meta{font-size:12px;color:#6b7280}.card{background:white;padding:18px;margin:16px 0;border-radius:12px}.row{padding:16px 0;display:flex;justify-content:space-between;border-bottom:1px solid #eee}
 .rule-page{overflow-wrap:anywhere}.rule-page button{box-sizing:border-box;width:100%;min-width:0;max-width:100%;white-space:normal}.rule-page .row{gap:12px}.rule-page .row>text:first-child{min-width:0}.rule-page .row>text:last-child{flex-shrink:0}
+.rule-page .hero { padding:6px 0 10px; background:transparent; }
+.rule-page .card { border:1px solid var(--mj-line); border-radius:var(--mj-card); padding:14px; }
+.rule-page .title { color:var(--mj-ink); font-size:23px; font-weight:700; }
+.rule-page .row { align-items:center; min-height:var(--mj-tap); border-color:var(--mj-line); }
+.rule-page .row:last-child { border-bottom:0; }

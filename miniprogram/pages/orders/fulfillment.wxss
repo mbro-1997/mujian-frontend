@@ -1,2 +1,2 @@
 @import "../../templates/fulfillment.wxss";
-@import "../../styles/renter-surfaces.wxss";
+@import "../../styles/surfaces.wxss";

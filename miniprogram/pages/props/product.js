@@ -34,9 +34,6 @@ require("../../session/page")({
     });
   },
   customFactory(){wx.navigateTo({url:"/pages/custom/factory?id="+this.data.item.factory.id});},
-  customize(){
-    wx.navigateTo({url:"/pages/custom/form?factoryId="+this.data.item.factory.id+"&skuId="+this.data.id});
-  },
   async onShow() {
     await Promise.all([this.load(), this.loadSelection()]);
     if (this.openLegacyPicker && this.data.verified) {

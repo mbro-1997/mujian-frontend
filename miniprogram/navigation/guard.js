@@ -2,7 +2,7 @@ const loginTarget = require("./login-target");
 const routes = require("../constants/routes"),
   session = require("../session/storage");
 function renterRoute(route) {
-  return /^pages\/(plan\/(detail|create|select)|custom\/(index|detail|form|factory)|checklist\/detail|address\/(index|edit)|checkout\/index|payment\/index|orders\/(index|detail|issues|extensions|disputes|fulfillment)|coupons\/(index|detail|records)|refund\/detail)$/.test(
+  return /^pages\/(plan\/(detail|create|select)|custom\/(index|detail|form|factory)|checklist\/(detail|history)|address\/(index|edit)|checkout\/index|payment\/index|orders\/(index|detail|issues|extensions|disputes|fulfillment)|coupons\/(index|detail|records)|refund\/detail)$/.test(
     route || "",
   );
 }

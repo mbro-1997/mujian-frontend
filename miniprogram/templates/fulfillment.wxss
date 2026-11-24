@@ -19,19 +19,17 @@ page { background:#f6f7f8; color:#111827; }
 .subhead { display:block; margin:18rpx 0 8rpx; }
 .item,.event { padding:14rpx 0; border-top:1px solid #eee; }
 .event text { display:block; }
-.notice,.feedback,.alert { padding:16rpx 20rpx; border-radius:12rpx; background:#fff9d8; margin:12rpx 0; }
+.notice,.alert { padding:16rpx 20rpx; border-radius:12rpx; background:#fff9d8; margin:12rpx 0; }
 .alert { background:#fff0ea; color:#842e12; }
-.feedback { background:#eef6ef; }
 .toolbar { display:grid; grid-template-columns:minmax(0,1fr) 176rpx; gap:14rpx; align-items:center; }
 .fulfill input,.fulfill textarea,.pickers picker { background:#f8fafc; border:1px solid #e1e4e8; border-radius:10rpx; padding:14rpx; margin:10rpx 0; box-sizing:border-box; }
-.fulfill input { height:80rpx; }
+.fulfill input { height:var(--mj-tap,44px); padding:0 14rpx; }
 .fulfill textarea { width:100%; min-height:130rpx; height:150rpx; }
 .pickers picker { flex:1; }
 .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12rpx; }
 .tile,.fulfill .add { height:148rpx; border-radius:12rpx; position:relative; overflow:hidden; }
 .tile image { width:100%; height:100%; }
 .fulfill .add { width:100%; border:1px dashed #b6bdc7; background:#f8fafc; }
-.fulfill .remove { position:absolute; bottom:0; right:0; background:#111827; color:#fff; font-size:20rpx; padding:0 12rpx; }
 .foot { position:fixed; z-index:3; left:0; right:0; bottom:0; padding:16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom)); background:white; border-top:1px solid #eee; }
 .foot button { flex:1; line-height:84rpx; }
 .fulfill .primary { background:#ffe100; }

@@ -14,15 +14,21 @@ Component({
   lifetimes: {
     attached() {
       this.alive = true;
-      this.stop = session.subscribe(() => { this.round++; this.setData({ src: "", loading: false, message: "" }); });
+      this.stop = session.subscribe(() => { this.round++; this.materialKey = ""; this.setData({ src: "", loading: false, message: "" }); });
       this.load();
     },
     detached() { this.alive = false; this.round++; if (this.stop) this.stop(); },
   },
   methods: {
-    async load() {
+    async load(force = false) {
       const { file, sourceId, kind, factory, factoryFile } = this.data;
-      const round = this.round = (this.round || 0) + 1, owner = session.capture();
+      const owner = session.capture();
+      const key = JSON.stringify([owner.generation, factory, kind, sourceId, file?.materialId, file?.type,
+        factoryFile?.localPath, factoryFile?.locator]);
+      if (!force && key === this.materialKey &&
+          (this.data.loading || factoryFile?.localPath || (this.data.src && this.expiresAt > Date.now()))) return;
+      this.materialKey = key;
+      const round = this.round = (this.round || 0) + 1;
       const current = () => this.alive && round === this.round && session.isCurrent(owner);
       this.setData({ src: "", message: "", loading: false });
       if (factoryFile?.localPath) {
@@ -36,11 +42,14 @@ Component({
         const data = locator
           ? await require("../../services/factory").request("factory-materials/view", "POST", locator)
           : await custom.get(custom.root(factory, kind, sourceId) + "/materials/" + file.materialId + "/view");
-        if (current()) this.setData({ src: data.url });
+        if (current()) {
+          this.expiresAt = Date.parse(data.expiresAt) || 0;
+          this.setData({ src: data.url });
+        }
       } catch (e) { if (current()) this.setData({ message: "图片暂不可用，点击重试" }); }
       finally { if (current()) this.setData({ loading: false }); }
     },
     failed() { this.setData({ src: "", message: "图片加载失败，点击重试" }); },
-    retry() { if (!this.data.loading) this.load(); },
+    retry() { if (!this.data.loading) this.load(true); },
   },
 });

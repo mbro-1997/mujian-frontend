@@ -1,3 +1,5 @@
+const { hint } = require("./form-error");
+const successToast = require("./success-toast");
 const api = require('./trading');
 const ui = require('./trading-page');
 const materials = require('./verification');
@@ -32,7 +34,7 @@ module.exports=function disputePage(factory){
   const orderBase='/api/me/'+(factory?'factory-orders':'rental-orders')+'/';
   const base=kind=>'/api/me/'+(factory?'factory-':'')+kind;
   return {
-    data:{factory,tabs,stages,stageIndex:0,kind:'claims',items:[],id:'',orderId:'',detail:null,creating:false,editing:false,checkVersion:0,lines:[],issueTypes,
+    data:{factory,filterGroups:[{key:"kind",title:"业务类型",options:tabs.map(item=>({code:item.key,label:item.name}))}],stages,stageIndex:0,kind:'claims',items:[],id:'',orderId:'',detail:null,creating:false,editing:false,checkVersion:0,lines:[],issueTypes,
       amount:'',summary:'',photos:[],page:1,total:0,pending:false,busy:false,message:''},
     onLoad(q) {
       const kind = q.kind === 'receivables' ? 'compensation-receivables' : q.kind;
@@ -70,11 +72,18 @@ module.exports=function disputePage(factory){
       this.setData({stageIndex:Number(e.detail.value),page:1,items:[],id:'',detail:null,editing:false,summary:'',photos:[]});
       return this.load();
     },
-    chooseTab(e){if(this.data.busy)return;this.setData({kind:e.currentTarget.dataset.key,stageIndex:0,page:1,items:[],id:'',detail:null,creating:false,editing:false,summary:'',amount:'',photos:[]});return this.load();},
+    resetFilters() {
+      if (!this.data.detail && !this.data.creating) return this.chooseTab({ detail: { value: 'claims' } });
+    },
+    chooseTab(e){if(this.data.busy)return;this.setData({kind:e.detail.value,stageIndex:0,page:1,items:[],id:'',detail:null,creating:false,editing:false,summary:'',amount:'',photos:[]});return this.load();},
     changePage(e){this.setData({page:this.data.page+Number(e.currentTarget.dataset.step),id:'',detail:null,editing:false});return this.load();},
     open(e){this.setData({id:e.currentTarget.dataset.id,detail:null,editing:false,creating:false,summary:'',photos:[]});return this.load();},
     edit(e){this.setData({[e.currentTarget.dataset.field]:e.detail.value});},
     line(e){const {i,field}=e.currentTarget.dataset;this.setData({['lines['+i+'].'+field]:e.detail.value});},
+    removeDraftPhoto(e) {
+      if (this.data.busy || this.data.pending) return;
+      this.setData({ photos: this.data.photos.filter(photo => photo.id !== e.currentTarget.dataset.id) });
+    },
     async attach(){
       if(this.picking || this.data.busy)return;
       this.picking=true;const owner=session.capture();
@@ -84,7 +93,7 @@ module.exports=function disputePage(factory){
         return await ui.run(this,async current=>{
           const d=this.data, node=d.kind==='arbitrations' || !factory?'arbitration':'claim';
           for(const file of picked.tempFiles){if(!current())return;const id=await materials.uploadOrder(orderBase+(d.detail?.orderId || d.orderId),node,file.tempFilePath);
-            if(current())this.setData({photos:this.data.photos.concat(id)});}
+            if(current())this.setData({photos:this.data.photos.concat({ id, src: file.tempFilePath })});}
         });
       }catch(e){if(!this.gone && session.isCurrent(owner))this.setData({message:'添加照片失败，请重新选择'});}finally{this.picking=false;}
     },
@@ -107,17 +116,17 @@ module.exports=function disputePage(factory){
           if(intent){actual=intent.path.split('/').pop();try{const receipt=await api.recover(slot);result=receipt?.receipt || receipt;}
             catch(err){if(err.status!==404 || !current())throw err;result=await api.command(slot,intent.path,intent.body);}}
           else{
-            const evidence={evidenceIds:[],uploadReceiptIds:d.photos},summary=d.summary.trim();
+            const evidence={evidenceIds:[],uploadReceiptIds:d.photos.map(photo => photo.id)},summary=d.summary.trim();
             let path=base(d.kind)+'/'+d.id+'/'+name,body={expectedVersion:row?.version ?? d.checkVersion};
             if(name==='save'){
-              if(!/^(0|[1-9]\d*)(\.\d{1,2})?$/.test(d.amount) || !summary){this.setData({message:'请填写损失金额和情况说明'});return;}
+              if(!/^(0|[1-9]\d*)(\.\d{1,2})?$/.test(d.amount) || !summary){hint('请填写损失金额和情况说明');return;}
               const items=d.lines.filter(i=>i.quantity && Number(i.quantity)>0).map(i=>({itemId:i.itemId,issueType:issueTypes[i.typeIndex].code,quantity:Number(i.quantity),description:null}));
-              if(!items.length || items.some(v=>!Number.isSafeInteger(v.quantity) || v.quantity>d.lines.find(i=>i.itemId===v.itemId).expectedQuantity)){this.setData({message:'请核对受影响道具的数量'});return;}
+              if(!items.length || items.some(v=>!Number.isSafeInteger(v.quantity) || v.quantity>d.lines.find(i=>i.itemId===v.itemId).expectedQuantity)){hint('请核对受影响道具的数量');return;}
               evidence.evidenceIds=row?.evidenceIds || [];
               Object.assign(body,{problemType:items[0].issueType,claimedFen:Math.round(Number(d.amount)*100),summary,evidence,items});
               if(d.creating)path=orderBase+d.orderId+'/claims';
             }else if(['appeal','supplement'].includes(name)){
-              if(!summary){this.setData({message:'请填写原因或补充说明'});return;}
+              if(!summary){hint('请填写原因或补充说明');return;}
               Object.assign(body,{summary,evidence});
             }
             if(['submit','confirm','withdraw','appeal'].includes(name) && !await ui.confirm(verbs[name]+'？',name==='confirm'?'确认后按核定金额执行扣款及补缴。':'请核对本次提交的内容。'))return;
@@ -126,7 +135,7 @@ module.exports=function disputePage(factory){
           if(!current())return;
           if(d.creating){this.setData({id:result?.resourceId || result?.receipt?.resourceId || '',creating:false});}
           if(actual==='pay' && result?.parameters)await api.nativePayment(result.parameters,current);
-          if(current()){this.setData({summary:'',photos:[],editing:false});await this.read(current);}
+          if(current()){if(actual!=='pay')successToast(actual==='save'?'草稿已保存':'操作已提交');this.setData({summary:'',photos:[],editing:false});await this.read(current);}
         }finally{if(current())this.setData({pending:api.pending.has(this.slot())});}
       });
     }

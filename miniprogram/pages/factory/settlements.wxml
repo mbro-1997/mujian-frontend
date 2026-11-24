@@ -5,7 +5,7 @@
   <view class="panel"><view class="heading">到账概览</view><view class="amounts"><view>本月到账<text>{{month===null?'—':'¥'+month}}</text></view><view>累计到账<text>{{lifetime===null?'—':'¥'+lifetime}}</text></view></view><view wx:if="{{more}}" class="muted">加载全部批次后可查看汇总。</view></view>
   <view class="panel"><view class="heading">到账记录 <text>{{total}} 个批次</text></view>
     <view wx:for="{{items}}" wx:key="id" class="entry" bindtap="open" data-id="{{item.id}}"><view class="row"><text class="number">{{item.batchNo}}</text><text class="price">¥{{item.actualUnlock}} ›</text></view><view class="muted">{{item.orderCount}} 张订单 · {{item.date}} 到账</view></view>
-    <view wx:if="{{!items.length&&!message}}" class="empty">{{busy?'正在读取到账记录':'暂无已到账批次'}}</view><button wx:if="{{more}}" bindtap="moreBatches" disabled="{{busy}}">更多到账记录</button></view><button class="settlement-rules" bindtap="rules">查看结算规则</button>
+    <view wx:if="{{!items.length&&!message}}" class="empty"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取到账记录"/><text wx:else>暂无已到账批次</text></view><button wx:if="{{more}}" bindtap="moreBatches" disabled="{{busy}}">更多到账记录</button></view><button class="settlement-rules" bindtap="rules">查看结算规则</button>
 </block>
 <block wx:elif="{{detail}}">
   <view class="hero"><view class="caption">已到账</view><view class="title">¥{{detail.summary.actualUnlock}}</view><view class="number">{{detail.summary.batchNo}}</view><view>{{detail.summary.date}} · {{detail.summary.orderCount}} 张订单</view></view>

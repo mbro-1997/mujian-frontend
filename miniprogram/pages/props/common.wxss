@@ -223,9 +223,6 @@ textarea {
 
 .navigation-return{padding:12px 16px;color:#555;font-size:14px;background:#fff;overflow-wrap:anywhere}.heading{overflow-wrap:anywhere}.row>input{min-width:0;flex:1}
 
-.warehouse-search{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,1fr);gap:8px;margin:12px 0 0}.warehouse-search .warehouse-input{width:100%;min-width:0}.warehouse-search .warehouse-submit{width:100%;min-width:0;margin:0;padding:0 4px;min-height:44px}.warehouse-filters .tabs{margin:10px 0}.warehouse-filters .tabs+.tabs{margin-top:0}
-
-.warehouse-submit{display:flex;align-items:center;justify-content:center;box-sizing:border-box;line-height:1.2;border-radius:8px;background:#ffe100;color:#111827;font-weight:700}
 .warehouse-pager{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);font-size:12px;white-space:nowrap}
 .warehouse-pager .warehouse-page-button{width:100%;min-width:0;margin:0;padding:0 8px;display:flex;align-items:center;justify-content:center;height:40px;line-height:1.2}
 
@@ -261,3 +258,17 @@ textarea {
 .prop-page .filter-row>text{font-size:13px;color:#6b7280}
 .prop-page .filter-row .select{min-width:0;width:100%}
 .prop-page .loading{padding:28px 16px;text-align:center;color:#6b7280}
+
+page { background:var(--mj-canvas); color:var(--mj-ink); }
+.prop-page { padding-inline:var(--mj-edge); }
+.prop-page .panel, .prop-page .dialog { background:var(--mj-paper); border-color:var(--mj-line); border-radius:var(--mj-card); padding:14px; }
+.prop-page .heading,.prop-page .section-title { font-weight:700; }
+.prop-page .muted { color:var(--mj-muted); }
+.prop-page .select,.prop-page input,.prop-page textarea { border-color:var(--mj-line); border-radius:var(--mj-control); }
+.prop-page .footer-actions button,.prop-page .dialog button { min-width:0; min-height:var(--mj-tap); border-radius:var(--mj-control); }
+.prop-page .primary-btn:not([disabled]) { background:var(--mj-accent); color:var(--mj-ink); }
+.prop-page .active,.prop-page .chip.active { background:var(--mj-active-bg); color:var(--mj-active-ink); }
+.prop-page .panel .row > view,.prop-page .panel .row > text:first-child { min-width:0; overflow-wrap:anywhere; }
+
+.prop-page .review-filter > text,.prop-page .filter-row > text { align-self:start; line-height:var(--mj-tap); }
+.prop-page .field-grid { align-items:start; }

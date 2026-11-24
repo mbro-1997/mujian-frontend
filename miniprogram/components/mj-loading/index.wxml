@@ -1,0 +1,3 @@
+<template name="spinner"><view class="progress" aria-role="status" aria-label="{{label}}"><view class="ring" aria-hidden="{{true}}"></view><text>{{label}}</text></view></template>
+<view wx:if="{{blocking}}" class="mask" catchtouchmove="blockTouch" catchtap="blockTouch"><template is="spinner" data="{{label}}"/></view>
+<template wx:else is="spinner" data="{{label}}"/>

@@ -1,3 +1,5 @@
+const { ValidationError, UploadError, hint } = require("./form-error");
+const successToast = require("./success-toast");
 const api = require('./trading'),
   session = require('../session/storage');
 // 所有交易页面统一隔离离页、并发刷新和身份切换，原生调起也使用此边界。
@@ -6,14 +8,17 @@ function begin(page) {
     round = (page.tradeRound = (page.tradeRound || 0) + 1);
   return () => !page.tradeHidden && round === page.tradeRound && session.isCurrent(owner);
 }
-async function run(page, action) {
+async function run(page, action, successLabel) {
   if (page.data.busy) return;
   const current = begin(page);
   page.setData({ busy: true, message: '', outstandingCompensation:false });
   try {
-    return await action(current);
+    const result = await action(current);
+    if (successLabel && result && current()) successToast(successLabel);
+    return result;
   } catch (error) {
     if (current()) {
+      if (error instanceof ValidationError) return hint(error.message);
       if ([401, 403, 404].includes(error.status)) {
         const cleared = { detail: null, items: [], quote: null };
         const defaults = { rows: [], total: '0', page: 0, loadedRevision: -1, exhausted: false,
@@ -26,6 +31,7 @@ async function run(page, action) {
         page.setData(cleared);
         if (page.onAccessLost) page.onAccessLost();
       }
+      if (error instanceof UploadError) return hint(error.message);
       page.setData({ message: api.message(error),outstandingCompensation:error.reason==='COMPENSATION_OUTSTANDING' });
     }
   } finally {

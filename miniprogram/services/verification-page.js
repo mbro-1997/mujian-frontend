@@ -1,3 +1,5 @@
+const { hint, UploadError } = require("./form-error");
+const successToast = require("./success-toast");
 const api = require("./verification"),
   account = require("./account"),
   session = require("../session/storage"),
@@ -38,7 +40,7 @@ module.exports = (domain, statusPage) => ({
     this.recoverEditing = q.recover === "1";
   },
   onShow() {
-    this.load();
+    return this.load();
   },
   onUnload() {
     this.command = null;
@@ -103,6 +105,10 @@ module.exports = (domain, statusPage) => ({
   consent(e) {
     this.setData({ agreed: e.detail.value.includes("agree") });
   },
+  removePhoto(e) {
+    if (this.data.busy || !this.data.editing || (this.data.unknown && !this.data.refilling)) return;
+    this.setData({ ["photos[" + e.currentTarget.dataset.position + "]"]: "" });
+  },
   async choose(e) {
     if (this.data.busy || (this.data.unknown && !this.data.refilling)) return;
     const owner = session.capture();
@@ -141,18 +147,18 @@ module.exports = (domain, statusPage) => ({
         session.isCurrent(owner) &&
         !String(e.errMsg || "").includes("cancel")
       )
-        this.setData({ message: e.message || "未能读取照片，请重新选择" });
+        hint(e.message || "未能读取照片，请重新选择");
     }
   },
   async submit() {
     if (this.data.busy || (this.data.unknown && !this.data.refilling) || !this.data.current?.canSubmit)
       return;
     if (!this.data.agreed) {
-      this.setData({ message: "请先单独同意材料处理说明" });
+      hint("请先单独同意材料处理说明");
       return;
     }
     let photos;
-    try { photos = orderedMaterials(domain, this.data.photos); } catch (e) { this.setData({message:e.message}); return; }
+    try { photos = orderedMaterials(domain, this.data.photos); } catch (e) { hint(e.message); return; }
     const name = this.data.name.trim(),
       card = this.data.card.trim().toUpperCase();
     if (
@@ -161,11 +167,11 @@ module.exports = (domain, statusPage) => ({
       photos.length < 2 ||
       (domain === "realname" && !/^[0-9]{17}[0-9X]$/.test(card))
     ) {
-      this.setData({ message: "请完整填写资料，并选择至少两张清晰照片" });
+      hint("请完整填写资料，并选择至少两张清晰照片");
       return;
     }
     const owner = session.capture();
-    this.setData({ busy: true, message: "正在上传材料，请勿重复提交" });
+    this.setData({ busy: true, message: "" });
     let sent = false;
     const recoveringKey = api.pending(domain, this.userId);
     try {
@@ -204,9 +210,10 @@ module.exports = (domain, statusPage) => ({
       api.forget(domain, this.userId);
       this.command = null;
       this.setData({ name: "", card: "", photos: [], agreed: false });
-      wx.redirectTo({ url: "/pages/" + domain + "/status" });
+      wx.redirectTo({ url: "/pages/" + domain + "/status", success: () => successToast("材料已提交") });
     } catch (e) {
       if (!session.isCurrent(owner)) return;
+      if (e instanceof UploadError) return hint(e.message);
       const definite = !recoveringKey && sent && e.outcome === "business-rejection" && [400, 403, 415, 413, 429].includes(e.status);
       if (definite) {
         api.forget(domain, this.userId);
@@ -240,7 +247,7 @@ module.exports = (domain, statusPage) => ({
       session.assertCurrent(owner);
       api.forget(domain, this.userId);
       this.command = null;
-      wx.redirectTo({ url: "/pages/" + domain + "/status" });
+      wx.redirectTo({ url: "/pages/" + domain + "/status", success: () => successToast("材料已提交") });
     } catch (e) {
       if (!session.isCurrent(owner)) return;
       this.setData({ message: e.message });
@@ -300,9 +307,6 @@ module.exports = (domain, statusPage) => ({
   resubmit() {
     if (this.data.current?.canSubmit && !this.data.unknown)
       wx.navigateTo({ url: "/pages/" + domain + "/form?retry=1" });
-  },
-  back() {
-    wx.switchTab({ url: "/pages/mine/index" });
   },
   realname() {
     wx.navigateTo({ url: "/pages/realname/form" });

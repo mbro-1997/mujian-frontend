@@ -95,10 +95,11 @@ require('../../session/page')({
     const { append, restore } = this.retryOptions || {};
     return this.load(null, !!append, !!restore);
   },
+  resetFilters() { return this.filter({ detail: { value: 'available' } }); },
   filter(e) {
     if (this.data.busy) return;
     this.setData({
-      status: e.currentTarget.dataset.status,
+      status: e.detail.value,
       page: 0,
       items: [],
       total: '0',

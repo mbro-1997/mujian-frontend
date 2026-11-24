@@ -15,4 +15,4 @@
 .product-page .footer-actions button{border-radius:26px;min-height:52px}
 
 .current-rental-period{border:1px solid #ffe100;background:#fff7cc;border-radius:26px;padding:8px 12px;display:flex;flex-direction:column;justify-content:center;line-height:1.4;font-size:12px;min-width:0}.current-rental-period>text{font-size:10px;color:#6b7280;margin-bottom:3px}.current-rental-period>view{overflow-wrap:anywhere}
-@import "../../styles/renter-surfaces.wxss";
+@import "../../styles/surfaces.wxss";

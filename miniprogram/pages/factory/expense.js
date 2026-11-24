@@ -1,3 +1,6 @@
+const evidencePhotos = require("../../services/evidence-photos");
+const { hint } = require("../../services/form-error");
+const successToast = require("../../services/success-toast");
 const api = require('../../services/trading'),
   ui = require('../../services/trading-page');
 const materials = require('../../services/verification');
@@ -181,10 +184,12 @@ require('../../session/page')({
         '&pageSize=12',
     );
     if (!current()) return;
+    const photos = await evidencePhotos(this.base, list.items);
+    if (!current()) return;
     const legs = this.data.legs.map((l) => ({
       ...l,
       photos: (page === 1 ? [] : l.photos).concat(
-        list.items
+        photos
           .filter((p) => p.transportLegId === l.transportLegId)
           .map((p) => ({
             ...p,
@@ -326,7 +331,10 @@ require('../../session/page')({
   async send(path, body, current) {
     try {
       await api.command(this.slot, this.base + path, body);
-      if (current()) await this.read(current, true);
+      if (current()) {
+        successToast("操作已保存");
+        await this.read(current, true);
+      }
     } catch (e) {
       if (current()) {
         this.setData({ pending: api.pending.has(this.slot) });
@@ -382,7 +390,7 @@ require('../../session/page')({
   },
   async submit() {
     if (this.data.dirty) {
-      this.setData({ message: '费用已修改，请先暂存后核对申报金额' });
+      hint('费用已修改，请先暂存后核对申报金额');
       return;
     }
     const row = this.data.detail.row,
@@ -408,7 +416,7 @@ require('../../session/page')({
       leg = this.data.legs[e.currentTarget.dataset.leg],
       owner = session.capture();
     if (!row || row.status !== 'draft' || this.data.dirty) {
-      this.setData({ message: '请先暂存本版费用，再上传凭证' });
+      hint('请先暂存本版费用，再上传凭证');
       return;
     }
     this.choosing = true;
@@ -469,7 +477,7 @@ require('../../session/page')({
   async remove(e) {
     const id = e.currentTarget.dataset.id,
       row = this.data.detail.row;
-    if (await ui.confirm('移除本版草稿照片？', '原历史版本的凭证将保留。'))
+    if (this.data.writable && !this.data.dirty && !this.data.pending)
       return ui.run(this, (current) =>
         this.send(
           '/evidence/' + id + '/remove',

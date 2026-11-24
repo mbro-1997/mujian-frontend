@@ -1,3 +1,4 @@
+const readWindow = require('../../services/read-list-window');
 const api = require('../../services/trading');
 const ui = require('../../services/trading-page');
 const base = '/api/me/factory-settlements';
@@ -71,21 +72,20 @@ require('../../session/page')({
     );
   },
   async readList(page, current) {
-    const data = await api.get(base + '?page=' + page + '&pageSize=20');
-    if (!current()) return;
-    const rows = page === 1 ? [] : this.data.items.slice(),
-      ids = new Set(rows.map((x) => x.id));
-    data.items.forEach((r) => {
-      if (!ids.has(r.id)) rows.push(format(r));
-    });
-    const more = page * data.pageSize < Number(data.total);
+    const data = await readWindow(page, Math.max(page, this.data.page),
+      n => api.get(base + '?page=' + n + '&pageSize=20'), current);
+    if (!data) return;
+    const rows = page === 1 ? [] : this.data.items.slice();
+    const seen = new Set(rows.map(row => row.id)), before = rows.length;
+    for (const row of data.items) if (!seen.has(row.id)) rows.push(format(row));
+    const more = !data.exhausted && rows.length > before && rows.length < Number(data.total);
     const shanghai = new Date(Date.now() + 8 * 3600000)
       .toISOString()
       .slice(0, 7);
     const complete = !more && rows.length === Number(data.total);
     this.setData({
       items: rows,
-      page,
+      page: data.page,
       more,
       total: data.total,
       month: complete
@@ -112,19 +112,14 @@ require('../../session/page')({
   },
   async readDetail(current) {
     const path = base + '/' + this.data.id;
-    const [detail, items, executions] = await Promise.all([
-      api.get(path),
-      api.get(path + '/items?pageSize=10'),
-      api.get(path + '/executions?pageSize=10'),
-    ]);
-    if (current())
-      this.setData({
-        detail: { ...detail, summary: format(detail.summary) },
-        groups: [
-          this.group('items', items),
-          this.group('executions', executions),
-        ],
-      });
+    const readGroup = async key => {
+      const last = this.data.groups.find(group => group.key === key)?.page || 1;
+      const result = await readWindow(1, last, n => api.get(path + '/' + key + '?pageSize=10' +
+        (n === 1 ? '' : '&page=' + n)), current);
+      return result && this.group(key, { ...result, pageSize: 10 });
+    };
+    const [detail, items, executions] = await Promise.all([api.get(path), readGroup('items'), readGroup('executions')]);
+    if (current()) this.setData({ detail: { ...detail, summary: format(detail.summary) }, groups: [items, executions] });
   },
   group(key, page) {
     return {

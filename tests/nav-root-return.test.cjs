@@ -33,7 +33,8 @@ for(const name of ['home','plan','checklist','mine'])test(name+' return keeps mo
   if(name==='plan'){p.factoryCreate({currentTarget:{dataset:{type:'A_ASSET'}}});assert.equal(f.nav.length,0,'publish waits for refreshed permissions');}
   complete(f.context);await returning;assert.equal(f.reads(),2);assert.equal(p.data.rootLoading,false);
   assert.equal(f.updates.some(u=>u.rootReady===false),false);
-  if(name==='mine')assert.equal(f.scroll.at(-1),388);
+  if(name==='mine')assert.deepEqual(f.scroll,[], 'native stack keeps the mounted scroll position');
+  if(name==='plan')assert.deepEqual(f.nav,['/pages/props/form?assetType=A_ASSET']);
 });
 test('mine first entry waits for profile; returning refresh updates profile without clearing the page',async()=>{
   const f=fixture(),p=f.page();let finish;f.profile(()=>new Promise(r=>finish=r));const first=p.onShow();await new Promise(r=>setImmediate(r));assert.equal(p.data.rootReady,false);
@@ -53,4 +54,30 @@ test('session clear during return clears private content and rejects late respon
 test('renter mine return also retains mounted page while checking context',async()=>{
   const f=fixture('demander'),p=f.page();await p.onShow();f.updates.length=0;let finish;f.reply(()=>new Promise(r=>finish=r));const returning=p.onShow();
   assert.equal(p.data.rootReady,true);finish(f.context);await returning;assert.equal(p.data.factoryRoot,false);assert.equal(f.updates.some(u=>u.rootReady===false),false);
+});
+test('publish tap during revalidation is discarded when the factory becomes suspended', async () => {
+  const f = fixture(), p = f.page('plan');
+  await p.onShow();
+  p.onHide();
+  let finish;
+  f.profile(() => new Promise(resolve => { finish = resolve; }));
+  const returnVisit = p.onShow();
+  await new Promise(resolve => setImmediate(resolve));
+  const pendingTap = p.factoryCreate({ currentTarget: { dataset: { type: 'B_CONSUMABLE' } } });
+  finish({ id:'abcdef12345647898123456789abcdef', factoryStatus:'suspended', materials:{} });
+  await Promise.all([returnVisit, pendingTap]);
+  assert.deepEqual(f.nav, []);
+  assert.equal(p.data.factoryProfile.factoryStatus, 'suspended');
+});
+test('same list responses keep rows mounted; a changed row updates in place', () => {
+  const { replaceItems } = fixture().load('services/planning-page.js');
+  const updates = [], items = [{ id: 'A', quantity: 1 }, { id: 'B', quantity: 2 }];
+  const page = { data: { items }, setData: patch => updates.push(JSON.parse(JSON.stringify(patch))) };
+  replaceItems(page, JSON.parse(JSON.stringify(items)));
+  assert.deepEqual(updates, []);
+  replaceItems(page, [items[0], { id: 'B', quantity: 3 }]);
+  assert.deepEqual(updates, [{ 'items[1]': { id: 'B', quantity: 3 } }]);
+  updates.length = 0;
+  replaceItems(page, [items[0]]);
+  assert.deepEqual(updates, [{ items: [items[0]] }]);
 });

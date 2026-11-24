@@ -5,9 +5,9 @@ require("../../session/page")({
   onLoad(q) {
     const pages = typeof getCurrentPages === "function" ? getCurrentPages() : [];
     const source = pages[pages.length - 2];
-    const prop = source?.data.item;
+    const prop = source?.data?.item;
     const reference = source?.route === "pages/props/product" && source.data.verified && prop?.factory?.id === q.id
-      ? { id: prop.skuId, name: prop.propName } : null;
+      ? { id: source.data.id, name: prop.propName } : null;
     this.setData({ id: q.id, reference });
   },
   onShow() {
@@ -23,7 +23,7 @@ require("../../session/page")({
   refresh() {
     return ui.run(this, async (cur) => {
       const factory = await c.get("/api/custom-factories/" + this.data.id);
-      if (cur()) this.setData({ factory });
+      if (cur()) this.setData({ factory, monogram: Array.from(factory.name)[0] });
     });
   },
   onAccessLost() {

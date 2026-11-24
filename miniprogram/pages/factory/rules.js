@@ -1,3 +1,5 @@
+const { hint, UploadError } = require("../../services/form-error");
+const successToast = require("../../services/success-toast");
 const api = require("../../services/factory");
 const checkboxSelection = require("../../services/checkbox-selection");
 // The current factory contract requires two distinct rule documents.
@@ -8,10 +10,11 @@ require("../../session/page")({
   data: { rules: [], checked: [], rulesReady: false, allSelected: false, body: null, busy: false, message: "" },
   onLoad(q={}) {
     this.setData({readOnly:q.readOnly === "1"});
-    this.load();
+    return this.load();
   },
   async load() {
-    this.setData({ rules: [], checked: [], rulesReady: false, allSelected: false, body: null, message: "" });
+    if (this.data.loadingRules) return;
+    this.setData({ loadingRules: true, rules: [], checked: [], rulesReady: false, allSelected: false, body: null, message: "" });
     try {
       const rules = (await api.request("factory-rules")).rules;
       this.setData({
@@ -20,6 +23,8 @@ require("../../session/page")({
       });
     } catch (e) {
       this.setData({ message: e.message });
+    } finally {
+      this.setData({ loadingRules: false });
     }
   },
   check(e) {
@@ -67,8 +72,9 @@ require("../../session/page")({
         contentHash: r.contentHash,
       }));
       await api.submit(d, accepted);
-      wx.redirectTo({ url: "/pages/factory/status" });
+      wx.redirectTo({ success: () => successToast("入驻申请已提交"), url: "/pages/factory/status" });
     } catch (e) {
+      if (e instanceof UploadError) return hint(e.message);
       this.setData({ message: e.message });
       if (e.reason === "RULE_VERSION_CHANGED") {
         d.body = null;

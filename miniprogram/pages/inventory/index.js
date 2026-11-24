@@ -41,12 +41,16 @@ require("../../session/page")({
     this.setData({ id: q.id || "" });
   },
   onShow() {
-    this.load();
+    return this.load();
   },
   async load() {
     this.setData({ busy: true, message: "", statusIndex: Math.max(0,this.data.statuses.indexOf(this.data.status)) });
     try {
       const sku = await api.request("me/factory-props/" + this.data.id);
+      if (sku.inventorySummary === null) {
+        this.setData({ sku, stock: null, summary: [], items: [], total: "0" });
+        return;
+      }
       this.setData({ sku });
       if (sku.assetType === "A_ASSET") {
         const [summary, list] = await Promise.all([
@@ -90,6 +94,11 @@ require("../../session/page")({
     } finally {
       this.setData({ busy: false });
     }
+  },
+  resetFilters() {
+    if (this.data.busy) return;
+    this.setData({ status: "", page: 1 });
+    return this.load();
   },
   filter(e) {
     this.setData({ status: this.data.statuses[e.detail.value], statusIndex: Number(e.detail.value), page: 1 });

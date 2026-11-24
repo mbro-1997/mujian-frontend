@@ -1,0 +1,3 @@
+<view class="pl-screen pl-checklist pl-checklist-history">
+  <include src="../../templates/checklist-rows.wxml"/>
+</view>

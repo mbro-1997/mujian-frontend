@@ -1,3 +1,4 @@
+const uploadBatch = require("./upload-batch");
 const http = require("./http"),
   session = require("../session/storage"),
   shared = require("./verification");
@@ -138,22 +139,16 @@ async function resume(slot) {
 async function materialize(images) {
   const owner = session.capture(),
     out = images.map((x) => ({ ...x }));
-  let cursor = 0;
-  async function worker() {
-    while (cursor < out.length) {
-      const i = cursor++;
-      if (out[i].localPath) {
-        const uploadId = await shared.upload(
-          "prop",
-          out[i].localPath,
-          "prop_image",
-        );
-        session.assertCurrent(owner);
-        out[i] = { kind: "upload", uploadId };
-      }
-    }
-  }
-  await Promise.all([worker(), worker()]);
+  const jobs = [];
+  out.forEach((image, index) => {
+    if (!image.localPath) return;
+    jobs.push(async () => {
+      const uploadId = await shared.upload("prop", image.localPath, "prop_image");
+      session.assertCurrent(owner);
+      out[index] = { kind: "upload", uploadId };
+    });
+  });
+  await uploadBatch(jobs);
   return out;
 }
 async function preview(locator) {

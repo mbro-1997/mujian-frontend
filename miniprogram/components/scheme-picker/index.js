@@ -1,3 +1,4 @@
+const successToast = require("../../services/success-toast");
 const api = require("../../services/planning");
 const account = require("../../services/account");
 const session = require("../../session/storage");
@@ -84,7 +85,7 @@ Component({
     },
     finish() {
       if (!this.current()) return;
-      wx.showToast({ title: "已加入方案" });
+      successToast("已加入方案");
       this.triggerEvent("close");
     },
     create() {

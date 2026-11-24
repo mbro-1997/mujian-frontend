@@ -121,7 +121,7 @@ test("从延期列表点记录只读详情，预警标签来自返回状态", as
 test("星级点击边界、无效租期、日历读屏信息", async () => {
   const r=fixture("reviews/detail").page;r.setData({entry:{canReview:true}});
   for(const rating of [1,5,6])r.rate(event({rating}));assert.equal(r.data.rating,5);
-  const f=fixture("props/dates"),p=f.page;await p.confirm();assert.ok(p.data.message);assert.equal(p.data.pendingCreate,false);
+  const f=fixture("props/dates"),p=f.page;let toast;f.wx.showToast=o=>{toast=o};await p.confirm();assert.equal(p.data.message,"");assert.match(toast.title,/租期/);assert.equal(p.data.pendingCreate,false);
   const calendar=f.load("services/rental-calendar.js");
   const cells=calendar.cells("2030-03","2030-03-10","2030-03-12","2030-03-09");
   assert.match(cells.find(c=>c.date==="2030-03-10").accessibleLabel,/2030年.*取货/);

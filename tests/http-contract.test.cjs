@@ -142,7 +142,7 @@ test("D6 正式 63 个操作逐项对应后端资源和两个前端注册表", (
   const source = fs.readFileSync(path.join(root, "开发交接/D6-定制闭环/契约/C-D6定制接口.openapi.json"), "utf8");
   assert.equal(fs.readFileSync(path.join(root, "代码/mujian-backend/src/main/resources/contracts/d6.openapi.json"), "utf8"), source);
   const formal = JSON.parse(source);
-  assert.equal(formal.info.version, "2026-11-11.2");
+  assert.equal(formal.info.version, "2026-11-24.1");
   const admin = require("../admin-web/src/api/d6.contract.json");
   const mini = require("../miniprogram/services/response-contract-data.js");
   const ids = new Set();

@@ -346,9 +346,13 @@ test('unexpected inherited property name does not turn an error into a trusted r
  const b=errorBody('REQUEST_INVALID');b.constructor='unexpected';
  assert.equal(protocol.failure('/api/me/factory-onboarding','POST',400,b).outcome,'unknown');
 });
-for(const name of ['index','profile']) test(name+' native template includes suspended business notice',()=>{
- const source=fs.readFileSync(path.resolve(__dirname,'../miniprogram/pages/factory/'+name+'.wxml'),'utf8');
- assert.match(source,/factoryStatus === 'suspended'/);assert.match(source,/已暂停/);
+for (const [name, file] of [
+  ['工厂首页', 'navigation/factory-root.wxml'],
+  ['工厂资料', 'pages/factory/profile.wxml'],
+]) test(name + ' displays suspended status', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../miniprogram', file), 'utf8');
+  assert.match(source, /factoryStatus\s*===\s*'suspended'/);
+  assert.match(source, /经营暂停|已暂停/);
 });
 
 // Regression: Node's JSON require and a mocked parser hid a real mini runtime failure.

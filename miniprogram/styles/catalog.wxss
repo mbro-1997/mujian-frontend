@@ -79,7 +79,7 @@
 .selected-styles {
   display: flex;
   gap: 5px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 .style-chip {
   background: #fff2a8;
@@ -95,7 +95,7 @@
 }
 .type-reset-row {
   display: grid;
-  grid-template-columns: 1fr 74px;
+  grid-template-columns: minmax(0,1fr) 74px;
   gap: 8px;
 }
 .dropdown,
@@ -176,4 +176,4 @@
 .home-page .rent-btn { width:auto; padding:0 14px; border-radius:var(--mj-control); font-size:14px; }
 .home-page .rent-btn.primary { background:var(--mj-accent); color:var(--mj-ink); }
 .home-page .section-head { min-height:0; padding:8px 0 0; background:transparent; border:0; font-weight:700; }
-.home-page .style-chip { max-width:100%; overflow-wrap:anywhere; }
+.home-page .style-chip { display:block; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }

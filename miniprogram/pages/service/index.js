@@ -8,6 +8,7 @@ const sourceNames = {
 };
 const { request } = require("../../services/http");
 const { uuid } = require("../../services/planning");
+const readWindow = require("../../services/read-list-window");
 const ui = require("../../services/trading-page");
 const customLabels = require("../../services/custom").labels;
 const rentalLabels = require("../../services/trading").labels;
@@ -53,19 +54,20 @@ require("../../session/page")({
   load(first = false) {
     return ui.run(this, async (current) => {
       this.retryFirst = first;
-      const page = first ? 1 : this.data.page + 1;
-      const result = await request("/api/me/service-sources?page=" + page);
-      if (!current()) return;
-      const rows = first ? [] : this.data.items.slice();
+      const start = first ? 1 : this.data.page + 1;
       const key = item => JSON.stringify([item.source.sourceType, item.source.sourceId]);
-      const seen = new Set(rows.map(key));
-      const before = rows.length;
+      const result = await readWindow(start, Math.max(start, this.data.page),
+        page => request("/api/me/service-sources?page=" + page), current, key);
+      if (!result) return;
+      const page = result.page;
+      const rows = first ? [] : this.data.items.slice();
+      const seen = new Set(rows.map(key)), before = rows.length;
       for (const item of result.items) {
-        if (!seen.has(key(item))) { seen.add(key(item)); rows.push({ ...sourceDisplay(item), sourceKey: key(item) }); }
+        if (!seen.has(key(item))) rows.push({ ...sourceDisplay(item), sourceKey: key(item) });
       }
       ui.showList(this, rows, !first);
       this.setData({
-          exhausted: rows.length === before,
+          exhausted: result.exhausted || rows.length === before,
           page,
           total: result.total,
         });

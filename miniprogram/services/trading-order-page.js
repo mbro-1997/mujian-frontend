@@ -1,5 +1,9 @@
+const { hint } = require("./form-error");
 const api = require('./trading'),
   ui = require('./trading-page');
+function revealConfirmation() {
+  wx.pageScrollTo({ selector: '.confirmation', duration: 180 });
+}
 module.exports = function (factory) {
   const endpoint = '/api/me/' + (factory ? 'factory-orders' : 'rental-orders');
   return {
@@ -66,7 +70,8 @@ module.exports = function (factory) {
     previewExtension() {
       const days = String(this.data.extensionDays);
       if (!/^[1-9][0-9]{0,2}$/.test(days) || Number(days) > 120) {
-        this.setData({ extensionQuote: null, message: '请填写 1 至 120 之间的整数天数' });
+        this.setData({ extensionQuote: null });
+        hint('请填写 1 至 120 之间的整数天数');
         return;
       }
       this.setData({ extensionQuote: null });
@@ -113,15 +118,16 @@ module.exports = function (factory) {
         api.command('accept:' + this.data.id, endpoint + '/' + this.data.id + '/accept', {
           expectedVersion: this.data.detail.version,
         }),
+        "已接单",
       );
       if (result) return this.load();
     },
     reject() {
-      this.setData({ rejecting: true, reason: '', quote: null });
+      this.setData({ rejecting: true, reason: '', quote: null, message: '' }, revealConfirmation);
     },
     async confirmReject() {
       if (!this.data.reason.trim()) {
-        this.setData({ message: '请填写拒绝接单原因' });
+        hint('请填写拒绝接单原因');
         return;
       }
       const result = await ui.run(this, () =>
@@ -129,6 +135,7 @@ module.exports = function (factory) {
           expectedVersion: this.data.detail.version,
           reason: this.data.reason.trim(),
         }),
+        "已拒绝接单",
       );
       if (result) return this.load();
     },
@@ -149,13 +156,13 @@ module.exports = function (factory) {
             },
             reason: '',
             rejecting: false,
-          });
+          }, revealConfirmation);
       });
     },
     async confirmCancel() {
       if (!this.data.quote) return;
       if (!this.data.reason.trim()) {
-        this.setData({ message: '请填写取消原因' });
+        hint('请填写取消原因');
         return;
       }
       const result = await ui.run(this, () =>
@@ -163,11 +170,12 @@ module.exports = function (factory) {
           confirmToken: this.data.quote.confirmToken,
           reason: this.data.reason.trim(),
         }),
+        "取消申请已提交",
       );
       if (result) return this.load();
     },
     close() {
-      this.setData({ quote: null, rejecting: false });
+      this.setData({ quote: null, rejecting: false, message: '' });
     },
     recover() {
       return ui.run(this, async (current) => {
