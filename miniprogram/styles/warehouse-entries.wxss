@@ -1,5 +1,38 @@
-.prop-page button.warehouse-scan { display:flex; align-items:center; justify-content:space-between; width:100%; margin:0; padding:16px 0; min-height:53px; color:#111827; font-size:14px; background:transparent; border-radius:0; border-bottom:1px solid #f0f0f0; text-align:left; }
-.prop-page .empty.warehouse-empty { background:#fff; border:1px solid #eee; border-radius:12px; padding:22px 12px; }
-.warehouse-quantities { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:10px 0; }
-.warehouse-quantities > view { padding:8px 10px; background:var(--mj-soft); border-radius:8px; font-size:16px; font-weight:650; font-variant-numeric:tabular-nums; }
-.warehouse-quantities text { display:block; font-size:11px; color:var(--mj-muted); font-weight:500; }
+.prop-page button.warehouse-scan { width:auto; min-height:44px; margin:0; padding:6px 12px; display:flex; justify-content:center; align-items:center; background:var(--mj-soft); color:var(--mj-active-ink); border-radius:var(--mj-control); font-size:13px; font-weight:600; }
+.prop-page button.warehouse-pending-label {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid #d1d5db;
+  border-radius: var(--mj-control);
+  background: var(--mj-paper);
+  color: var(--mj-ink);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.prop-page button.warehouse-pending-label.is-selected {
+  border-color: var(--mj-accent);
+  background: var(--mj-accent);
+}
+.prop-page .empty.warehouse-empty { background:var(--mj-paper); border:1px solid var(--mj-line); border-radius:var(--mj-card); padding:22px 12px; }
+.stock-head,.stock-foot { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+.stock-title { min-width:0; font-size:17px; font-weight:700; line-height:1.4; overflow-wrap:anywhere; }
+.stock-state { flex:none; align-self:flex-start; border-radius:6px; padding:3px 8px; font-size:12px; color:var(--mj-muted); background:var(--mj-soft); }
+.stock-state.pending { background:#fff2c2; color:#70500c; }
+.stock-state.approved { background:var(--mj-active-bg); color:var(--mj-active-ink); }
+.stock-state.rejected { background:#fff0eb; color:#963e28; }
+.stock-summary,.stock-excerpt,.stock-note { margin-top:6px; color:var(--mj-muted); font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
+.stock-excerpt,.stock-code { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.stock-code { margin-top:6px; color:var(--mj-muted); font-size:12px; }
+.stock-foot { flex-wrap:wrap; border-top:1px solid var(--mj-line); padding-top:10px; margin-top:12px; color:var(--mj-muted); font-size:12px; }
+.stock-number { color:var(--mj-ink); font-size:16px; font-weight:650; }
+.stock-link { margin-left:auto; color:var(--mj-active-ink); font-size:13px; font-weight:650; }
+.stock-pressed { opacity:.8; }

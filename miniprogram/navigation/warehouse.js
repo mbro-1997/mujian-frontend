@@ -18,6 +18,7 @@ module.exports = {
     busy: false,
     tab: "",
     assetType: "",
+    hasPendingLabel: false,
     selection: false,
     keyword: "",
     submittedKeyword: "",
@@ -29,11 +30,16 @@ module.exports = {
   },
   async load() {
     const round = this.warehouseRound = (this.warehouseRound || 0) + 1;
+    // Older shared-tab snapshots can contain the renter list’s unloaded page (0).
+    if (!Number.isSafeInteger(this.data.page) || this.data.page < 1) this.setData({ page: 1 });
+    if (this.data.hasPendingLabel && (this.data.selection || this.data.assetType === "B_CONSUMABLE"))
+      this.setData({ hasPendingLabel: false, page: 1 });
     const filters = {
       page: this.data.page,
       keyword: this.data.submittedKeyword || undefined,
       assetType: this.data.assetType || undefined,
     };
+    if (this.data.hasPendingLabel) filters.hasPendingLabel = true;
     if (this.data.tab === "pending") filters.auditing = true;
     else if (this.data.tab) filters.skuStatus = this.data.tab;
     const query = api.query(filters);
@@ -61,13 +67,20 @@ module.exports = {
     this.load();
   },
   resetWarehouse() {
-    this.setData({ keyword: "", submittedKeyword: "", assetType: "", tab: "", page: 1 });
+    this.setData({ keyword: "", submittedKeyword: "", assetType: "", tab: "", hasPendingLabel: false, page: 1 });
+    return this.load();
+  },
+  togglePendingLabel() {
+    if (this.data.selection || this.data.assetType === "B_CONSUMABLE") return;
+    this.setData({ hasPendingLabel: !this.data.hasPendingLabel, page: 1 });
     return this.load();
   },
   selectWarehouseFilter(e) {
     const { field, value } = e.detail;
     if (field !== "assetType" && field !== "tab") return;
-    this.setData({ [field]: value, page: 1 });
+    const updates = { [field]: value, page: 1 };
+    if (field === "assetType" && value === "B_CONSUMABLE") updates.hasPendingLabel = false;
+    this.setData(updates);
     return this.load();
   },
   open(e) {
@@ -88,9 +101,7 @@ module.exports = {
   reviews() {
     wx.navigateTo({ url: "/pages/props/reviews" });
   },
-  scan() {
-    wx.navigateTo({ url: "/pages/props/scan/index" });
-  },
+  scan: require("./prop-scan").openScanner,
   next() {
     if (this.data.page * 20 < Number(this.data.total)) {
       this.setData({ page: this.data.page + 1 });

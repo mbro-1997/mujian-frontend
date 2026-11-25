@@ -2,3 +2,8 @@
 
 @import "../../styles/planning-detail.wxss";
 @import "../../styles/surfaces.wxss";
+
+.planning-detail .item.checklist-item { overflow:hidden; padding:0; }
+.checklist-item-body { padding:10px; }
+.checklist-item-controls { padding:0 10px 10px; }
+.cutoff-note { margin:10px 0 4px; color:#ac3027; font-size:14px; line-height:1.5; font-weight:600; }

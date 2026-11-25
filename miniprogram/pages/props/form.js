@@ -87,7 +87,6 @@ require("../../session/page")({
             images: f.images.map((i) => ({
               kind: "existing",
               locator: i.locator,
-              preview: i.preview,
             })),
           },
           assetType: sku.assetType,

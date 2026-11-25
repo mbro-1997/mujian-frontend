@@ -43,7 +43,7 @@
     <text class="arrow">›</text>
   </button>
 </block>
-<template wx:elif="{{rootIndex===2}}" is="warehouse" data="{{items,message,busy,tab,keyword,submittedKeyword,page,total,assetType,selection,warehouseFilters,warehouseLoaded}}"/>
+<template wx:elif="{{rootIndex===2}}" is="warehouse" data="{{items,message,busy,tab,keyword,submittedKeyword,page,total,assetType,hasPendingLabel,selection,warehouseFilters,warehouseLoaded}}"/>
 <block wx:elif="{{rootIndex===3}}">
   <block wx:for="{{factoryMenus}}" wx:key="title" wx:for-item="group">
     <view class="menu-title">{{group.title}}</view>

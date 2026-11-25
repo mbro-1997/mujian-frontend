@@ -1,2 +1,61 @@
-<view class="navigation-return" wx:if="{{!nativeBackAvailable}}" bindtap="navigationBack">‹ 返回</view><view class="prop-page">
-  <view wx:if="{{busy && !record && !message}}" class="mj-read-state"><mj-loading label="正在读取审核记录"/></view><view wx:if="{{message}}" class="feedback error">{{message}}<button bindtap="load">刷新</button></view><block wx:if="{{record}}"><view class="panel"><view class="heading">{{action}}申请 · {{state}}</view><view class="muted">{{record.factoryName}} · {{record.applicantName}}</view><view>{{record.propName}} · {{record.skuCode}}</view><view class="muted">当前 {{currentSkuState}}</view><view class="muted">提交于 {{record.submittedAtText}}</view><view wx:if="{{record.auditStatus==='pending'}}">申请已提交，等待管理员处理</view></view><view class="panel"><view class="heading">申请内容</view><view class="row"><text>申请说明</text><text>{{record.applyRemark||'—'}}</text></view><view wx:if="{{record.sourceType==='sku_audit'}}"><view class="muted">当前资料{{record.currentFillStatus==='filled'?'已填写':'待补填'}} · {{record.currentUpdatedAtText}}</view><view>初始数量：{{record.initialQuantity===null?'不适用':record.initialQuantity}}</view><view>状态：{{beforeSkuState}} → {{targetSkuState}}</view><text class="link" bindtap="toggle">{{expanded?'收起':'展开'}}当次提交资料与照片</text></view><view wx:elif="{{record.sourceType==='sn_adjustment'}}"><view>申请件数：{{record.quantity}}</view><view wx:if="{{record.abnormalResult}}">异常结果：{{record.abnormalResult==='lost'?'丢失 / 盘亏':'报废'}}</view><view wx:for="{{items}}" wx:key="snId" class="panel"><view class="sn-code">{{item.snCodeSnapshot}}</view><view>{{item.before}} → {{item.target}}</view><view>{{item.remark||'—'}}</view><view class="muted">当前 {{item.current}} · {{item.currentStatusRemark||'—'}} · {{item.currentStatusChangedAtText||'—'}}</view></view></view><view wx:else><view>数量变化：{{record.quantityDelta}}</view><view>提交时总量 / 可用：{{record.beforeTotalQuantity}} / {{record.beforeAvailableQuantity}}</view><view>当前总量 / 可用：{{record.currentStock.totalQuantity}} / {{record.currentStock.availableQuantity}}</view><view wx:if="{{record.abnormalResult}}">异常结果：{{record.abnormalResult==='lost'?'丢失 / 盘亏':'报废'}}</view></view></view><block wx:if="{{expanded&&record.proposed}}"><view class="muted">当次提交快照</view><prop-fields fields="{{record.proposed}}"/><block wx:if="{{record.before}}"><view class="muted">提交前资料</view><prop-fields fields="{{record.before}}"/></block></block><view class="panel"><view class="heading">处理状态</view><view>{{state}}</view><view>审核意见：{{record.auditRemark||'尚未处理'}}</view><view wx:if="{{record.rejectReason}}">驳回原因：{{record.rejectReason}}</view><view wx:if="{{record.reviewedAtText}}" class="muted">处理于 {{record.reviewedAtText}}</view><button wx:if="{{record.canCancel}}" bindtap="cancel">撤回申请</button><button wx:if="{{canResubmit}}" class="primary-btn" bindtap="resubmit">重新填写并提交</button></view></block><view wx:if="{{dialog}}" class="mask"><view class="dialog"><view class="heading">撤回申请？</view><view class="muted">撤回后本次申请不再审核，已生效库存保持不变。</view><textarea adjust-position="{{false}}" fixed value="{{reason}}" bindinput="input" maxlength="255" placeholder="请填写说明"/><view class="feedback" wx:if="{{message}}">{{message}}</view><button bindtap="confirm" class="primary-btn" loading="{{busy && !returnRefresh}}" disabled="{{busy||!reason}}">确认撤回</button><button bindtap="close" disabled="{{busy}}">返回</button></view></view></view>
+<view wx:if="{{!nativeBackAvailable}}" class="navigation-return" bindtap="navigationBack">‹ 返回</view>
+<view class="prop-page review-detail">
+  <view wx:if="{{busy && !record && !message}}" class="mj-read-state"><mj-loading label="正在读取审核记录"/></view>
+  <view wx:if="{{message && !dialog}}" class="feedback error">{{message}}<button bindtap="load">刷新</button></view>
+  <block wx:if="{{record}}">
+    <view class="review-header">
+      <view class="stock-head"><text class="review-name">{{record.propName}}</text><text class="stock-state {{record.auditStatus}}">{{state}}</text></view>
+      <view class="review-subtitle">{{action}}申请 · {{record.assetType==='A_ASSET'?'A 类':'B 类'}}</view>
+      <view class="review-code" user-select>{{record.skuCode}}</view>
+    </view>
+    <view class="panel">
+      <mj-heading title="处理进度"/>
+      <view class="progress-step"><view>已提交</view><text>{{record.factoryName}} · {{record.applicantName}}</text><text>{{record.submittedAtText}}</text></view>
+      <view class="progress-step last"><view>{{state}}</view>
+        <text wx:if="{{record.reviewedAtText}}">{{record.reviewedAtText}}</text>
+        <text wx:if="{{record.auditStatus==='pending'}}">等待管理员处理</text>
+        <text wx:if="{{record.auditRemark}}">审核意见：{{record.auditRemark}}</text>
+        <text wx:if="{{record.rejectReason}}" class="reject-reason">驳回原因：{{record.rejectReason}}</text>
+      </view>
+      <button wx:if="{{record.canCancel}}" class="secondary-btn" bindtap="cancel">撤回申请</button>
+      <button wx:if="{{canResubmit}}" class="primary-btn" bindtap="resubmit">重新填写并提交</button>
+    </view>
+    <view class="panel">
+      <mj-heading title="申请内容"/>
+      <view class="fact"><text>申请说明</text><text>{{record.applyRemark||'—'}}</text></view>
+      <view wx:if="{{currentSkuState}}" class="fact"><text>当前上架状态</text><text>{{currentSkuState}}</text></view>
+      <block wx:if="{{record.sourceType==='sku_audit'}}">
+        <view wx:if="{{record.initialQuantity!=null}}" class="fact"><text>初始数量</text><text>{{record.initialQuantity}} 件</text></view>
+        <view class="fact"><text>申请状态变更</text><text>{{beforeSkuState}} → {{targetSkuState}}</text></view>
+        <view class="fact"><text>当前资料</text><text>{{record.currentFillStatus==='filled'?'已填写':'待补填'}}<text wx:if="{{record.currentUpdatedAtText}}" class="fact-time">{{record.currentUpdatedAtText}}</text></text></view>
+      </block>
+      <block wx:elif="{{record.sourceType==='sn_adjustment'}}">
+        <view class="fact"><text>申请件数</text><text>{{record.quantity}} 件</text></view>
+        <view wx:for="{{items}}" wx:key="snId" class="sn-entry">
+          <view class="review-code" user-select>{{item.snCodeSnapshot}}</view><view>{{item.before}} → {{item.target}}</view>
+          <view wx:if="{{item.remark}}">{{item.remark}}</view>
+          <view class="stock-note">当前：{{item.current}}<text wx:if="{{item.currentStatusRemark}}"> · {{item.currentStatusRemark}}</text><text wx:if="{{item.currentStatusChangedAtText}}"> · {{item.currentStatusChangedAtText}}</text></view>
+        </view>
+      </block>
+      <block wx:else>
+        <view class="fact"><text>数量变化</text><text>{{record.quantityDelta}}</text></view>
+        <view class="fact"><text>提交时库存</text><text>总量 {{record.beforeTotalQuantity}} · 可用 {{record.beforeAvailableQuantity}}</text></view>
+        <view class="fact"><text>当前库存</text><text>总量 {{record.currentStock.totalQuantity}} · 可用 {{record.currentStock.availableQuantity}}</text></view>
+      </block>
+      <view wx:if="{{record.abnormalResult}}" class="fact"><text>异常结果</text><text>{{record.abnormalResult==='lost'?'丢失 / 盘亏':'报废'}}</text></view>
+    </view>
+    <view wx:if="{{record.proposed}}" class="panel snapshot">
+      <button class="snapshot-toggle" bindtap="toggle" aria-expanded="{{expanded}}"><text>本次提交资料与照片</text><text>{{expanded?'收起':'展开'}}</text></button>
+      <block wx:if="{{expanded}}">
+        <prop-fields compact fields="{{record.proposed}}"/>
+        <block wx:if="{{record.before}}"><view class="previous-title">提交前资料</view><prop-fields compact fields="{{record.before}}"/></block>
+      </block>
+    </view>
+  </block>
+  <view wx:if="{{dialog}}" class="mask"><view class="dialog">
+    <view class="heading">撤回申请？</view><view class="muted">撤回后本次申请不再审核，已生效库存保持不变。</view>
+    <textarea adjust-position="{{false}}" fixed value="{{reason}}" bindinput="input" maxlength="255" placeholder="请填写说明"/>
+    <view wx:if="{{message}}" class="feedback error">{{message}}</view>
+    <view class="dialog-actions"><button class="secondary-btn" bindtap="close" disabled="{{busy}}">返回</button><button bindtap="confirm" class="primary-btn" loading="{{busy}}" disabled="{{busy||!reason}}">确认撤回</button></view>
+  </view></view>
+</view>

@@ -2,6 +2,7 @@
   "navigationBarTitleText": "道具上架",
   "usingComponents": {
     "prop-fields": "/components/prop-fields/index",
-    "prop-grid": "/components/prop-grid/index"
+    "prop-grid": "/components/prop-grid/index",
+    "prop-image": "/components/prop-image/index"
   }
 }

@@ -18,6 +18,8 @@ async function run(page, action, successLabel) {
     return result;
   } catch (error) {
     if (current()) {
+      if (error.reason === 'RENTAL_WINDOW_CLOSED' || error.reason === 'RENTAL_WINDOW_NOT_OPEN')
+        return hint(api.message(error));
       if (error instanceof ValidationError) return hint(error.message);
       if ([401, 403, 404].includes(error.status)) {
         const cleared = { detail: null, items: [], quote: null };

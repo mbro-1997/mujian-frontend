@@ -1,6 +1,8 @@
 Component({
+  options: { multipleSlots: true },
   properties: {
-    filters: Array, values: Object, keyword: String, placeholder: String, disabled: Boolean, stacked: Boolean, quiet: Boolean, fieldMode: Boolean, resettable: Boolean,
+    filters: Array, values: Object, keyword: String, placeholder: String, disabled: Boolean, stacked: Boolean, quiet: Boolean, fieldMode: Boolean, resettable: Boolean, inlineReset: Boolean,
+    trailingSelector: Boolean,
     maxlength: { type: Number, value: 128 },
   },
   data: { labels: [], open: -1, above: false, panelHeight: 0 },

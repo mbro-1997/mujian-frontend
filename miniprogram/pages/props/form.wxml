@@ -112,8 +112,8 @@
     <view class="panel">
       <view class="section-title">图片 · 1～4张</view>
       <view class="upload-grid">
-        <view class="mj-photo-frame" wx:for="{{fields.images}}" wx:key="index">
-          <image class="upload" src="{{item.localPath||item.preview.url}}" mode="aspectFill"/>
+        <view class="mj-photo-frame upload" wx:for="{{fields.images}}" wx:key="index">
+          <prop-image locator="{{item.locator}}" local-path="{{item.localPath}}" fallback="图片暂不可用"/>
           <photo-remove identity="{{item.localPath || item.locator || item.uploadId}}" data-index="{{index}}" disabled="{{busy || locked}}" bindremove="remove"/>
         </view>
         <button class="upload" wx:if="{{fields.images.length<4}}" bindtap="photos">＋</button>

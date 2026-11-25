@@ -108,7 +108,7 @@ function back(page) {
       source === "ledger"
         ? "/pages/inventory/select"
         : page.data.id
-          ? (route === "pages/inventory/index"
+          ? (route === "pages/inventory/index" || route === "pages/inventory/adjust"
               ? "/pages/props/detail?id="
               : "/pages/inventory/index?id=") + page.data.id
           : "/pages/inventory/select";

@@ -31,6 +31,28 @@ module.exports = function (index, renter) {
       this.rootRefresh = this.resolveRoot();
       return this.rootRefresh;
     },
+    async onPullDownRefresh() {
+      // The native gesture belongs to the active role, even though both roles share this route.
+      if (this.data.rootLoading) await this.rootRefresh;
+      if (this.data.rootReady && !this.data.factoryRoot && renter.onPullDownRefresh)
+        return renter.onPullDownRefresh.call(this);
+
+      try {
+        if (!this.data.rootReady || !this.data.factoryRoot) return;
+        if (index === 2) {
+          this.setData({ page: 1 });
+          return await this.load();
+        }
+        if (index === 0) return await this.factoryOrdersLoad();
+        return await this.resolveRoot();
+      } finally {
+        wx.stopPullDownRefresh?.();
+      }
+    },
+    onReachBottom(...args) {
+      if (this.data.rootReady && !this.data.rootLoading && !this.data.factoryRoot)
+        return renter.onReachBottom?.apply(this, args);
+    },
     onHide() {
       this.rootRound = (this.rootRound || 0) + 1;
       this.setData({ tradeBusy: false });

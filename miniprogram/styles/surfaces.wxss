@@ -46,7 +46,6 @@ page, .custom, .verify-page { background: var(--mj-canvas); color: var(--mj-ink)
 .planning.address-edit { background: var(--mj-canvas); }
 .planning-detail .badge.current { color: var(--mj-active-ink); background: var(--mj-active-bg); }
 .verify-page .eyebrow { color: var(--mj-muted); font-weight: 600; }
-.date-page .date-notice { background: var(--mj-paper); color: var(--mj-muted); }
 @media (max-width: 350px) {
   .trade, .trade.order-list, .planning, .custom, .fulfill, .verify-page, .product-page { padding-left: 12px; padding-right: 12px; }
   .trade .row { gap: 8px; }

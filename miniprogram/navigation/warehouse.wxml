@@ -1,34 +1,32 @@
 <template name="warehouse">
   <view class="prop-page" bindtouchstart="activity">
     <view class="panel warehouse-filters">
-      <mj-heading title="{{selection?'选择道具 · 库存流水':'库存道具'}}"/>
-      <button wx:if="{{!selection}}" class="warehouse-scan" bindtap="scan">扫描道具标签<text>›</text>
-      </button>
+      <mj-heading title="{{selection?'选择道具':'库存道具'}}">
+        <button wx:if="{{!selection}}" class="warehouse-scan" bindtap="scan">扫描道具标签</button>
+      </mj-heading>
       <view wx:if="{{selection}}" class="muted">A 类选择实物查看状态记录；B 类查看数量增减流水。</view>
-      <list-filters resettable="{{assetType || tab || keyword || submittedKeyword}}" bindresetfilters="resetWarehouse" filters="{{warehouseFilters}}" values="{{ {assetType:assetType, tab:tab} }}" keyword="{{keyword}}" placeholder="SKU 编号 / 道具名称"
-        bindselectfilter="selectWarehouseFilter" bindkeyword="searchInput" bindsearch="search"/>
+      <list-filters inline-reset="{{true}}" trailing-selector="{{!selection && assetType !== 'B_CONSUMABLE'}}"
+        bindresetfilters="resetWarehouse" filters="{{warehouseFilters}}" values="{{ {assetType:assetType, tab:tab} }}"
+        keyword="{{keyword}}" placeholder="SKU 编号 / 道具名称"
+        bindselectfilter="selectWarehouseFilter" bindkeyword="searchInput" bindsearch="search">
+        <button slot="selector-end" class="warehouse-pending-label {{hasPendingLabel ? 'is-selected' : ''}}"
+          aria-pressed="{{hasPendingLabel}}" hover-class="none" bindtap="togglePendingLabel">
+          <text wx:if="{{hasPendingLabel}}" aria-hidden="true">✓</text><text>待贴标</text>
+        </button>
+      </list-filters>
     </view>
-    <view wx:if="{{message}}" class="feedback error">{{message}}<button bindtap="load">重试</button>
-    </view>
-    <view wx:elif="{{busy && !warehouseLoaded}}" class="empty">
-      <mj-loading label="正在加载"/>
-    </view>
+    <view wx:if="{{message}}" class="feedback error">{{message}}<button bindtap="load">重试</button></view>
+    <view wx:elif="{{busy && !warehouseLoaded}}" class="empty"><mj-loading label="正在加载"/></view>
     <view wx:elif="{{!items.length}}" class="empty warehouse-empty">暂无符合条件的道具</view>
-    <view class="panel" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="open">
-      <view class="row">
-        <text class="heading">{{item.fields.propName}}</text>
-        <text class="pill">{{item.pendingApplicationId?'审核中':item.state}}</text>
+    <view class="panel stock-card" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="open" hover-class="stock-pressed" aria-role="button">
+      <view class="stock-head"><text class="stock-title">{{item.fields.propName}}</text><text class="stock-state {{item.pendingApplicationId?'pending':''}}">{{item.pendingApplicationId?'审核中':item.state}}</text></view>
+      <view class="stock-summary">{{item.assetType==='A_ASSET'?'A 类 · 一物一码':'B 类 · 数量库存'}}<text wx:if="{{item.factoryName}}"> · {{item.factoryName}}</text></view>
+      <view class="stock-code">{{item.skuCode}}</view>
+      <view class="stock-foot">
+        <view wx:if="{{item.inventorySummary}}">库存 <text class="stock-number">{{item.inventorySummary.totalQuantity}}</text> · 可用 <text class="stock-number">{{item.inventorySummary.availableQuantity}}</text></view>
+        <text wx:else>尚未形成库存</text>
+        <text class="stock-link">{{selection?(item.assetType==='A_ASSET'?'选择实物':'查看数量流水'):'资料与库存'}} ›</text>
       </view>
-      <view class="muted">{{item.assetType==='A_ASSET'?'A 类 · 一物一码':'B 类 · 数量库存'}}</view>
-      <view class="muted">{{item.skuCode}} · {{item.factoryName}}</view>
-      <view wx:if="{{item.inventorySummary}}" class="warehouse-quantities">
-        <view>
-          <text>库存总量</text>{{item.inventorySummary.totalQuantity}}</view>
-        <view>
-          <text>当前可用</text>{{item.inventorySummary.availableQuantity}}</view>
-      </view>
-      <view wx:else class="muted">尚未形成库存</view>
-      <view class="row link">{{selection?(item.assetType==='A_ASSET'?'选择实物 · 查看状态记录 →':'查看数量流水 →'):'查看资料与库存 →'}}</view>
     </view>
     <view wx:if="{{total>20 || page>1}}" class="pager warehouse-pager">
       <button class="warehouse-page-button" bindtap="prev" disabled="{{page===1}}">上一页</button>

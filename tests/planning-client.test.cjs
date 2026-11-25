@@ -308,7 +308,7 @@ test("calendar creates real manual checklist once and preserves browse filters a
       "&styles=" +
       encodeURIComponent('["retro"]'),
   });
-  const today = f.load("services/rental-calendar.js").today();
+  const today = f.load("services/rental-calendar.js").earliestStart();
   p.setData({ startDate: today, endDate: today });
   const creating = p.confirm();
   await tick();
@@ -410,6 +410,7 @@ test("500-item detail renders in bounded chunks without embedding a second full 
 test("planning append coalesces bottom events and retries the same failed page without clearing loaded rows", async () => {
   const f = fixture("plan/index"),
     p = f.page;
+  p.setData({ rootReady: true, factoryRoot: false });
   const first = p.loadPlanning();
   await tick();
   f.pending[0].resolve({
@@ -926,4 +927,46 @@ test("清单按租期上限校正手输，历史超量仍可减量，零库存�
   step(-1);
   assert.equal(p.data.items[0].quantity, 2);
   assert.equal(f.pending.length, 0);
+});
+
+test("北京时间11点整切换最早取货日，跨月跨年按14天限制取货", () => {
+  const c = require("../miniprogram/services/rental-calendar");
+  for (const [now, min] of [
+    ["2026-11-25T02:59:59.999Z", "2026-11-27"],
+    ["2026-11-25T03:00:00.000Z", "2026-11-28"],
+    ["2026-12-30T03:00:00.000Z", "2027-01-02"],
+  ]) {
+    assert.equal(c.earliestStart(Date.parse(now)), min);
+    assert.equal(c.startWindow(Date.parse(now)).latest, now.startsWith("2026-11") ? "2026-12-09" : "2027-01-13");
+    assert.equal(c.startWindow(Date.parse(now)).earliestDays, now.includes("T02:") ? 2 : 3);
+    const window = c.startWindow(Date.parse(now));
+    const cells = c.cells(min.slice(0, 7), "", "", window);
+    assert.equal(cells.find(day => day.date === min).disabled, false);
+    assert.ok(cells.filter(day => day.date < min).every(day => day.disabled));
+    assert.ok(c.allowed(min, min, window));
+    assert.equal(c.allowed("2027-02-10", "2027-02-10", window), false);
+  }
+});
+
+test("单件左滑按稳定 ID 确认，取消不改清单，移除进入待保存草稿", async () => {
+  const f = fixture("checklist/detail"), p = f.page, event = {currentTarget:{dataset:{id:sku}},detail:{opened:true}};
+  p.setData({id,detail:{actions:{canEdit:true}},items:[entry(),{...entry(),id:"other"}]});
+  let confirm;
+  f.wx.showModal = o => {confirm = o.success};
+  p.revealRow(event);
+  const cancelled = p.removeRow(event); confirm({confirm:false}); await cancelled;
+  assert.equal(p.data.items.length,2);
+  p.revealRow(event);
+  const removed = p.removeRow(event);p.setData({items:[...p.data.items].reverse()});confirm({confirm:true});await removed;
+  assert.equal(p.data.items.length,1);assert.equal(p.data.items[0].id,"other");
+  assert.equal(p.data.dirty,true);assert.equal(f.pending.length,0);
+});
+
+test("已截止清单点配送结算使用轻提示，已受理批次可查看原付款", () => {
+  const f=fixture("checklist/detail"),p=f.page;let toast;
+  f.wx.showToast=o=>{toast=o};
+  p.setData({id,detail:{submission:{canSubmit:false,reasonCode:"RENTAL_WINDOW_CLOSED"}},reason:"已超过下单截止"});
+  p.submit();assert.equal(p.data.message,"");assert.equal(toast.title,p.data.reason);assert.equal(f.nav.length,0);
+  p.setData({detail:{currentCheckoutBatchId:"previous"}});
+  p.submit();assert.match(f.nav[0],/payment\/index\?id=previous/);
 });

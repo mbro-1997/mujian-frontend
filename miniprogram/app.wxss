@@ -225,7 +225,7 @@ button::after {
 .mj-system-picker { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:var(--mj-tap); min-width:0; }
 .mj-selected-label,.mj-system-picker text { display:block; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .mj-system-picker::after { content:""; flex:none; width:6px; height:6px; margin-right:3px; border:solid var(--mj-muted); border-width:0 1.5px 1.5px 0; transform:rotate(45deg); }
-.review-filter dict-select,.filter-row dict-select,.custom .bar > dict-select { flex:1; min-width:0; }
+.filter-row dict-select,.custom .bar > dict-select { flex:1; min-width:0; }
 
 .prop-page button.mj-filter-reset { display:block; width:auto; min-height:var(--mj-tap); margin:0 0 0 auto; padding:6px 8px; color:var(--mj-active-ink); background:transparent; font-size:13px; }
 

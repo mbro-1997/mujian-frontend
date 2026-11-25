@@ -1,0 +1,2 @@
+<image wx:if="{{source}}" class="image" src="{{source}}" mode="{{mode}}" binderror="failed"/>
+<view wx:else class="fallback">{{loading ? '加载中…' : fallback}}</view>

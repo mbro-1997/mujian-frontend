@@ -1,1 +1,3 @@
 @import "../props/common.wxss";
+
+.prop-page { padding-bottom:calc(16px + env(safe-area-inset-bottom)); }

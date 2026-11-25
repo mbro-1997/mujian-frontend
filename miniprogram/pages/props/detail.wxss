@@ -1,1 +1,7 @@
 @import "common.wxss";
+
+.detail-edits { display:grid; gap:8px; }
+.detail-edits button, .stock-actions button { width:100%; margin:0; min-height:44px; padding:6px; font-size:14px; line-height:1.4; display:flex; align-items:center; justify-content:center; white-space:normal; }
+.prop-page .footer-actions.prop-actions { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.stock-actions { display:flex; gap:8px; margin-top:12px; }
+.stock-actions button { flex:1; }

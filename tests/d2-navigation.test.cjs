@@ -22,6 +22,57 @@ test('warehouse query/page/scroll restores per factory and clears on logout',asy
  const f=fixture();const w=f.page('checklist/index');await w.onShow();w.setData({keyword:'灯',assetType:'B_CONSUMABLE',page:4,tab:'online'});w.onPageScroll({scrollTop:420});w.onHide();const restored=f.page('checklist/index');await restored.onShow();assert.equal(restored.data.page,4);assert.equal(restored.data.keyword,'灯');assert.equal(f.scroll.at(-1),420);
  f.load('session/storage.js').clear();f.storage.set('mj.session','B');const fresh=f.page('checklist/index');await fresh.onShow();assert.equal(fresh.data.keyword,'');assert.equal(fresh.data.page,1);
 });
+test('warehouse pending-label switch keeps search and status through paging, then clears on cancel, B or reset', async () => {
+  const f = fixture();
+  const w = f.page('checklist/index');
+  f.table['/api/me/factory-props?'] = (path) => {
+    const q = new URL(path, 'https://fixture.invalid').searchParams;
+    const id = q.has('hasPendingLabel') ? 'pending-' + q.get('page') : 'original';
+    return Promise.resolve({ items: [{ id, skuStatus: 'online' }], total: '22' });
+  };
+  await w.onShow();
+  w.setData({ keyword: '椅子', submittedKeyword: '椅子', tab: 'online', page: 3 });
+  const query = () => new URL(f.requests.at(-1), 'https://fixture.invalid').searchParams;
+  await w.togglePendingLabel();
+  assert.equal(w.data.hasPendingLabel, true);
+  assert.equal(w.data.items[0].id, 'pending-1');
+  assert.equal(query().get('page'), '1');
+  assert.equal(query().get('keyword'), '椅子');
+  assert.equal(query().get('skuStatus'), 'online');
+  assert.equal(query().get('hasPendingLabel'), 'true');
+
+  w.next();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(w.data.hasPendingLabel, true);
+  assert.equal(query().get('hasPendingLabel'), 'true');
+  assert.equal(w.data.items[0].id, 'pending-2');
+  w.onHide();
+  const reopened = f.page('checklist/index');
+  await reopened.onShow();
+  assert.equal(reopened.data.hasPendingLabel, true);
+  assert.equal(reopened.data.page, 2);
+
+  await reopened.togglePendingLabel();
+  assert.equal(reopened.data.hasPendingLabel, false);
+  assert.equal(query().has('hasPendingLabel'), false);
+  assert.equal(query().get('page'), '1');
+  assert.equal(query().get('keyword'), '椅子');
+  assert.equal(query().get('skuStatus'), 'online');
+  assert.equal(reopened.data.items[0].id, 'original');
+
+  await reopened.togglePendingLabel();
+  await reopened.selectWarehouseFilter({ detail: { field: 'assetType', value: 'B_CONSUMABLE' } });
+  assert.equal(reopened.data.hasPendingLabel, false);
+  assert.equal(query().get('assetType'), 'B_CONSUMABLE');
+  assert.equal(query().has('hasPendingLabel'), false);
+  await reopened.selectWarehouseFilter({ detail: { field: 'assetType', value: 'A_ASSET' } });
+  assert.equal(query().has('hasPendingLabel'), false);
+  await reopened.togglePendingLabel();
+  await reopened.resetWarehouse();
+  assert.equal(reopened.data.hasPendingLabel, false);
+  assert.equal(reopened.data.keyword, '');
+  assert.equal(f.requests.at(-1), '/api/me/factory-props?page=1');
+});
 test('SKU ledger selection branches A to SN list and B to quantity movements; no-stack SN return preserves SKU',async()=>{
  const f=fixture(),p=f.page('inventory/select');await p.onLoad({});p.setData({items:[{id:'a',assetType:'A_ASSET'},{id:'b',assetType:'B_CONSUMABLE'}]});p.open({currentTarget:{dataset:{id:'a'}}});assert.equal(f.nav.pop(),'/pages/inventory/index?id=a&source=ledger');p.open({currentTarget:{dataset:{id:'b'}}});assert.equal(f.nav.pop(),'/pages/inventory/movements?id=b&source=ledger');const logs=f.page('inventory/logs');await logs.onLoad({id:'sn',skuId:'a',source:'ledger'});logs.navigationBack();assert.equal(f.nav.pop(),'/pages/inventory/index?id=a&source=ledger');
 });
@@ -29,7 +80,7 @@ test('cold owned deep link authenticates before requesting private data; logout 
  const f=fixture();f.load('session/storage.js').clear();const p=f.page('inventory/logs');await p.onLoad({id:'sn',skuId:'a'});await p.onShow();assert.equal(f.requests.length,0);assert.match(f.nav[0],/account\/index\?resume=1&return=/);const q=f.page('account/index');q.onLoad({return:'/pages/props/detail?id=old'});f.load('session/storage.js').replace('B');assert.equal(q.data.returnPath,'/pages/home/index');
 });
 test('application and inventory nested state restore uses object-specific keys',async()=>{
- const f=fixture(),a=f.page('props/reviews');await a.onLoad({skuId:'a'});a.setData({page:3,status:'rejected',assetType:'A_ASSET'});a.onPageScroll({scrollTop:220});a.onHide();const b=f.page('props/reviews');await b.onLoad({skuId:'b'});assert.equal(b.data.page,1);const a2=f.page('props/reviews');await a2.onLoad({skuId:'a'});assert.equal(a2.data.page,3);assert.equal(a2.data.status,'rejected');
+ const f=fixture(),a=f.page('props/reviews');await a.onLoad({skuId:'a'});a.setData({page:3});a.onPageScroll({scrollTop:220});a.onHide();const b=f.page('props/reviews');await b.onLoad({skuId:'b'});assert.equal(b.data.page,1);const a2=f.page('props/reviews');await a2.onLoad({skuId:'a'});assert.equal(a2.data.page,3);
 });
 test('D2 ownedList real HTTP responses replay through warehouse mapping without client filtering',async()=>{
  const evidence=process.env.MJ_EVIDENCE_DIR;assert.ok(evidence);const rows=fs.readFileSync(path.join(evidence,'nav-owned-asset-http.jsonl'),'utf8').trim().split('\n').map(JSON.parse).filter(x=>x.path.startsWith('/api/me/factory-props?')&&x.status===200);
@@ -42,7 +93,7 @@ test('no-stack SKU inventory and scoped application list return to their source 
 
 test('cold scan restores server identity before QR resolution and refuses demander without private request',async()=>{const f=fixture('demander'),p=f.page('props/scan/index');p.onLoad({code:'123456789abc4def8123456789abcdef'});p.onShow();await new Promise(r=>setImmediate(r));assert.equal(f.requests.length,0);assert.equal(p.data.loginRequired,true);assert.match(p.data.message,/工厂账号/);p.onUnload();});
 
-for(const name of ['props/reviews','inventory/movements'])test(name+' ignores late results after filter changes',async()=>{const f=fixture(),p=f.page(name);await p.onLoad({id:'sku'});let pending=[];f.table[name==='props/reviews'?'/api/me/prop-reviews?':'/api/me/factory-props/sku/movements?']=()=>new Promise(resolve=>pending.push(resolve));const a=p.load(),b=p.load();pending[1]({items:[],pendingCounts:{total:'2'},total:'2'});await b;pending[0]({items:[],pendingCounts:{total:'9'},total:'9'});await a;assert.equal(p.data.total,'2');});
+for(const name of ['props/reviews','inventory/movements'])test(name+' ignores late results after a newer list request',async()=>{const f=fixture(),p=f.page(name);await p.onLoad({id:'sku'});let pending=[];f.table[name==='props/reviews'?'/api/me/prop-reviews?':'/api/me/factory-props/sku/movements?']=()=>new Promise(resolve=>pending.push(resolve));const a=p.load(),b=p.load();pending[1]({items:[],pendingCounts:{total:'2'},total:'2'});await b;pending[0]({items:[],pendingCounts:{total:'9'},total:'9'});await a;assert.equal(p.data.total,'2');});
 
 test('explicit renter order shortcut starts on page one without restoring a different search; returning from a child retains the current list', async () => {
   const f = fixture('demander');
@@ -89,4 +140,45 @@ test('仓库同条件刷新保留可见卡片，切换筛选立即清除旧行�
   await refresh;
   assert.equal(warehouse.data.items[0].id, 'filtered');
   assert.equal(warehouse.data.busy, false);
+});
+
+test('factory tab gestures use factory endpoints and repair an old warehouse page zero', async () => {
+  const f = fixture();
+  let stopped = 0;
+  f.wx.stopPullDownRefresh = () => stopped++;
+  const warehouse = f.page('checklist/index');
+  warehouse.setData({ page: 0, assetType: 'A_ASSET', tab: 'pending', submittedKeyword: '椅子' });
+  await warehouse.onShow();
+  assert.equal(warehouse.data.page, 1);
+  assert.match(f.requests.at(-1), /factory-props\?page=1&/);
+  warehouse.setData({ page: 2, total: '50' });
+  f.requests.length = 0;
+  await warehouse.onReachBottom();
+  assert.equal(f.requests.length, 0);
+  await warehouse.onPullDownRefresh();
+  assert.equal(stopped, 1);
+  assert.equal(f.requests.length, 1);
+  const query = new URL(f.requests[0], 'http://local');
+  assert.equal(query.pathname, '/api/me/factory-props');
+  assert.deepEqual(Object.fromEntries(query.searchParams), { page: '1', keyword: '椅子', assetType: 'A_ASSET', auditing: 'true' });
+  const publish = f.page('plan/index');
+  await publish.onShow();
+  f.requests.length = 0;
+  await publish.onPullDownRefresh();
+  await publish.onReachBottom();
+  assert.equal(stopped, 2);
+  assert.deepEqual(f.requests, []);
+});
+
+test('renter checklist pull-to-refresh still loads personal checklists and stops the indicator', async () => {
+  const f = fixture('demander');
+  let stopped = 0;
+  f.wx.stopPullDownRefresh = () => stopped++;
+  const page = f.page('checklist/index');
+  await page.onShow();
+  f.requests.length = 0;
+  await page.onPullDownRefresh();
+  assert.ok(f.requests.some(url => url.startsWith('/api/me/checklists?')));
+  assert.ok(f.requests.every(url => !url.includes('factory-props')));
+  assert.equal(stopped, 1);
 });

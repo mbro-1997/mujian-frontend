@@ -5,37 +5,11 @@ require("../../session/page")({
   data: {
     id: "",
     sku: null,
-    summary: [],
-    stock: null,
     items: [],
     message: "",
     busy: false,
     page: 1,
     total: "0",
-    status: "",
-    statusIndex: 0,
-    statuses: [
-      "",
-      "pending_label",
-      "idle",
-      "locked",
-      "renting",
-      "repairing",
-      "lost",
-      "scrapped",
-      "retired",
-    ],
-    labels: [
-      "全部",
-      "待贴标",
-      "空闲",
-      "锁定",
-      "租赁中",
-      "维修中",
-      "丢失",
-      "报废",
-      "已退库",
-    ],
   },
   onLoad(q) {
     this.setData({ id: q.id || "" });
@@ -44,81 +18,27 @@ require("../../session/page")({
     return this.load();
   },
   async load() {
-    this.setData({ busy: true, message: "", statusIndex: Math.max(0,this.data.statuses.indexOf(this.data.status)) });
+    const round = this.loadRound = (this.loadRound || 0) + 1;
+    this.setData({ busy: true, message: "" });
     try {
-      const sku = await api.request("me/factory-props/" + this.data.id);
-      if (sku.inventorySummary === null) {
-        this.setData({ sku, stock: null, summary: [], items: [], total: "0" });
-        return;
-      }
-      this.setData({ sku });
-      if (sku.assetType === "A_ASSET") {
-        const [summary, list] = await Promise.all([
-          api.request("me/factory-props/" + this.data.id + "/instance-summary"),
-          api.request(
-            "me/factory-props/" +
-              this.data.id +
-              "/instances?" +
-              api.query({ page: this.data.page, status: this.data.status }),
-          ),
-        ]);
-        this.setData({
-          summary: Object.entries(summary).map(([k, v]) => ({
-            label: {
-              total: "管理总量",
-              pendingLabel: "待贴标",
-              idle: "空闲",
-              locked: "锁定",
-              renting: "租赁中",
-              repairing: "维修",
-              lost: "丢失",
-              scrapped: "报废",
-              retired: "退库",
-            }[k],
-            value: v,
-          })),
-          items: list.items.map((i) => ({
-            ...minuteFields(i, ["statusChangedAt"]),
-            state: api.names[i.instanceStatus],
-          })),
-          total: list.total,
-        });
-      } else
-        this.setData({
-          stock: await api.request(
-            "me/factory-props/" + this.data.id + "/stock",
-          ),
-        });
+      const path = "me/factory-props/" + this.data.id;
+      const sku = await api.request(path);
+      if (round !== this.loadRound) return;
+      const list = sku.inventorySummary !== null && sku.assetType === "A_ASSET"
+        ? await api.request(path + "/instances?" + api.query({ page: this.data.page }))
+        : { items: [], total: "0" };
+      if (round !== this.loadRound) return;
+      this.setData({ sku, total: list.total, items: list.items.map(i => ({
+        ...minuteFields(i, ["statusChangedAt"]), state: api.names[i.instanceStatus],
+      })) });
     } catch (e) {
-      this.setData({ message: e.message });
+      if (round === this.loadRound) this.setData({ sku: null, items: [], total: "0", message: e.message });
     } finally {
-      this.setData({ busy: false });
+      if (round === this.loadRound) this.setData({ busy: false });
     }
   },
-  resetFilters() {
-    if (this.data.busy) return;
-    this.setData({ status: "", page: 1 });
-    return this.load();
-  },
-  filter(e) {
-    this.setData({ status: this.data.statuses[e.detail.value], statusIndex: Number(e.detail.value), page: 1 });
-    this.load();
-  },
   logs(e) { wx.navigateTo({url:"/pages/inventory/logs?id="+e.currentTarget.dataset.id+"&skuId="+this.data.id+"&source="+((this._navigationQuery||{}).source==="ledger"?"ledger":"sku")}); },
-  adjust() {
-    wx.navigateTo({ url: "/pages/inventory/adjust?id=" + this.data.id });
-  },
-  movements() {
-    wx.navigateTo({ url: "/pages/inventory/movements?id=" + this.data.id });
-  },
-  qr(e) {
-    wx.navigateTo({
-      url: "/pages/props/scan/index?id=" + e.currentTarget.dataset.code,
-    });
-  },
-  scan() {
-    wx.navigateTo({ url: "/pages/props/scan/index" });
-  },
+  scan: require("../../navigation/prop-scan").openScanner,
   async repair(e) {
     const sn = this.data.items.find((x) => x.id === e.currentTarget.dataset.id);
     const owner = session.capture();

@@ -123,7 +123,7 @@ test("星级点击边界、无效租期、日历读屏信息", async () => {
   for(const rating of [1,5,6])r.rate(event({rating}));assert.equal(r.data.rating,5);
   const f=fixture("props/dates"),p=f.page;let toast;f.wx.showToast=o=>{toast=o};await p.confirm();assert.equal(p.data.message,"");assert.match(toast.title,/租期/);assert.equal(p.data.pendingCreate,false);
   const calendar=f.load("services/rental-calendar.js");
-  const cells=calendar.cells("2030-03","2030-03-10","2030-03-12","2030-03-09");
+  const cells=calendar.cells("2030-03","2030-03-10","2030-03-12",calendar.startWindow(Date.parse("2030-03-07T01:00:00Z")));
   assert.match(cells.find(c=>c.date==="2030-03-10").accessibleLabel,/2030年.*取货/);
   assert.match(cells.find(c=>c.date==="2030-03-08").accessibleLabel,/不可选/);
 });

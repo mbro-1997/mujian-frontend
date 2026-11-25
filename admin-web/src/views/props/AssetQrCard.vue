@@ -3,8 +3,10 @@ import { ElImage, ElTag } from "element-plus";
 import "element-plus/es/components/image/style/css";
 import "element-plus/es/components/tag/style/css";
 import type { Qr } from "../../api/prop-types";
+import { computed } from "vue";
 import { names } from "../../api/props";
-defineProps<{ qr: Qr; manage: boolean }>();
+const props = defineProps<{ qr: Qr; manage: boolean }>();
+const imageUrl = computed(() => "/api/admin/prop-qr/" + encodeURIComponent(props.qr.id) + "/image");
 defineEmits<{ register: []; issue: []; refresh: []; retry: [] }>();
 </script>
 
@@ -13,10 +15,10 @@ defineEmits<{ register: []; issue: []; refresh: []; retry: [] }>();
     <header><strong>{{ qr.propName }}</strong><ElTag size="small" :type="qr.status === 'bound' ? 'success' : 'info'">{{ qr.status === 'bound' ? '已绑定' : '已停用' }}</ElTag></header>
     <div class="qr-content">
       <div v-if="qr.status === 'bound'" class="qr-preview">
-        <ElImage v-if="qr.imageStatus === 'ready' && qr.image" :src="qr.image.url" alt="微信小程序码" fit="contain">
+        <ElImage v-if="qr.imageStatus === 'ready'" :key="qr.image?.expiresAt" :src="imageUrl" alt="微信小程序码" fit="contain">
           <template #error>标签图片加载失败</template>
         </ElImage>
-        <span v-else>{{ qr.imageStatus === 'failed' ? '图片生成失败' : qr.imageStatus === 'ready' ? '暂无可用图片' : '标签图片生成中…' }}</span>
+        <span v-else>{{ qr.imageStatus === 'failed' ? '图片生成失败' : '标签图片生成中…' }}</span>
       </div>
       <dl>
         <dt>SKU 编码</dt><dd>{{ qr.skuCode }}</dd>
@@ -30,7 +32,7 @@ defineEmits<{ register: []; issue: []; refresh: []; retry: [] }>();
       <template v-if="qr.status === 'bound'">
         <el-button v-if="qr.canRetryImage" @click="$emit('retry')">重试图片</el-button>
         <el-button v-if="manage" @click="$emit('register')">登记二维码异常</el-button>
-        <el-button v-if="qr.imageStatus === 'ready' && qr.image" type="primary" tag="a" :href="qr.image.url" target="_blank" rel="noopener">查看 / 下载原标签</el-button>
+        <el-button v-if="qr.imageStatus === 'ready'" type="primary" tag="a" :href="imageUrl" target="_blank" rel="noopener">查看 / 下载原标签</el-button>
       </template>
       <el-button v-else-if="manage" type="primary" @click="$emit('issue')">独立正常发码</el-button>
     </footer>

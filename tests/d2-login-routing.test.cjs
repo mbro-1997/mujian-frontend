@@ -694,11 +694,12 @@ for (const [role, stage] of [
   test(
     "calendar inline confirm preserves dates through login and routes by server identity " +
       (role || stage),
-    async () => {
+    async (t) => {
       const f = fixture(context(role, stage)),
         p = f.page("props/dates"),
         c = f.load("services/rental-calendar.js"),
-        today = c.today();
+        today = c.earliestStart();
+      t.after(() => p.onUnload());
       await p.onLoad({
         return:
           "/pages/props/browse?keyword=%E6%9C%A8%E6%A4%85&styles=%5B%22modern%22%5D&typeCode=chair",

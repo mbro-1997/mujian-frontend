@@ -10,7 +10,7 @@ require("../../session/page")({
     busy: false,
     dialog: false,
     reason: "",
-    expanded: true,
+    expanded: false,
   },
   onLoad(q) {
     this.setData({ id: q.id || "", type: q.type || "" });

@@ -42,9 +42,13 @@ function uploadPrivate(endpoint, path, formData, field, requestId) {
         try {
           const n = JSON.parse(r.data);
           if (r.statusCode !== 200 || n.code !== "OK") {
-            const message = n.reasonCode === "OBJECT_STORAGE_UNAVAILABLE"
-              ? "文件存储暂不可用，请稍后重试"
-              : "材料上传失败，请检查文件后重试";
+            let message = "材料上传失败，请检查文件后重试";
+            if (n.reasonCode === "OBJECT_STORAGE_UNAVAILABLE") {
+              message = "文件存储暂不可用，请稍后重试";
+            } else if (endpoint === "/api/me/prop-materials" &&
+                (r.statusCode === 413 || n.reasonCode === "MATERIAL_TOO_LARGE")) {
+              message = "道具照片须不超过 5 MiB、2000 万像素，请压缩或重新选择";
+            }
             return reject(new UploadError(message, r.statusCode, n.reasonCode, n.traceId));
           }
           if (!n.data || !/^[0-9a-f]{32}$/.test(n.data[field]) ||

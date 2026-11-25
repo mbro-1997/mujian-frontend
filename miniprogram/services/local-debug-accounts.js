@@ -30,8 +30,8 @@ function request(options) {
   }));
 }
 
-async function switchAccount(role, { logoutFirst = false } = {}) {
-  if (!available() || !roles.includes(role)) throw new Error("当前环境不可切换测试账号。");
+async function switchAccount(role, { slot = 1, logoutFirst = false } = {}) {
+  if (!available() || !roles.includes(role) || ![1, 2].includes(slot)) throw new Error("当前环境不可切换测试账号。");
   if (switching) throw new Error("正在切换账号");
   switching = true;
   try {
@@ -43,7 +43,7 @@ async function switchAccount(role, { logoutFirst = false } = {}) {
     const auth = await authorization();
     session.assertCurrent(owner);
     const issued = await request({
-      url: env.debugEndpoint + "/sessions/" + role, method: "POST",
+      url: env.debugEndpoint + "/sessions/" + role + (slot === 2 ? "2" : ""), method: "POST",
       header: { Authorization: auth },
     });
     if (env.wechatPreviewDebug && issued.statusCode === 403)

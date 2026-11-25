@@ -1,1 +1,4 @@
-{ "navigationBarTitleText": "库存管理" }
+{
+  "navigationBarTitleText": "获取标签",
+  "usingComponents": { "inventory-label": "/components/inventory-label/index" }
+}

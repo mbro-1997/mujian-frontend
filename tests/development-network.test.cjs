@@ -56,6 +56,7 @@ function debugRuntime({ version = "develop", mode = "lan", platform = "ios" } = 
     setStorageSync: (k, v) => storage.set(k, v),
     removeStorageSync: k => storage.delete(k),
     reLaunch: o => o.success(),
+    showActionSheet: o => o.success({ tapIndex: 0 }),
   };
   const envModule = { exports: {} };
   vm.runInNewContext(source, { module: envModule, wx, require: () => config });
@@ -79,7 +80,7 @@ function debugRuntime({ version = "develop", mode = "lan", platform = "ios" } = 
   wx.request = o => {
     calls.push({ url: o.url, auth: o.header.Authorization });
     if (o.method === "POST") o.success({ statusCode: 200, data: { userId: "user", token: o.url.split("/").pop() } });
-    else o.success({ statusCode: 200, data: { data: { userId: "user", roleCode: o.header.Authorization.slice(7), userStatus: "active", accessMode: "normal" } } });
+    else o.success({ statusCode: 200, data: { data: { userId: "user", roleCode: o.header.Authorization.slice(7).replace(/2$/, ""), userStatus: "active", accessMode: "normal" } } });
   };
   return { env, wx, config, storage, calls, sessions, session, http, logins: () => logins, service: service.exports };
 }
@@ -129,7 +130,7 @@ function buttons(runtime) {
   let definition;
   const file = path.join(__dirname, "../miniprogram/components/local-debug-accounts/index.js");
   vm.runInNewContext(fs.readFileSync(file, "utf8"), {
-    require: () => runtime.service, Component: options => { definition = options; },
+    wx: runtime.wx, require: () => runtime.service, Component: options => { definition = options; },
   });
   const instance = { data: { ...definition.data }, events: [],
     setData(values) { Object.assign(this.data, values); },
@@ -196,4 +197,29 @@ test("先退出后新账号登录失败，保持游客且可重试", async () =>
   assert.equal(r.session.token(), "");
   assert.equal(ui.instance.data.busy, false);
   assert.deepEqual(ui.instance.events, ["switchfailed"]);
+});
+
+
+test("先选身份再选账号，取消或关闭选择菜单不会注销当前账号", async () => {
+  for (const [role, label] of [["demander", "租赁方"], ["supplier", "工厂"]]) {
+    const r = debugRuntime();
+    r.session.replace("original");
+    let sheet;
+    r.wx.showActionSheet = options => { sheet = options; };
+    const ui = buttons(r);
+    const cancelled = ui.tap(role);
+    assert.deepEqual(Array.from(sheet.itemList), [label + "1", label + "2"]);
+    assert.equal(r.calls.length, 0);
+    sheet.fail({errMsg: "showActionSheet:fail cancel"});
+    await cancelled;
+    assert.equal(r.session.token(), "original");
+    assert.equal(r.calls.length, 0);
+    assert.equal(ui.instance.data.busy, false);
+    const chosen = ui.tap(role);
+    sheet.success({tapIndex: 1});
+    await chosen;
+    assert.equal(r.session.token(), role + "2");
+    assert.deepEqual(r.calls.map(c => new URL(c.url, r.env.baseUrl).pathname),
+      ["/api/auth/logout", "/sessions/" + role + "2", "/api/me/context"]);
+  }
 });

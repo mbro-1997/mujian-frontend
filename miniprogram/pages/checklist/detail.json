@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "清单详情",
   "usingComponents": {
+    "swipe-delete": "/components/swipe-delete/index",
     "public-prop-image": "/components/public-prop-image/index"
   }
 }

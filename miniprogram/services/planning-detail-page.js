@@ -142,8 +142,10 @@ module.exports = function (kind) {
       this.editStatus();
     },
     remove(e) {
-      if (this.data.busy) return;
-      const index = Number(e.currentTarget.dataset.index);
+      this.removeItemAt(Number(e.currentTarget.dataset.index));
+    },
+    removeItemAt(index) {
+      if (this.data.busy || !this.data.items[index]) return;
       if (plan) this.savedScheme.remove(this.data.items[index], index);
       this.setData({ items: this.data.items.filter((_, i) => i !== index) });
       this.editStatus();
@@ -330,7 +332,13 @@ module.exports = function (kind) {
     submit() {
       if(this.data.dirty){hint("请先保存清单修改，再进入配送结算。");return;}
       if(this.data.detail.currentCheckoutBatchId){wx.navigateTo({url:"/pages/payment/index?id="+this.data.detail.currentCheckoutBatchId});return;}
-      if(!this.data.detail.submission.canSubmit){this.setData({message:this.data.reason||"当前清单暂不能提交，请核对状态。"});return;}
+      const { submission } = this.data.detail;
+      if (!submission.canSubmit) return hint(this.data.reason || "当前清单暂不能提交，请核对状态。");
+      if (Date.now() >= Date.parse(submission.closesAt)) {
+        const reason = api.reasons.RENTAL_WINDOW_CLOSED;
+        this.setData({ reason, "detail.submission.reasonCode": "RENTAL_WINDOW_CLOSED", "detail.submission.canSubmit": false });
+        return hint(reason);
+      }
       wx.navigateTo({url:"/pages/checkout/index?id="+this.data.id});
     },
     inaccessible(e) {

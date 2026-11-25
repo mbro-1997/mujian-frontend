@@ -33,6 +33,10 @@ function fixture(pageName, context = {}, realHttp = false) {
     getRandomValues: (o) =>
       o.success({ randomValues: new Uint8Array(16).fill(6).buffer }),
     uploadFile: (o) => uploads.push(o),
+    getFileSystemManager: () => ({
+      stat: (o) => o.success({ stats: { size: 800_000 } }),
+    }),
+    getImageInfo: (o) => o.success({ width: 1200, height: 900, orientation: "up" }),
     request: (o) => wire.push(o),
     redirectTo: (o) => nav.push(o.url),
     navigateTo: (o) => nav.push(o.url),
@@ -121,71 +125,61 @@ function fixture(pageName, context = {}, realHttp = false) {
 }
 const tick = () => new Promise((r) => setImmediate(r));
 const id = "123456789abc4def8abc123456789abc";
-test("C label save checks denied album permission before downloading", async () => {
-  const f = fixture("props/scan/index");
-  f.page.setData({ qr: { id, status: "bound" } });
-  f.wx.getSetting = (o) =>
-    o.success({ authSetting: { "scope.writePhotosAlbum": false } });
-  f.wx.downloadFile = () =>
-    assert.fail("denied permission must stop before download");
-  const saving = f.page.save();
-  await tick();
-  assert.equal(f.pending.length, 0);
-  await saving;
-  assert.match(f.page.data.message, /相册权限/);
-});
-async function labelSaveFixture(setting = {}) {
-  const f = fixture("props/scan/index");
-  f.page.setData({ qr: { id, status: "bound" } });
-  f.wx.getSetting = (o) => o.success({ authSetting: setting });
-  f.wx.downloadFile = (o) => {
-    f.download = o;
+function labelRow() {
+  const f = fixture();
+  f.load("components/inventory-label/index.js");
+  const qr = {id, skuId:"sku", targetType:"SN", targetId:"sn", snCode:"SN-1", skuCode:"SKU-1", imageStatus:"ready", status:"bound"};
+  const row = { ...f.component.methods, data:{...f.component.data, qrId:id, targetId:"sn", sku:{id:"sku",assetType:"A_ASSET",fields:{propName:"椅"}}},
+    setData(patch){Object.assign(this.data,patch);} };
+  row.reset();
+  f.api.request = async () => qr;
+  f.wx.getSetting = o => o.success({authSetting:{}});
+  f.wx.downloadFile = o => {f.download = o};
+  f.wx.saveImageToPhotosAlbum = o => {f.album = o};
+  f.load("services/prop-label.js").render = async (_row, path, data) => {
+    assert.equal(path,"raw.png");assert.equal(data.serial,"SN-1");return "printed.png";
   };
-  f.wx.saveImageToPhotosAlbum = (o) => {
-    f.album = o;
-  };
-  f.wx.showToast = (o) => {
-    f.toast = o;
-  };
-  const saving = f.page.save();
-  await tick();
-  f.pending[0].resolve({
-    id,
-    status: "bound",
-    image: { url: "https://fixture.invalid/label" },
-  });
-  await saving;
-  return f;
+  return {f, row, qr};
 }
-test("C label save distinguishes download permission from network failures", async () => {
-  const f = await labelSaveFixture();
-  f.download.fail({ errMsg: "downloadFile:fail privacy permission denied" });
-  assert.match(f.page.data.message, /权限|授权/);
-  f.download.fail({ errMsg: "downloadFile:fail timeout" });
-  assert.match(f.page.data.message, /图片下载失败/);
-  assert.doesNotMatch(f.page.data.message, /相册权限/);
-  assert.equal(f.album, undefined);
+test("行内生成标签并在本行保存同一张 PNG，生成时不打开新页或大图", async () => {
+  const {f,row} = labelRow();
+  const generating = row.print();await tick();
+  assert.equal(f.download.header.Authorization,"Bearer owner-A");
+  assert.equal(f.download.url,"https://fixture.invalid/api/me/prop-qr/"+id+"/image");
+  f.download.success({statusCode:200,tempFilePath:"raw.png"});await generating;
+  assert.equal(row.data.file,"printed.png");assert.equal(f.album,undefined);assert.deepEqual(f.nav,[]);
+  const saving = row.print();await tick();assert.equal(f.album.filePath,row.data.file);
+  f.album.success();await saving;assert.equal(f.wx.lastToast.title,"已保存标签图片");
 });
-test("C label save reports album denial and ignores stale callbacks", async () => {
-  const f = await labelSaveFixture();
-  f.download.success({ statusCode: 200, tempFilePath: "fixture.png" });
-  f.album.fail({ errMsg: "saveImageToPhotosAlbum:fail auth deny" });
-  assert.match(f.page.data.message, /相册权限/);
-  assert.equal(f.toast, undefined);
-  f.session.clear();
-  f.page.setData({ message: "new session" });
-  f.album.success();
-  f.album.fail({ errMsg: "saveImageToPhotosAlbum:fail auth deny" });
-  f.download.fail({ errMsg: "downloadFile:fail timeout" });
-  assert.equal(f.toast, undefined);
-  assert.equal(f.page.data.message, "new session");
+test("原码下载错误保留重试，迟到的旧会话结果不能生成标签", async () => {
+  for (const [msg,expected] of [["downloadFile:fail privacy permission denied",/授权/],["downloadFile:fail timeout",/图片下载失败/]]) {
+    const {f,row} = labelRow();const run = row.print();await tick();f.download.fail({errMsg:msg});await run;
+    assert.match(f.wx.lastToast.title,expected);assert.equal(row.data.file,"");
+  }
+  const {f,row}=labelRow();const run=row.print();await tick();f.session.clear();
+  f.download.success({statusCode:200,tempFilePath:"raw.png"});await run;assert.equal(row.data.file,"");
 });
-test("C label save allows an undecided permission and reports success only after album write", async () => {
-  const f = await labelSaveFixture();
-  f.download.success({ statusCode: 200, tempFilePath: "fixture.png" });
-  assert.equal(f.toast, undefined);
-  f.album.success();
-  assert.equal(f.toast.title, "已保存标签图片");
+test("保存时处理相册授权、撤销绑定与账号变化", async () => {
+  const {f,row,qr}=labelRow();row.setData({file:"printed.png"});
+  f.wx.getSetting=o=>o.success({authSetting:{"scope.writePhotosAlbum":false}});
+  await row.print();assert.match(f.wx.lastToast.title,/相册权限/);assert.equal(f.album,undefined);
+  f.wx.getSetting=o=>o.success({authSetting:{}});
+  const saving=row.print();await tick();f.album.fail({errMsg:"saveImageToPhotosAlbum:fail auth deny"});await saving;
+  assert.match(f.wx.lastToast.title,/相册权限/);
+  f.album=undefined;qr.status="revoked";await row.print();assert.equal(row.data.file,"");assert.equal(f.album,undefined);
+});
+test("C factory material previews use the authenticated file endpoint and a temporary path", async () => {
+  const f = fixture("props/scan/index");
+  const api = f.load("services/props.js");
+  const locator = { sourceType: "sku_audit", sourceId: id, section: "proposed", index: 0 };
+  f.wx.downloadFile = (o) => { f.download = o; };
+  f.wx.previewImage = (o) => { f.viewer = o; };
+  const preview = api.preview(locator);
+  assert.equal(f.download.url, "https://fixture.invalid/api/me/prop-materials/content?sourceType=sku_audit&sourceId=" + id + "&section=proposed&index=0");
+  assert.equal(f.download.header.Authorization, "Bearer owner-A");
+  f.download.success({ statusCode: 200, tempFilePath: "photo.jpg" });
+  await preview;
+  assert.equal(f.viewer.urls[0], "photo.jpg");
 });
 test("C B scan confirmation opens the identified inventory without history or writes", () => {
   const f = fixture("props/scan/index");
@@ -193,7 +187,7 @@ test("C B scan confirmation opens the identified inventory without history or wr
   f.wx.navigateBack = () =>
     assert.fail("recognition must not depend on navigation history");
   f.page.recognize();
-  assert.deepEqual(f.nav, ["/pages/inventory/index?id=" + id]);
+  assert.deepEqual(f.nav, ["/pages/props/detail?id=" + id]);
   assert.equal(f.pending.length, 0);
 });
 test("C B scan confirmation reports navigation failure and ignores stale callbacks", () => {
@@ -205,10 +199,10 @@ test("C B scan confirmation reports navigation failure and ignores stale callbac
   };
   f.page.recognize();
   navigation.fail({ errMsg: "redirectTo:fail" });
-  assert.match(f.page.data.message, /未能打开库存页/);
+  assert.match(f.page.data.message, /未能打开道具资料/);
   f.session.clear();
   navigation.fail({ errMsg: "redirectTo:fail" });
-  assert.doesNotMatch(f.page.data.message, /未能打开库存页/);
+  assert.doesNotMatch(f.page.data.message, /未能打开道具资料/);
   assert.equal(f.pending.length, 0);
 });
 test("C B scan confirmation ignores busy and revoked labels and is bound in WXML", () => {
@@ -467,32 +461,24 @@ test("C movement filters survive completion and pagination; nullable historical 
   f.pending[1].resolve({ items: [], total: "21" });
   await tick();
 });
-test("C review history defaults all, retains pending counts and source-qualified identities", async () => {
+test("工厂申请历史直接查询第一页，保留各状态和不同来源的记录", async () => {
   const f = fixture("props/reviews");
   const run = f.page.load();
   await tick();
-  assert.match(f.pending[0].args[0], /auditStatus=all/);
+  assert.equal(f.pending[0].args[0], "/api/me/prop-reviews?page=1");
   f.pending[0].resolve({
     items: [
-      { id, sourceType: "sku_audit", auditStatus: "approved" },
+      { id, sourceType: "sku_audit", auditStatus: "pending" },
       { id, sourceType: "stock_adjustment", auditStatus: "approved" },
     ],
     total: "2",
-    pendingCounts: { total: "3", sku: "1", inventory: "2", skuStatus: "0" },
+    pendingCounts: { total: "1", sku: "1", inventory: "0", skuStatus: "0" },
   });
   await run;
-  assert.equal(f.page.data.counts.total, "3");
+  assert.equal(f.page.data.total, "2");
   assert.notEqual(f.page.data.items[0].rowKey, f.page.data.items[1].rowKey);
-  f.page.category({ detail: { value: 2 } });
-  await tick();
-  assert.match(f.pending[1].args[0], /reviewCategory=inventory/);
-  assert.equal(f.page.data.page, 1);
-  f.pending[1].resolve({
-    items: [],
-    total: "0",
-    pendingCounts: { total: "2", sku: "0", inventory: "2", skuStatus: "0" },
-  });
-  await tick();
+  assert.equal(f.page.data.counts, undefined);
+  assert.equal(f.pending.length, 1);
 });
 test("C route-specific command results reject cross-operation successful payload", () => {
   const { valid } = require("../miniprogram/services/schema"),
@@ -685,7 +671,6 @@ test("C1297 foreign QR real 404 clears old data and same-factory scene recovers"
   assert.equal(f.page.data.busy, false);
   await f.page.confirm();
   f.page.recognize();
-  await f.page.retry();
   assert.equal(f.wire.length, 0);
   assert.equal(f.nav.length, 0);
   c1297State(e, "foreignQrDenied", f.page);
@@ -694,15 +679,15 @@ test("C1297 foreign QR real 404 clears old data and same-factory scene recovers"
   assert.equal(f.page.data.message, "");
   c1297State(e, "ownQrRestored", f.page);
   f.page.recognize();
-  assert.deepEqual(f.nav, ["/pages/inventory/index?id=" + qr.skuId]);
-  const inventory = fixture("inventory/index", { roleCode: "supplier" }, true);
+  assert.deepEqual(f.nav, ["/pages/props/detail?id=" + qr.skuId]);
+  const inventory = fixture("props/detail", { roleCode: "supplier" }, true);
   inventory.page.onLoad({ id: new URL(f.nav[0], "https://fixture.invalid").searchParams.get("id") });
   const opened = inventory.page.load();
   await c1297Reply(inventory, skuDetail);
   await c1297Reply(inventory, stockDetail);
   await opened;
   assert.equal(inventory.page.data.sku.id, qr.skuId);
-  assert.equal(inventory.page.data.stock.totalQuantity, stockDetail.body.data.totalQuantity);
+  assert.equal(inventory.page.data.counts[0].value, stockDetail.body.data.totalQuantity);
   assert.equal(inventory.page.data.message, "");
 });
 test("C1297 late QR and product replies cannot replace a newer target", async () => {
@@ -804,48 +789,56 @@ test("home guest search keeps login guard while public style browsing remains av
   assert.equal(p.data.loginVisible, false);
   assert.ok(requests.some((x) => x.startsWith("public/props?")));
 });
-test("review picker captions track restored domain filters as well as user changes", async () => {
-  const f = fixture("props/reviews"),
-    p = f.page;
-  f.api.request = async () => ({
-    items: [],
-    total: "0",
-    pendingCounts: { total: "0", sku: "0", inventory: "0", skuStatus: "0" },
-  });
-  p.setData({
-    category: "inventory",
-    assetType: "B_CONSUMABLE",
-    status: "rejected",
-  });
-  await p.load();
-  assert.equal(p.data.categoryLabels[p.data.categoryIndex], "库存调整");
-  assert.equal(p.data.assetLabels[p.data.assetIndex], "B 类");
-  assert.equal(p.data.labels[p.data.statusIndex], "未通过");
-  p.category({ detail: { value: "1" } });
-  p.asset({ detail: { value: "1" } });
-  p.filter({ detail: { value: "1" } });
+test("从道具进入审核管理时只按该 SKU 分页", async () => {
+  const f = fixture("props/reviews");
+  const requests = [];
+  f.api.request = async path => {
+    requests.push(path);
+    return { items: [], total: "21" };
+  };
+  await f.page.onLoad({skuId: id});
+  await f.page.load();
+  f.page.next();
   await tick();
-  assert.equal(p.data.categoryIndex, 1);
-  assert.equal(p.data.assetIndex, 1);
-  assert.equal(p.data.statusIndex, 1);
+  assert.deepEqual(requests, [1, 2].map(page => "me/prop-reviews?skuId=" + id + "&page=" + page));
 });
 
-test("UI sweep inventory filters display and reopen the restored server-code selection", async () => {
-  const f = fixture("inventory/index"),
-    p = f.page;
-  f.api.request = async (path) =>
-    path.endsWith("/instance-summary")
-      ? { total: "0" }
-      : path.includes("/instances?")
-        ? { items: [], total: "0" }
-        : { assetType: "A_ASSET", fields: {} };
-  p.setData({ status: "repairing" });
+test("仓库和获取标签入口直接拉起微信扫码，取消留在原页", () => {
+  const f = fixture("inventory/index");
+  const warehouse = f.load("navigation/warehouse.js");
+  let options;
+  f.wx.scanCode = o => { options = o; };
+  for (const entry of [warehouse, f.page]) {
+    entry.scan();
+    assert.equal(options.onlyFromCamera, false);
+    options.fail({errMsg: "scanCode:fail cancel"});
+    assert.deepEqual(f.nav, []);
+    entry.scan();
+    options.success({result: "invalid"});
+    assert.deepEqual(f.nav, []);
+    entry.scan();
+    options.success({path: "pages/props/scan/index?scene=" + id});
+    assert.deepEqual(f.nav.splice(0), ["/pages/props/scan/index?code=" + id]);
+  }
+  warehouse.scan();
+  f.session.clear();
+  options.success({result: id});
+  assert.deepEqual(f.nav, []);
+});
+
+test("获取标签仅按页码读取全部实物", async () => {
+  const f = fixture("inventory/index"), p = f.page, requests = [];
+  f.api.request = async path => {
+    requests.push(path);
+    return path.includes("/instances?") ? { items: [], total: "21" } : { assetType: "A_ASSET", inventorySummary: {} };
+  };
+  p.setData({id:"sku"});
   await p.load();
-  assert.equal(p.data.labels[p.data.statusIndex], "维修中");
-  p.filter({ detail: { value: "2" } });
-  assert.equal(p.data.status, "idle");
-  assert.equal(p.data.statusIndex, 2);
-  await tick();
+  p.next(); await tick();
+  p.prev(); await tick();
+  assert.deepEqual(requests.filter(path => path.includes("/instances?")), [1,2,1].map(page => "me/factory-props/sku/instances?page=" + page));
+});
+test("库存流水筛选回显来源和类型", async () => {
   const m = fixture("inventory/movements");
   m.api.request = async () => ({ items: [], total: "0" });
   m.page.setData({ source: "arbitration", movement: "arbitration_decrease" });
@@ -864,13 +857,14 @@ test("UI sweep calendar validates actual dates and inclusive 120-day limit acros
   const c = require("../miniprogram/services/rental-calendar");
   assert.equal(c.valid("2028-02-29"), true);
   assert.equal(c.valid("2027-02-29"), false);
-  assert.equal(c.allowed("2028-01-01", "2028-04-29", "2028-01-01"), true);
-  assert.equal(c.allowed("2028-01-01", "2028-04-30", "2028-01-01"), false);
-  assert.equal(c.allowed("2028-01-02", "2028-01-01", "2028-01-01"), false);
-  assert.equal(c.allowed("2027-12-31", "2028-01-01", "2028-01-01"), false);
+  const window = c.startWindow(Date.parse("2027-12-30T01:00:00Z"));
+  assert.equal(c.allowed("2028-01-01", "2028-04-29", window), true);
+  assert.equal(c.allowed("2028-01-01", "2028-04-30", window), false);
+  assert.equal(c.allowed("2028-01-02", "2028-01-01", window), false);
+  assert.equal(c.allowed("2027-12-31", "2028-01-01", window), false);
   assert.equal(c.month("2028-12", 1), "2029-01");
   assert.equal(c.month("2028-01", -1), "2027-12");
-  const cells = c.cells("2028-02", "2028-02-28", "2028-03-01", "2028-01-01");
+  const cells = c.cells("2028-02", "2028-02-28", "2028-03-01", c.startWindow(Date.parse("2028-02-21T00:00:00Z")));
   assert.equal(cells.length, 42);
   assert.equal(cells.find((x) => x.date === "2028-02-29").inRange, true);
   assert.equal(cells.find((x) => x.date === "2028-03-01").disabled, true);
@@ -879,7 +873,7 @@ test("UI sweep calendar keeps browse filters, creates a checklist, and rejects a
   const f = fixture("props/dates"),
     p = f.page,
     c = f.load("services/rental-calendar.js"),
-    today = c.today();
+    today = c.earliestStart();
   p.onLoad({
     return:
       "/pages/props/browse?keyword=" +
@@ -1003,10 +997,9 @@ test("calendar sequential selection replaces an earlier pickup, starts a fresh r
   const f = fixture("props/dates"),
     p = f.page,
     c = f.load("services/rental-calendar.js");
+  f.setNow(Date.parse("2026-11-30T02:59:00Z"));
   p.onLoad({});
-  const month = c.month(c.today().slice(0, 7), 1);
-  p.setData({ month });
-  p.render();
+  const month = "2026-12";
   const select = (date) => p.select({ currentTarget: { dataset: { date } } });
   select(month + "-10");
   assert.equal(p.data.startDate, month + "-10");
@@ -1023,7 +1016,7 @@ test("calendar sequential selection replaces an earlier pickup, starts a fresh r
   select(month + "-08");
   assert.equal(p.data.duration, 1);
   p.reset();
-  select(month + "-01");
+  select(month + "-05");
   p.setData({ month: c.month(month, 5) });
   p.render();
   select(p.data.month + "-01");
@@ -1523,8 +1516,8 @@ test("扫码轮询保留同一张标签，换码或失去访问权立即清除�
 });
 
 test("首次上架还未建库存时不查询账本，后续审核不遮住已形成的库存", async () => {
-  const f = fixture("inventory/index"), calls = [];
-  const sku = { assetType: "B_CONSUMABLE", inventorySummary: null, pendingApplicationId: "audit" };
+  const f = fixture("props/detail"), calls = [];
+  const sku = { id:"SKU", assetType: "B_CONSUMABLE", inventorySummary: null, pendingApplicationId: "audit" };
   f.api.request = async path => {
     calls.push(path);
     return path.endsWith("/stock") ? { totalQuantity: 0 } : sku;
@@ -1532,11 +1525,11 @@ test("首次上架还未建库存时不查询账本，后续审核不遮住已�
   f.page.setData({ id: "SKU", stock: { totalQuantity: 4 } });
   await f.page.load();
   assert.deepEqual(calls, ["me/factory-props/SKU"]);
-  assert.equal(f.page.data.stock, null);
+  assert.equal(f.page.data.counts.length, 0);
   sku.inventorySummary = { totalQuantity: 0, availableQuantity: 0 };
   await f.page.load();
   assert.equal(calls.at(-1), "me/factory-props/SKU/stock");
-  assert.equal(f.page.data.stock.totalQuantity, 0);
+  assert.equal(f.page.data.counts[0].value, 0);
 });
 
 test("COS outage leaves listing editable and preserves the trace and draft", async () => {
@@ -1572,6 +1565,7 @@ test("a failed image stops new uploads and waits for the second active image", a
   let finished = false;
   const work = f.api.materialize(["one", "two", "three"].map(localPath => ({localPath})));
   const check = assert.rejects(work, /文件存储暂不可用/).then(() => { finished = true; });
+  await tick();
   assert.equal(f.uploads.length, 2);
   f.uploads[0].success({statusCode: 503, data: JSON.stringify({reasonCode:"OBJECT_STORAGE_UNAVAILABLE"})});
   await tick();
@@ -1579,4 +1573,116 @@ test("a failed image stops new uploads and waits for the second active image", a
   f.uploads[1].success({statusCode: 200, data: JSON.stringify({code:"OK", data:{uploadId:id}})});
   await check;
   assert.equal(f.uploads.length, 2);
+});
+
+test("oversize prop JPEG is resized in its displayed orientation and only the result is uploaded", async () => {
+  const f = fixture();
+  f.wx.getFileSystemManager = () => ({
+    stat: (o) => o.success({ stats: { size: o.path === "raw.jpg" ? 8_552_100 : 1_116_990 } }),
+  });
+  f.wx.getImageInfo = (o) => o.success(o.src === "raw.jpg"
+    ? { width: 5712, height: 4284, orientation: "right" }
+    : { width: 1536, height: 2048, orientation: "up" });
+  f.wx.compressImage = (o) => {
+    assert.equal(o.compressedHeight, 2048);
+    assert.equal(o.compressedWidth, undefined);
+    o.success({ tempFilePath: "compressed.jpg" });
+  };
+  const work = f.api.materialize([{ localPath: "raw.jpg" }]);
+  await tick();
+  assert.equal(f.uploads.length, 1);
+  assert.equal(f.uploads[0].filePath, "compressed.jpg");
+  f.uploads[0].success({ statusCode: 200, data: JSON.stringify({ code: "OK", data: { uploadId: id } }) });
+  assert.equal((await work)[0].uploadId, id);
+});
+
+test("a prop photo still over the limit after compression never reaches upload", async () => {
+  const f = fixture();
+  f.wx.getFileSystemManager = () => ({
+    stat: (o) => o.success({ stats: { size: 8_000_000 } }),
+  });
+  const sizes = [];
+  f.wx.compressImage = (o) => { sizes.push(o.compressedWidth); o.success({ tempFilePath: "large.png" }); };
+  await assert.rejects(f.api.materialize([{ localPath: "large.png" }]), /第 1 张图片.*5 MiB/);
+  assert.deepEqual(sizes, [1200, 1200]);
+  assert.equal(f.uploads.length, 0);
+});
+
+test("the prop upload reports the photo limits and keeps the trace on HTTP 413", async () => {
+  const f = fixture();
+  const work = f.api.materialize([{ localPath: "boundary.jpg" }]);
+  const result = assert.rejects(work, /5 MiB.*2000 万像素.*photo-tr/);
+  await tick();
+  f.uploads[0].success({
+    statusCode: 413,
+    data: JSON.stringify({ reasonCode: "PAYLOAD_TOO_LARGE", traceId: "photo-trace" }),
+  });
+  await result;
+});
+
+test("标签相机和相册共用扫码结果解析，取消保持原页", () => {
+  const f = fixture("props/scan/index");
+  let scan;
+  f.wx.scanCode = options => { scan = options; };
+  f.page.load = () => {};
+  f.page.scan();
+  assert.equal(scan.onlyFromCamera, false);
+  scan.fail({errMsg:"scanCode:fail cancel"});
+  assert.equal(f.page.data.message, "");
+  scan.success({path:"pages/props/scan/index?scene=" + id});
+  assert.equal(f.page.data.code, id);
+});
+
+test("打印资料依照绑定层级区分实物和 SKU", () => {
+  const { labelData } = require("../miniprogram/services/prop-label");
+  const sku = {fields:{propName:"折椅",materialDesc:"木",remark:""}, factoryName:"测试工厂"};
+  const qr = {targetType:"SN", skuCode:"SKU-001", snCode:"SN-001"};
+  assert.equal(labelData(qr, sku).serial, "SN-001");
+  assert.equal(labelData({...qr, snCode:null}, sku), null);
+  assert.deepEqual(labelData({...qr, targetType:"SKU"}, sku), {
+    name:"折椅", material:"木", code:"SKU-001", serial:"", factory:"测试工厂", remark:"",
+  });
+});
+
+test("取货第 14 天、归还第 120 天可选，越界置灰且点击显示原因并保留选择", () => {
+  const f = fixture("props/dates"), p = f.page;
+  f.setNow(Date.parse("2026-11-25T03:18:00Z"));
+  p.onLoad({});
+  function cell(date) {
+    p.setData({month:date.slice(0,7)});
+    p.render();
+    return p.data.cells.find(c => c.date === date);
+  }
+  const tap = date => p.select({currentTarget:{dataset:{date}}});
+  assert.equal(cell("2026-11-27").disabled, true);
+  assert.equal(cell("2026-11-28").disabled, false);
+  assert.equal(cell("2026-12-10").disabled, true);
+  tap("2026-12-10");
+  assert.match(f.wx.lastToast.title, /3–14/);
+  assert.equal(p.data.startDate, "");
+  assert.equal(cell("2026-12-09").disabled, false);
+  tap("2026-12-09");
+  assert.equal(cell("2026-12-10").disabled, false);
+  assert.equal(cell("2027-04-08").disabled, true);
+  tap("2027-04-08");
+  assert.match(f.wx.lastToast.title, /120/);
+  assert.equal(p.data.endDate, "");
+  assert.equal(cell("2027-04-07").disabled, false);
+  tap("2027-04-07");
+  assert.equal(p.data.duration, 120);
+  assert.equal(p.data.startDate, "2026-12-09");
+});
+
+test("SKU 标签只使用本 SKU 的绑定，A、B 列表不再进入打印子页", async () => {
+  const {f,row,qr}=labelRow();
+  row.data.sku.assetType="B_CONSUMABLE";row.data.targetId=row.data.sku.id;
+  let layout;
+  f.load("services/prop-label.js").render=async (_row,_file,data)=>{layout=data;return "B.png"};
+  await row.print();assert.equal(f.download,undefined);
+  Object.assign(qr,{targetType:"SKU",targetId:"sku",snCode:null});
+  const generating=row.print();await tick();f.download.success({statusCode:200,tempFilePath:"raw.png"});await generating;
+  assert.equal(layout.serial,"");assert.equal(row.data.file,"B.png");assert.deepEqual(f.nav,[]);
+  const markup=fs.readFileSync(path.join(__dirname,"../miniprogram/pages/inventory/index.wxml"),"utf8");
+  assert.match(markup,/查看实物状态记录（删去）/);
+  assert.doesNotMatch(markup,/bindtap="qr"/);
 });

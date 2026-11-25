@@ -1,7 +1,9 @@
 const uploadBatch = require("./upload-batch");
+const { preparePropPhoto } = require("./prop-photo-upload");
 const http = require("./http"),
   session = require("../session/storage"),
   shared = require("./verification");
+const env = require("../config/environment");
 const query = (q) =>
   Object.entries(q)
     .filter(([, v]) => v !== "" && v !== null && v !== undefined)
@@ -143,7 +145,9 @@ async function materialize(images) {
   out.forEach((image, index) => {
     if (!image.localPath) return;
     jobs.push(async () => {
-      const uploadId = await shared.upload("prop", image.localPath, "prop_image");
+      const path = await preparePropPhoto(image.localPath, index + 1);
+      session.assertCurrent(owner);
+      const uploadId = await shared.upload("prop", path, "prop_image");
       session.assertCurrent(owner);
       out[index] = { kind: "upload", uploadId };
     });
@@ -151,9 +155,48 @@ async function materialize(images) {
   await uploadBatch(jobs);
   return out;
 }
+function downloadImage(path) {
+  const owner = session.capture();
+  if (!owner.token) return Promise.reject(Error("请登录原工厂账号后查看图片"));
+  if (!env.baseUrl) return Promise.reject(Error("当前版本尚未配置服务地址"));
+  return new Promise((resolve, reject) => {
+    wx.downloadFile({
+      url: env.baseUrl + path,
+      header: { Authorization: "Bearer " + owner.token },
+      timeout: 20000,
+      success(result) {
+        if (!session.isCurrent(owner)) return reject(new session.StaleSessionError());
+        if (result.statusCode === 200 && result.tempFilePath) return resolve(result.tempFilePath);
+        if (result.statusCode === 401) return reject(Error("登录已失效，请重新登录"));
+        if (result.statusCode === 403 || result.statusCode === 404)
+          return reject(Error("图片不可用或无查看权限，请刷新资料"));
+        reject(Error("图片下载失败，请稍后重试"));
+      },
+      fail(error) {
+        if (!session.isCurrent(owner)) return reject(new session.StaleSessionError());
+        if (/auth|permission|privacy|denied|权限|授权|隐私|拒绝/i.test(error?.errMsg || ""))
+          return reject(Error("图片下载被限制，请检查微信或小程序授权"));
+        reject(Error("图片下载失败，请稍后重试"));
+      },
+    });
+  });
+}
+function photoFile({ sourceType, sourceId, section, index }) {
+  return downloadImage("/api/me/prop-materials/content?" + query({ sourceType, sourceId, section, index }));
+}
+function qrImageFile(id) {
+  return downloadImage("/api/me/prop-qr/" + encodeURIComponent(id) + "/image");
+}
+function confirmLabel(qr) {
+  return command("label-" + qr.targetId, "label_confirm",
+    "me/prop-instances/" + qr.targetId + "/label-confirm",
+    { qrCode: qr.qrCode, expectedVersion: qr.snVersion });
+}
 async function preview(locator) {
-  const image = await request("me/prop-materials/view", "POST", locator);
-  wx.previewImage({ urls: [image.url] });
+  const owner = session.capture();
+  const file = await photoFile(locator);
+  session.assertCurrent(owner);
+  wx.previewImage({ urls: [file] });
 }
 module.exports = {
   request,
@@ -164,5 +207,8 @@ module.exports = {
   command,
   resume,
   materialize,
+  photoFile,
+  qrImageFile,
+  confirmLabel,
   preview,
 };

@@ -1,0 +1,3 @@
+:host { display: block; width: 100%; height: 100%; }
+.image, .fallback { width: 100%; height: 100%; }
+.fallback { display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 12px; }

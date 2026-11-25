@@ -58,21 +58,39 @@ require("../../session/page")({
       filters,
       startDate: keep ? start : "",
       endDate: keep ? end : "",
-      month: (keep ? start : calendar.today()).slice(0, 7),
+      month: (keep ? start : calendar.earliestStart()).slice(0, 7),
     });
     this.render();
   },
+  onShow() {
+    this.updateClock();
+  },
+  onHide() { clearTimeout(this.clockTimer); },
+  onUnload() { clearTimeout(this.clockTimer); },
+  updateClock() {
+    clearTimeout(this.clockTimer);
+    this.render();
+    this.clockTimer = setTimeout(() => this.updateClock(), Math.max(1, this.data.startWindow.nextChange - Date.now()));
+  },
   render() {
-    const d = this.data,
-      parts = d.month.split("-");
+    const window = calendar.startWindow();
+    const min = window.earliest;
+    const d = this.data;
+    const month = d.month && d.month >= min.slice(0, 7) ? d.month : min.slice(0, 7);
+    const parts = month.split("-");
+    if (d.startDate && !calendar.validStart(d.startDate, window)) this.setData({ startDate: "", endDate: "" });
     this.setData({
+      month,
+      startWindow: window,
+      latestLabel: calendar.label(window.latest),
+      earliestLabel: calendar.label(min),
       pendingCreate: planning.pending.has("create-checklist"),
       monthLabel: parts[0] + "年" + Number(parts[1]) + "月",
-      cells: calendar.cells(d.month, d.startDate, d.endDate),
+      cells: calendar.cells(month, d.startDate, d.endDate, window),
       duration: calendar.days(d.startDate, d.endDate),
       startLabel: calendar.label(d.startDate),
       endLabel: calendar.label(d.endDate),
-      canPrev: d.month > calendar.today().slice(0, 7),
+      canPrev: month > min.slice(0, 7),
     });
   },
   move(e) {
@@ -83,19 +101,18 @@ require("../../session/page")({
     this.render();
   },
   select(e) {
-    const value = e.currentTarget.dataset.date,
-      cell = this.data.cells.find((x) => x.date === value);
-    if (!cell || cell.disabled) return;
-    if (
-      !this.data.startDate ||
-      this.data.endDate ||
-      value < this.data.startDate
-    ) {
+    if (this.data.busy) return;
+    if (Date.now() >= this.data.startWindow.nextChange) this.render();
+    const value = e.currentTarget.dataset.date;
+    const cell = this.data.cells.find(day => day.date === value);
+    if (!cell) return;
+    if (cell.reason) return hint(cell.reason);
+    const { startDate, endDate } = this.data;
+    if (!startDate || endDate || value < startDate) {
       this.setData({ startDate: value, endDate: "", message: "" });
-    } else if (!calendar.allowed(this.data.startDate, value)) {
-      hint("请选择不早于开始日期、含首尾1～120天的租期。");
-      return;
-    } else this.setData({ endDate: value, message: "" });
+    } else {
+      this.setData({ endDate: value, message: "" });
+    }
     this.render();
   },
   reset() {
@@ -117,8 +134,11 @@ require("../../session/page")({
   },
   async confirm() {
     if (this.data.busy) return;
-    if (!calendar.allowed(this.data.startDate, this.data.endDate)) {
-      hint("请选择今天起、含首尾1～120天的租期。");
+    const window = calendar.startWindow();
+    if (!calendar.allowed(this.data.startDate, this.data.endDate, window)) {
+      const invalidStart = this.data.startDate && !calendar.validStart(this.data.startDate, window);
+      this.render();
+      hint(invalidStart ? calendar.startHint(window) : "请选择有效的取货和归还日期，租期最长 120 天");
       return;
     }
     if (!session.token()) {

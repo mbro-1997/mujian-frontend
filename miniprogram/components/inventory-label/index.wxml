@@ -1,0 +1,5 @@
+<button class="print" bindtap="print" data-retry="{{retryImage}}" loading="{{busy}}" disabled="{{busy}}">{{file?'保存标签图片':retryImage?'重试生成标签图片':sku.assetType==='A_ASSET'?'查看标签 / 贴标':'生成标签图片'}}</button>
+<image wx:if="{{file}}" class="label-image" src="{{file}}" mode="widthFix" bindtap="preview" aria-label="查看标签大图"/>
+<view wx:if="{{notice}}" class="notice">{{notice}}</view>
+<button wx:if="{{qr.canConfirmLabel && !sku.pendingApplicationId}}" bindtap="confirm" disabled="{{busy}}">确认已贴标</button>
+<canvas wx:if="{{busy && !file}}" id="label-canvas" class="canvas" type="2d" aria-hidden="true"/>

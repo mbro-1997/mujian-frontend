@@ -1,7 +1,6 @@
 {
   "navigationBarTitleText": "道具资料",
   "usingComponents": {
-    "prop-fields": "/components/prop-fields/index",
-    "prop-grid": "/components/prop-grid/index"
+    "prop-fields": "/components/prop-fields/index"
   }
 }

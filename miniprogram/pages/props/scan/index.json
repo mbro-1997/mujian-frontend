@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "道具标签",
+  "navigationBarTitleText": "扫描道具标签",
   "usingComponents": {
     "login-sheet": "/components/login-sheet/index"
   }

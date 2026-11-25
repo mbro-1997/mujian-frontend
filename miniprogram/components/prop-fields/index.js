@@ -1,7 +1,7 @@
 const api = require("../../services/props"),
   session = require("../../session/storage");
 Component({
-  properties: { fields: { type: Object, value: null, observer: "render" } },
+  properties: { compact: Boolean, fields: { type: Object, value: null, observer: "render" } },
   data: { rows: [], groups: [], images: [], message: "" },
   methods: {
     render() {
@@ -29,7 +29,8 @@ Component({
           ["备注", f.remark || "—"],
           ["包装体积系数", f.packagingFactorBps == null ? "待补充" : String(f.packagingFactorBps / 10000)],
         ].map(([label, value]) => ({ label, value })),
-        images: f.images || [],
+        images: (f.images || []).map(({ locator }) => ({ locator, index: locator.index })),
+        message: "",
       });
       const rows=this.data.rows;
       this.setData({groups:[
@@ -40,16 +41,12 @@ Component({
       ]});
     },
     async preview(e) {
+      const owner = session.capture();
       try {
         await api.preview(e.currentTarget.dataset.locator);
       } catch (e) {
-        this.setData({ message: e.message });
+        if (session.isCurrent(owner)) this.setData({ message: e.message });
       }
-    },
-    failed(e) {
-      this.setData({
-        ["images[" + e.currentTarget.dataset.index + "].preview"]: null,
-      });
     },
   },
 });
