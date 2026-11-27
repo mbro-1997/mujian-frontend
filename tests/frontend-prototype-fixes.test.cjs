@@ -71,6 +71,7 @@ test("报价锁定备注，选券取消不重报，确认只使用服务端重�
     return {quoteToken:"Q"+calls.length,groups:[],amounts:{}};
   };
   p.setData({id:"c",detail:{version:1},address:{id:"a",version:1},groups:[{factoryId:"f",buyerRemark:"原备注"}]});
+  let notice; f.wx.showToast = options => { notice = options; };
   const initial=p.quote();p.remark(event({index:0},"在途备注"));first.resolve(choices);await initial;
   assert.equal(calls[1][1].deliveries[0].buyerRemark,p.data.groups[0].buyerRemark);
   p.coupons();p.chooseCoupon(event({id:"b"}));assert.equal(p.data.draftCouponId,"a");
@@ -78,7 +79,7 @@ test("报价锁定备注，选券取消不重报，确认只使用服务端重�
   p.coupons();p.chooseCoupon(event());await p.confirmCoupon();
   assert.equal(p.data.quote.quoteToken,"Q4");assert.equal(calls[3][1].couponId,null);
   p.coupons();p.chooseCoupon(event({id:"a"}));choices.items[0].usable=false;await p.confirmCoupon();
-  assert.equal(p.data.quote,null);assert.ok(p.data.message);assert.equal(calls.length,5);
+  assert.equal(p.data.quote,null);assert.equal(p.data.message,"");assert.ok(notice.title);assert.equal(calls.length,5);
 });
 
 test("编辑旧报价以元回显，恢复整数分，不向后端发送显示字段", async () => {
@@ -115,7 +116,10 @@ test("两份契约的预编译匹配保持静态优先、方法、查询串和�
 test("从延期列表点记录只读详情，预警标签来自返回状态", async () => {
   const f=fixture("factory/extensions"),p=f.page,api=f.load("services/trading.js"), got=[];
   api.get=async path=>{got.push(path);return {id:"e",extensionStatus:"factory_warning",availableActions:[]};};
-  await p.open(event({id:"e"}));assert.equal(got.length,1);assert.ok(got[0].endsWith("/e"));assert.match(p.data.detail.label,/预警/);
+  p.open(event({id:"e"}));
+  assert.equal(f.nav[0],"/pages/factory/extensions?id=e");
+  assert.equal(got.length,0);
+  p.onLoad({id:"e"});await p.onShow();assert.equal(got.length,1);assert.ok(got[0].endsWith("/e"));assert.match(p.data.detail.label,/预警/);
 });
 
 test("星级点击边界、无效租期、日历读屏信息", async () => {
@@ -151,4 +155,43 @@ test("附件建稿已获回执后回读超时，重试只读取同一草稿", as
   assert.equal(p.data.form.items[0].rowKey, "item-1");
   assert.equal(saves, 1);
   assert.equal(reads, 2);
+});
+
+test("实名认证拦截只在确认且仍在原页面时跳转，收款拦截只出现轻提示", async () => {
+  for (const respond of ["cancel", "confirm", "leave", "merchant"]) {
+    const f = fixture("checkout/index"), p = f.page, api = f.load("services/trading.js");
+    const groups = [{ factoryId: "f", outboundService: "self_pickup", returnService: "user_return", buyerRemark: "原备注" }];
+    p.setData({ id: "c", detail: { version: 2 }, address: { id: "a", version: 1 }, groups });
+    let dialog, notice;
+    f.wx.showModal = options => { dialog = options; };
+    f.wx.showToast = options => { notice = options; };
+    api.post = async () => { throw { status: 409, reason: respond === "merchant" ? "MERCHANT_NOT_READY" : "REALNAME_REQUIRED" }; };
+    await p.quote();
+    assert.equal(p.data.message, "");
+    assert.equal(p.data.groups[0].buyerRemark, "原备注");
+    assert.equal(p.data.step, 1);
+    if (respond === "merchant") {
+      assert.equal(dialog, undefined); assert.match(notice.title, /收款/); assert.equal(notice.mask, false);
+    } else {
+      assert.equal(dialog.confirmText, "实名认证");
+      if (respond === "leave") p.onHide();
+      dialog.success({ confirm: respond !== "cancel" });
+      assert.deepEqual(f.nav, respond === "confirm" ? ["/pages/realname/form"] : []);
+    }
+  }
+});
+
+test("运价表按城市、车型和真实里程档显示；缺档留空，零价保留", async () => {
+  const f = fixture("checkout/index"), p = f.page, api = f.load("services/trading.js");
+  const rule = { cityCode: "甲", vehicleTierId: "small", distanceMinMeter: 0, distanceMaxMeter: 11000, guideMinFen: 0, guideMaxFen: 1200, includedDistanceMeter: 5000, extraKmFen: null };
+  api.get = async () => ({
+    vehicles: [{ id: "small", tierName: "微型车" }, { id: "truck", tierName: "货车" }],
+    rules: [rule, { ...rule, vehicleTierId: "truck", distanceMinMeter: 11000, distanceMaxMeter: null }, { ...rule, cityCode: "乙" }],
+  });
+  await p.readPrices(() => true);
+  const [first, second] = p.data.priceSheet;
+  assert.equal(first.ranges.length, 2); assert.equal(second.ranges.length, 1);
+  assert.equal(first.rows[0].prices[0].price, "¥0.00–12.00");
+  assert.equal(first.rows[0].prices[1].price, undefined);
+  assert.equal(first.rows[1].prices[1].extra, "不支持超程");
 });

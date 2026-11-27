@@ -1,7 +1,8 @@
 import { defineConfig } from "vite";
+import { realnamePhotoResources } from "./realname-photo-dev";
 import vue from "@vitejs/plugin-vue";
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), realnamePhotoResources()],
   server: {
     host: "127.0.0.1",
     port: 5173,

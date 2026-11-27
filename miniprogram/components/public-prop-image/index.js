@@ -15,7 +15,7 @@ Component({
   },
   data: { src: "", error: false },
   observers: {
-    "image,active,resourceType,resourceId,resourceVersion": function () {
+    "image,active,skuId,resourceType,resourceId,resourceVersion": function () {
       if (this.readyToLoad) this.sync();
     },
   },
@@ -55,6 +55,7 @@ Component({
     // 属性刷新不清空已经显示的同对象图片；未进入区域不设置src。
     sync() {
       const key = [
+        this.data.skuId,
         this.data.resourceType,
         this.data.resourceId,
         this.data.resourceVersion,
@@ -124,7 +125,8 @@ Component({
           !session.isCurrent(owner)
         )
           return;
-        this.setData({ src: image ? image.url : "", error: !image });
+        const src = image && (resource ? image.url : store.images.publicPropContentUrl(this.data.skuId, image));
+        this.setData({ src: src || "", error: !image });
       } catch (error) {
         if (round === this.round && session.isCurrent(owner)) {
           this.setData({ error: true });
@@ -137,13 +139,16 @@ Component({
         if (round === this.round) this.loading = false;
       }
     },
-    failed() {
+    async failed() {
       if (this.retried) {
         this.setData({ src: "", error: true });
         return;
       }
       this.retried = true;
-      return this.load(true);
+      const round = this.round;
+      // 同源图片地址稳定，先移除失败节点，再挂载一次以触发实际重试。
+      await new Promise(resolve => this.setData({ src: "" }, resolve));
+      if (this.readyToLoad && this.round === round) return this.load(true);
     },
     preview() {
       this.triggerEvent("preview");

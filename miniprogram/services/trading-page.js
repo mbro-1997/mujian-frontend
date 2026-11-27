@@ -8,18 +8,32 @@ function begin(page) {
     round = (page.tradeRound = (page.tradeRound || 0) + 1);
   return () => !page.tradeHidden && round === page.tradeRound && session.isCurrent(owner);
 }
-async function run(page, action, successLabel) {
+function guide(current, title, content, confirmText, url) {
+  wx.showModal({
+    title, content, confirmText, cancelText: '暂不处理',
+    success(result) {
+      if (result.confirm && current()) wx.navigateTo({ url });
+    },
+  });
+}
+async function run(page, action, successLabel, transient = false) {
   if (page.data.busy) return;
   const current = begin(page);
-  page.setData({ busy: true, message: '', outstandingCompensation:false });
+  page.setData({ busy: true, message: '' });
   try {
     const result = await action(current);
     if (successLabel && result && current()) successToast(successLabel);
     return result;
   } catch (error) {
     if (current()) {
+      if (error.reason === 'REALNAME_REQUIRED')
+        return guide(current, '请完成实名认证', '认证完成后可返回继续结算。', '实名认证', '/pages/realname/form');
+      if (error.reason === 'MERCHANT_NOT_READY')
+        return hint('工厂暂不具备收款条件，请调整选品或联系平台');
+      if (error.reason === 'COMPENSATION_OUTSTANDING')
+        return guide(current, '请先处理待补缴款项', '查看补缴明细后可继续处理。', '查看明细', '/pages/orders/disputes?kind=compensation-receivables');
       if (error.reason === 'RENTAL_WINDOW_CLOSED' || error.reason === 'RENTAL_WINDOW_NOT_OPEN')
-        return hint(api.message(error));
+        return hint(api.message(error).split(' 追踪号：')[0]);
       if (error instanceof ValidationError) return hint(error.message);
       if ([401, 403, 404].includes(error.status)) {
         const cleared = { detail: null, items: [], quote: null };
@@ -34,10 +48,16 @@ async function run(page, action, successLabel) {
         if (page.onAccessLost) page.onAccessLost();
       }
       if (error instanceof UploadError) return hint(error.message);
-      page.setData({ message: api.message(error),outstandingCompensation:error.reason==='COMPENSATION_OUTSTANDING' });
+      if (transient && ![401, 403, 404].includes(error.status))
+        return hint(api.message(error).split(' 追踪号：')[0]);
+      page.setData({ message: api.message(error) });
     }
   } finally {
-    if (current()) page.setData({ busy: false });
+    if (current()) {
+      const state = { busy: false };
+      if (page.hasPendingOperation) state.pending = page.hasPendingOperation();
+      page.setData(state);
+    }
   }
 }
 function hide(page) {
@@ -50,4 +70,7 @@ function show(page) {
   page.tradeHidden = false;
   page.setData({ busy: false });
 }
-module.exports = { showList: require("./planning-page").showList, run, begin, hide, show, confirm: require('./planning-page').confirm };
+function act(page, action, successLabel) {
+  return run(page, action, successLabel, true);
+}
+module.exports = { act, showList: require("./planning-page").showList, run, begin, hide, show, confirm: require('./planning-page').confirm };

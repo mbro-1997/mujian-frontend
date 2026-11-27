@@ -18,6 +18,11 @@ function fixture(pageName, context = {}, realHttp = false, realContract = false)
     removeStorageSync: (k) => storage.delete(k),
     getRandomValues: (o) =>
       o.success({ randomValues: new Uint8Array(16).fill(6).buffer }),
+    getFileSystemManager: () => ({
+      stat: (o) => o.success({ stats: { size: 1200 } }),
+      readFile: (o) => o.success({ data: new Uint8Array([255,216,255,224,0]).buffer }),
+    }),
+    getImageInfo: (o) => o.success({ width: 120, height: 90, type: "jpeg" }),
     uploadFile: (o) => uploads.push(o),
     request: (o) => wire.push(o),
     redirectTo: (o) => nav.push(o.url),
@@ -98,6 +103,7 @@ test("B draft does not upload before confirmation; two workers use shared upload
   f.api.save({ fields: data });
   assert.equal(f.uploads.length, 0);
   const result = f.api.materialize(data);
+  await tick();
   assert.equal(f.uploads.length, 2);
   assert.equal(f.uploads[0].formData.purpose, "factory_avatar");
   assert.equal(f.uploads[0].formData.consentAccepted, undefined);
@@ -118,6 +124,7 @@ test("B session change discards local draft and late shared upload without navig
   const f = fixture();
   f.api.save({ fields: fields() });
   const result = f.api.materialize(fields());
+  await tick();
   f.session.replace("owner-B");
   uploaded(f.uploads[0], "1");
   uploaded(f.uploads[1], "2");
@@ -269,6 +276,7 @@ test("one failed upload stops queued jobs and waits for the other active upload 
   const f = fixture();
   let settled = false;
   const result = f.api.materialize(fields());
+  await tick();
   const checked = assert.rejects(result).then(() => {
     settled = true;
   });

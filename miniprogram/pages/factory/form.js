@@ -1,4 +1,4 @@
-const { hint, UploadError } = require("../../services/form-error");
+const { hint } = require("../../services/form-error");
 const successToast = require("../../services/success-toast");
 const checkboxSelection = require("../../services/checkbox-selection");
 const api = require("../../services/factory"),
@@ -133,14 +133,10 @@ require("../../session/page")({
     const max = field === "factoryPhotos" ? 3 : 3;
     wx.chooseMedia({
       count: collection ? max - current.length : 1,
-      mediaType: ["image"],
+      mediaType: ["image"], sizeType: ["original", "compressed"],
       success: (r) => {
         if (!session.isCurrent(owner)) return;
         const images = r.tempFiles.map((f) => ({ localPath: f.tempFilePath }));
-        if (r.tempFiles.some((f) => f.size > 5 * 1024 * 1024)) {
-          hint("每张图片不能超过5MiB，请重新选择。");
-          return;
-        }
         const key =
           field === "cases"
             ? "fields.cases[" + index + "].images"
@@ -182,7 +178,7 @@ require("../../session/page")({
         (await api.request("factory-materials/view", "POST", img.locator)).url;
       wx.previewImage({ urls: [url], current: url });
     } catch (e) {
-      this.setData({ message: e.message });
+      hint(e.message);
     }
   },
   async next() {
@@ -232,8 +228,7 @@ require("../../session/page")({
           await api.submit(d);
           wx.redirectTo({ success: () => successToast("变更申请已提交"), url: "/pages/factory/status?mode=change" });
         } catch (e) {
-          if (e instanceof UploadError) return hint(e.message);
-          this.setData({ message: e.message });
+          hint(e.message);
         } finally {
           this.setData({ busy: false });
         }

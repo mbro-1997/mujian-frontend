@@ -1,20 +1,16 @@
-<view class="sheet confirmation" wx:if="{{quote}}">
-  <view class="heading">确认取消订单</view>
+<mj-action-sheet wx:if="{{quote}}" title="确认取消订单" busy="{{busy}}" binddismiss="close">
   <view class="row"><text>取消费扣款</text><text>¥{{quote.deduction}}</text></view>
   <view class="row"><text>退租金 / 押金 / 运费</text><text>¥{{quote.rent}} / {{quote.deposit}} / {{quote.freight}}</text></view>
   <view class="row"><text>应退合计</text><text class="strong">¥{{quote.total}}</text></view>
   <view class="muted">超过确认时限或费用档位变化，需要重新核对金额。</view>
   <textarea id="field-decision-reason" adjust-position="{{false}}" value="{{reason}}" bindinput="reason" maxlength="255" placeholder="请输入取消原因"/>
-  <view wx:if="{{message}}" class="feedback" aria-live="polite">{{message}}</view>
   <button class="primary" bindtap="confirmCancel" disabled="{{busy}}" loading="{{busy}}">确认取消并原路退款</button>
   <button bindtap="cancelQuote" disabled="{{busy}}">重新试算</button>
-  <button bindtap="close">暂不取消</button>
-</view>
-<view class="sheet confirmation" wx:if="{{rejecting}}">
-  <view class="heading">拒绝接单</view>
+  <button bindtap="close" disabled="{{busy}}">暂不取消</button>
+</mj-action-sheet>
+<mj-action-sheet wx:elif="{{rejecting}}" title="拒绝接单" busy="{{busy}}" binddismiss="close">
   <view class="notice">确认后将退回这家工厂的原实付款。</view>
   <textarea id="field-decision-reason" adjust-position="{{false}}" value="{{reason}}" bindinput="reason" maxlength="255" placeholder="请输入拒绝原因"/>
-  <view wx:if="{{message}}" class="feedback" aria-live="polite">{{message}}</view>
   <button class="primary" bindtap="confirmReject" disabled="{{busy}}" loading="{{busy}}">确认拒绝</button>
-  <button bindtap="close">返回核对</button>
-</view>
+  <button bindtap="close" disabled="{{busy}}">返回核对</button>
+</mj-action-sheet>

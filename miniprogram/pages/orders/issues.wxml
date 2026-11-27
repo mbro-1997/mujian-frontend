@@ -1,6 +1,6 @@
 <view class="trade">
   <view wx:if="{{message}}" class="feedback">{{message}}<button bindtap="load">刷新</button></view>
-  <view wx:if="{{!items.length && !message}}" class="section"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取问题"/><text wx:else>这笔订单尚无问题记录</text></view>
+  <view wx:if="{{!issueId && !items.length && !message}}" class="section"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取问题"/><text wx:else>这笔订单尚无问题记录</text></view>
   <view wx:for="{{items}}" wx:key="id" class="section">
     <view class="heading">{{item.scene==='receipt'?'收货问题':'使用中异常'}} · {{item.statusText}}</view>
     <view>{{item.summary}}</view><view class="muted">{{item.createdText}}</view>
@@ -10,6 +10,7 @@
     <button data-step="-1" bindtap="changePage" disabled="{{busy || pending || page===1}}">上一页</button>
     <button data-step="1" bindtap="changePage" disabled="{{busy || pending || page*15>=total}}">下一页</button>
   </view>
+  <view wx:if="{{issueId && busy && !detail}}" class="blank"><mj-loading label="正在读取处理进度"/></view>
   <view wx:if="{{detail}}" class="section">
     <view class="heading">{{detail.statusText}}</view><view>{{detail.summary}}</view>
     <view class="muted">订单 {{detail.orderNo}} · {{detail.factoryName}}</view>
@@ -28,8 +29,6 @@
       <button bindtap="submit" disabled="{{busy || (!pending && !summary)}}">{{pending?'恢复原操作':'提交补充材料'}}</button>
     </block>
   </view>
+<navigator wx:if="{{detail.id}}" class="service-entry" url="/pages/service/index?type=order_issue&id={{detail.id}}">咨询此订单问题 ›</navigator>
+<navigator wx:elif="{{orderId && !issueId}}" class="service-entry" url="/pages/service/index?type=rental_order&id={{orderId}}">咨询平台客服 ›</navigator>
 </view>
-
-<navigator wx:if="{{orderId}}" url="/pages/service/index?type=rental_order&id={{orderId}}">咨询平台客服 ›</navigator>
-
-<navigator wx:if="{{detail.id}}" url="/pages/service/index?type=order_issue&id={{detail.id}}">咨询此订单问题 ›</navigator>

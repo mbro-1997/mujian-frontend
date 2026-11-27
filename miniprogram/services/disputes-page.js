@@ -88,14 +88,14 @@ module.exports=function disputePage(factory){
       if(this.picking || this.data.busy)return;
       this.picking=true;const owner=session.capture();
       try{
-        const picked=await new Promise((ok,fail)=>wx.chooseMedia({count:9,mediaType:['image'],success:ok,fail:e=>/cancel/i.test(e.errMsg||'')?ok(null):fail(e)}));
+        const picked=await new Promise((ok,fail)=>wx.chooseMedia({count:9,mediaType:['image'], sizeType: ["original", "compressed"],success:ok,fail:e=>/cancel/i.test(e.errMsg||'')?ok(null):fail(e)}));
         if(!picked || this.gone || !session.isCurrent(owner))return;
-        return await ui.run(this,async current=>{
+        return await ui.act(this,async current=>{
           const d=this.data, node=d.kind==='arbitrations' || !factory?'arbitration':'claim';
           for(const file of picked.tempFiles){if(!current())return;const id=await materials.uploadOrder(orderBase+(d.detail?.orderId || d.orderId),node,file.tempFilePath);
             if(current())this.setData({photos:this.data.photos.concat({ id, src: file.tempFilePath })});}
         });
-      }catch(e){if(!this.gone && session.isCurrent(owner))this.setData({message:'添加照片失败，请重新选择'});}finally{this.picking=false;}
+      }catch(e){if(!this.gone && session.isCurrent(owner))hint('添加照片失败，请重新选择');}finally{this.picking=false;}
     },
     backToRecords() {
       if (this.data.busy) return;
@@ -103,14 +103,14 @@ module.exports=function disputePage(factory){
         summary: '', amount: '', photos: [], lines: [] });
     },
     sourceOrder(){const row=this.data.detail;if(row)wx.navigateTo({url:"/pages/"+(factory?"factory/order":"orders/detail")+"?id="+row.orderId});},
-    evidence(e){const d=this.data.detail;if(!d)return;return ui.run(this,async current=>{
+    evidence(e){const d=this.data.detail;if(!d)return;return ui.act(this,async current=>{
       const v=await api.post(orderBase+d.orderId+'/evidence/'+e.currentTarget.dataset.id+'/view',{});
       if(current())wx.previewImage({urls:[v.url]});
     });},
     act(e){
       const name=e.currentTarget.dataset.action,d=this.data,row=d.detail,slot=this.slot();
       if(!(api.pending.has(slot) || d.creating && name==='save' || name==='save' && row?.actions.edit || row?.actions[name]))return;
-      return ui.run(this,async current=>{
+      return ui.act(this,async current=>{
         let result, intent=api.pending.get(slot),actual=name;
         try{
           if(intent){actual=intent.path.split('/').pop();try{const receipt=await api.recover(slot);result=receipt?.receipt || receipt;}

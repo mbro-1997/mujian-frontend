@@ -103,7 +103,7 @@ require("../../session/page")({
     });
   },
   submit() {
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       const review = await request("/api/me/order-reviews", "POST", true, {
         businessType: this.data.type,
         businessOrderId: this.data.id,

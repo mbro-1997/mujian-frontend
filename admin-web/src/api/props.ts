@@ -1,3 +1,4 @@
+import { prepareUploadImage } from "./upload-image";
 import { api, refreshCsrf, ApiError } from "./http";
 import { capture, assertCurrent } from "../session/boundary";
 import { me } from "../session/state";
@@ -187,14 +188,11 @@ export async function upload(files: File[]): Promise<string[]> {
   async function work() {
     while (queue.length) {
       const job = queue.shift()!;
-      if (
-        job.f.size > 5242880 ||
-        !["image/png", "image/jpeg"].includes(job.f.type)
-      )
-        throw Error("请选择不超过5MiB的JPEG或PNG");
+      const file = await prepareUploadImage(job.f);
+      assertCurrent(owner);
       const body = new FormData();
       body.append("purpose", "qr_exception_evidence");
-      body.append("file", job.f);
+      body.append("file", file);
       out[job.i] = (
         await api<UploadResult>("/api/admin/prop-materials", "POST", body)
       ).uploadId;

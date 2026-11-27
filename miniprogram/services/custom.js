@@ -120,6 +120,7 @@ async function attach(root, purpose) {
     { purpose },
     "materialId",
     id,
+    { acceptPdf: true },
   );
 }
 async function preview(root, file) {

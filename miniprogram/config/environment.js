@@ -11,7 +11,8 @@ if (version === "develop") {
   wechatPreviewDebug = config.mode === "lan" && platform !== "devtools" && typeof wx.login === "function";
   if (platform === "devtools") debugEndpoint = config.debugLocalUrl;
   if (wechatPreviewDebug) debugEndpoint = config.debugLanUrl;
-  baseUrl = config.mode === "lan" ? config.lanBaseUrl : config.localBaseUrl;
+  // 模拟器与后端同机，使用回环地址即可跨 Wi-Fi 切换；手机使用开发机的局域网地址。
+  baseUrl = platform !== "devtools" && config.mode === "lan" ? config.lanBaseUrl : config.localBaseUrl;
 }
 module.exports = {
   development: version === "develop",

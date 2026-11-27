@@ -21,6 +21,9 @@ require('../../session/page')({
   onHide() {
     ui.hide(this);
   },
+  hasPendingOperation() {
+    return ['pay:', 'close:'].some(key => api.pending.has(key + this.data.id));
+  },
   onUnload() {
     ui.hide(this);
   },
@@ -74,7 +77,7 @@ require('../../session/page')({
     return this.load();
   },
   pay() {
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       const result = await api.command(
         'pay:' + this.data.id,
         '/api/me/checkout-batches/' + this.data.id + '/pay',
@@ -93,7 +96,7 @@ require('../../session/page')({
       ))
     )
       return;
-    await ui.run(this, async (current) => {
+    await ui.act(this, async (current) => {
       await api.command(
         'close:' + this.data.id,
         '/api/me/checkout-batches/' + this.data.id + '/cancel',
@@ -103,7 +106,7 @@ require('../../session/page')({
     });
   },
   recover() {
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       let found = false;
       for (const slot of ['pay:', 'close:'])
         if (api.pending.has(slot + this.data.id)) {

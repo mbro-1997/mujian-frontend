@@ -1,6 +1,6 @@
 <view class="trade">
-  <list-filters resettable="{{(kind !== 'claims' || stageIndex) && !detail && !creating}}" bindresetfilters="resetFilters" quiet="{{returnRefresh}}" filters="{{filterGroups}}" values="{{ {kind:kind} }}" disabled="{{busy}}" bindselectfilter="chooseTab"/>
-  <view wx:if="{{kind==='arbitrations'}}" class="section"><dict-select range="{{stages}}" range-key="name" value="{{stageIndex}}" disabled="{{busy}}" bindchange="chooseStage" title="裁决阶段" display="{{stages[stageIndex].name}}" quiet="{{returnRefresh}}"/></view>
+  <list-filters wx:if="{{!detail && !creating}}" resettable="{{(kind !== 'claims' || stageIndex) && !detail && !creating}}" bindresetfilters="resetFilters" quiet="{{returnRefresh}}" filters="{{filterGroups}}" values="{{ {kind:kind} }}" disabled="{{busy}}" bindselectfilter="chooseTab"/>
+  <view wx:if="{{!detail && !creating && kind==='arbitrations'}}" class="section"><dict-select range="{{stages}}" range-key="name" value="{{stageIndex}}" disabled="{{busy}}" bindchange="chooseStage" title="裁决阶段" display="{{stages[stageIndex].name}}" quiet="{{returnRefresh}}"/></view>
   <view wx:if="{{message}}" class="feedback">{{message}}<button bindtap="load" disabled="{{busy}}">刷新进度</button></view>
   <view wx:if="{{!creating && !detail}}" class="section">
     <button class="dispute-record" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="open" disabled="{{busy}}">

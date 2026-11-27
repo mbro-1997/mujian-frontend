@@ -1,1 +1,21 @@
-<view class="trade"><view class="section"><block wx:if="{{section==='center'}}"><view class="heading">信用机制暂未启用</view><view>当前租赁评价正常开放。租赁方和学生用户均按订单原押金全额支付，减免金额为 0 元。</view><button data-section="ledger" bindtap="show">查看信用流水</button><button data-section="rules" bindtap="show">查看后续规则预览</button></block><block wx:elif="{{section==='ledger'}}"><view class="heading">暂无信用记录</view><view>首期不计分。</view></block><block wx:else><view class="heading">后续规则预览</view><view>以下档位尚未启用。未来启用时初始 80 分。</view><view>90～100 分：普通用户押金减免 40%，学生用户减免 70%。</view><view>75～89 分：普通用户减免 20%，学生用户减免 50%。</view><view>60～74 分：全额押金。0～59 分：未来限制新租赁付款。</view></block><button wx:if="{{section!=='center'}}" data-section="center" bindtap="show">返回信用中心</button></view></view>
+<view class="trade">
+  <block wx:if="{{section==='center'}}">
+    <view class="section hero"><view class="heading">信用机制暂未启用</view><text>首期不计分，订单评价正常开放。</text></view>
+    <view class="section"><view class="heading">首期押金规则</view><view class="row"><text>全部用户（含学生）</text><text>原押金全额支付</text></view><view class="row"><text>押金减免</text><text>¥0</text></view><navigator class="service-entry" url="/pages/reviews/credit?section=deposit">查看押金说明 ›</navigator></view>
+    <view class="section"><navigator class="row" url="/pages/reviews/credit?section=ledger">查看信用流水　›</navigator><navigator class="row" url="/pages/reviews/credit?section=rules">查看后续规则预览　›</navigator></view>
+  </block>
+  <view wx:elif="{{section==='ledger'}}" class="section blank"><view class="heading">暂无信用记录</view><text>首期不计分。</text></view>
+  <view wx:elif="{{section==='deposit'}}" class="section"><view class="heading">全额押金</view>当前所有用户均按订单原押金全额支付，学生认证用户同样适用。</view>
+  <block wx:else>
+    <view class="section hero"><view class="heading">后续规则预览</view><text>以下档位尚未启用。启用时初始为 80 分。</text></view>
+    <view class="section"><view class="heading">押金规则</view>
+      <view class="row"><text>90～100 分</text><text>普通用户减免 40% · 学生减免 70%</text></view>
+      <view class="row"><text>75～89 分</text><text>普通用户减免 20% · 学生减免 50%</text></view>
+      <view class="row"><text>60～74 分</text><text>全额押金</text></view>
+      <view class="row"><text>0～59 分</text><text>限制新租赁付款</text></view>
+    </view>
+    <view class="section"><view class="heading">常用加减分规则</view><text class="muted">仅供预览，尚未启用</text>
+      <view wx:for="{{events}}" wx:key="name" class="row"><text>{{item.name}}</text><text>{{item.score}}</text></view>
+    </view>
+  </block>
+</view>

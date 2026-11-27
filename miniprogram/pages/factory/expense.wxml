@@ -1,5 +1,6 @@
 <view class="fulfill">
-  <view wx:if="{{message}}" class="alert">{{message}}<button bindtap="load" disabled="{{busy}}">刷新</button><button wx:if="{{pending}}" bindtap="recover">查询原操作</button></view>
+  <view wx:if="{{message}}" class="alert">{{message}}<button bindtap="load" disabled="{{busy}}">刷新</button></view>
+  <button wx:if="{{pending}}" bindtap="recover" disabled="{{busy}}">查询原操作</button>
   <view wx:if="{{!detail && !message}}" class="panel"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取核销信息"/><text wx:else>暂无可查看的运费申报</text></view>
   <block wx:if="{{detail}}">
     <view class="panel hero"><view class="heading"><text>{{detail.factory}}</text><text class="tag">{{detail.status}}</text></view><view class="muted">订单 {{detail.number}} · 往返统一核销</view><view class="row"><text>运费暂收池</text><text>¥{{detail.pool}}</text></view><view wx:if="{{detail.row.reviewReason}}" class="notice">审核说明 · {{detail.row.reviewReason}}</view></view>

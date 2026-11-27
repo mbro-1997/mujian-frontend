@@ -1,3 +1,4 @@
+const { prepareUploadImage, isPdfAttachment } = require("./upload-image");
 const { UploadError } = require("./form-error");
 const http = require("./http"),
   session = require("../session/storage"),
@@ -16,22 +17,31 @@ function id() {
     }),
   );
 }
-function upload(domain, path, version, side) {
+function upload(domain, path, version, side, position) {
   const formData = ["factory", "prop"].includes(domain) ? { purpose: version } : {
     consentAccepted: "true", consentVersion: version, ...(side ? { side } : {}),
   };
-  return uploadPrivate("/api/me/" + domain + "-materials", path, formData, "uploadId");
+  return uploadPrivate("/api/me/" + domain + "-materials", path, formData, "uploadId", undefined, { position });
 }
 function uploadOrder(root, node, path) {
   return uploadPrivate(root + "/evidence/uploads", path, { node }, "receiptId");
 }
-function uploadPrivate(endpoint, path, formData, field, requestId) {
+async function uploadPrivate(endpoint, path, formData, field, requestId, options = {}) {
   const owner = session.capture();
+  if (!env.baseUrl) throw new UploadError("尚未配置上传服务地址");
+  let filePath;
+  try {
+    const pdf = options.acceptPdf && await isPdfAttachment(path);
+    filePath = pdf ? path : await prepareUploadImage(path, options.position);
+  } catch (error) {
+    session.assertCurrent(owner);
+    throw new UploadError(error.message || "无法处理图片，请重新选择");
+  }
+  session.assertCurrent(owner);
   return new Promise((resolve, reject) => {
-    if (!env.baseUrl) return reject(new UploadError("尚未配置上传服务地址"));
     wx.uploadFile({
       url: env.baseUrl + endpoint,
-      filePath: path,
+      filePath,
       name: "file",
       header: { Authorization: "Bearer " + owner.token, ...(requestId ? {"Idempotency-Key": requestId} : {}) },
       formData,

@@ -1,3 +1,4 @@
+const { hint } = require("../../services/form-error");
 const account = require("../../services/account"),
   routes = require("../../constants/routes"),
   session = require("../../session/storage");
@@ -81,7 +82,7 @@ require("../../session/page")({
     try {
       await require("../../services/registration").bind();
     } catch (e) {
-      this.setData({ message: e.message });
+      hint(e.message);
     } finally {
       this.setData({ busy: false });
     }
@@ -107,7 +108,7 @@ require("../../session/page")({
       session.assertCurrent(owner);
       loginTarget.open(loginTarget.select(context, this.data.returnPath) || routes.tabs[0]);
     } catch (e) {
-      if (session.isCurrent(owner)) this.setData({ message: e.message });
+      if (session.isCurrent(owner)) hint(e.message);
     }
   },
   factory() {

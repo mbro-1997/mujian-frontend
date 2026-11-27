@@ -32,10 +32,16 @@ function fixture(pageName, context = {}, realHttp = false) {
     removeStorageSync: (k) => storage.delete(k),
     getRandomValues: (o) =>
       o.success({ randomValues: new Uint8Array(16).fill(6).buffer }),
+    getFileSystemManager: () => ({
+      stat: (o) => o.success({ stats: { size: 1200 } }),
+      readFile: (o) => o.success({ data: new Uint8Array([255,216,255,224,0]).buffer }),
+    }),
+    getImageInfo: (o) => o.success({ width: 120, height: 90, type: "jpeg" }),
     uploadFile: (o) => uploads.push(o),
     request: (o) => wire.push(o),
     navigateBack: () => nav.push("back"),
     switchTab: (o) => nav.push(o.url),
+    setNavigationBarTitle() {},
     showToast() {},
     redirectTo: (o) => nav.push(o.url),
     navigateTo: (o) => nav.push(o.url),

@@ -117,15 +117,13 @@ module.exports = (domain, statusPage) => ({
       const picked = await new Promise((resolve, reject) =>
         wx.chooseMedia({
           count: 1,
-          mediaType: ["image"],
-          sizeType: ["original"],
+          mediaType: ["image"], sizeType: ["original", "compressed"],
           success: resolve,
           fail: reject,
         }),
       );
       session.assertCurrent(owner);
       const file = picked.tempFiles[0];
-      if (file.size > 5242880) throw new Error("每张照片不能超过5MiB");
       const info = await new Promise((resolve, reject) =>
         wx.getImageInfo({
           src: file.tempFilePath,
@@ -134,11 +132,7 @@ module.exports = (domain, statusPage) => ({
         }),
       );
       session.assertCurrent(owner);
-      if (
-        !["jpeg", "jpg", "png"].includes(info.type) ||
-        info.width * info.height > 20000000
-      )
-        throw new Error("仅支持JPEG/PNG，最多2000万像素");
+      if (!["jpeg", "jpg", "png"].includes(info.type)) throw new Error("仅支持 JPEG 或 PNG");
       const photos = this.data.photos.slice();
       photos[position] = file.tempFilePath;
       this.setData({ photos, message: "" });

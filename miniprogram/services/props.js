@@ -1,5 +1,4 @@
 const uploadBatch = require("./upload-batch");
-const { preparePropPhoto } = require("./prop-photo-upload");
 const http = require("./http"),
   session = require("../session/storage"),
   shared = require("./verification");
@@ -145,9 +144,8 @@ async function materialize(images) {
   out.forEach((image, index) => {
     if (!image.localPath) return;
     jobs.push(async () => {
-      const path = await preparePropPhoto(image.localPath, index + 1);
       session.assertCurrent(owner);
-      const uploadId = await shared.upload("prop", path, "prop_image");
+      const uploadId = await shared.upload("prop", image.localPath, "prop_image", undefined, index + 1);
       session.assertCurrent(owner);
       out[index] = { kind: "upload", uploadId };
     });

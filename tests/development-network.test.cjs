@@ -120,6 +120,7 @@ test("手机微信核对失败或角色不一致保留原会话，阻止不可�
 
 test("模拟器沿用本机凭据，无须调用微信登录", async () => {
   const r = debugRuntime({ platform: "devtools" });
+  assert.equal(r.env.baseUrl, r.config.localBaseUrl);
   r.storage.set("mj.localDebugPair", {origin:r.env.baseUrl, secret:"b".repeat(64)});
   await r.service.switchAccount("demander");
   assert.equal(r.logins(), 0);

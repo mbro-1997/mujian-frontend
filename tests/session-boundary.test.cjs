@@ -11,7 +11,10 @@ function fixture(pageName = "mine") {
   const app = { globalData: { context: null } },
     pending = [],
     modules = new Map();
+  const redirects = [], notices = [];
   const wx = {
+    showToast: options => notices.push(options.title),
+    reLaunch: options => redirects.push(options.url),
     getStorageSync: () => token,
     setStorageSync: (_, value) => {
       token = value;
@@ -79,6 +82,7 @@ function fixture(pageName = "mine") {
     account,
     activity,
     page,
+    redirects, notices,
     token: () => token,
     advance: (ms) => {
       now += ms;
@@ -173,7 +177,7 @@ test("current 503 and unknown network failure preserve credential and distinct m
   f.pending[1].fail();
   await load;
   assert.equal(f.token(), "A");
-  assert.match(f.page.data.message, /网络中断或超时/);
+  assert.match(f.page.data.message, /读取失败，请检查网络后重试/);
 });
 test("late logout from A never clears B or resets B page", async () => {
   const f = fixture();
@@ -273,7 +277,10 @@ for (const page of ["mine", "factory"])
       assert.equal(f.token(), "");
       assert.equal(f.page.data.context, null);
       assert.match(f.page.data.message, /服务器注销尚未确认/);
-      assert.equal(f.page.data.busy, false);
+      if (page === "mine") {
+        assert.deepEqual(f.redirects, ["/pages/mine/index"]);
+        assert.match(f.notices.at(-1), /本地已退出/);
+      } else assert.equal(f.page.data.busy, false);
     });
 test("Mini same-session simultaneous context queries remain valid in either return order", async () => {
   const f = fixture();

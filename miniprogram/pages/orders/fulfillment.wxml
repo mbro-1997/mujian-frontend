@@ -1,3 +1,1 @@
 <include src="../../templates/fulfillment.wxml"/>
-
-<navigator wx:if="{{id}}" url="/pages/service/index?type=rental_order&id={{id}}">咨询平台客服 ›</navigator>

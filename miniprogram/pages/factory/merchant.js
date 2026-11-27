@@ -9,6 +9,9 @@ require('../../session/page')({
   onHide() {
     ui.hide(this);
   },
+  hasPendingOperation() {
+    return api.pending.has('merchant-sync') || api.pending.has('merchant-onboard');
+  },
   onUnload() {
     ui.hide(this);
   },
@@ -32,14 +35,14 @@ require('../../session/page')({
     });
   },
   async sync() {
-    const result = await ui.run(this, () =>
+    const result = await ui.act(this, () =>
       api.command('merchant-sync', '/api/me/factory-wechat-account/sync', {}),
     );
     if (result) return this.load();
   },
   async onboard() {
     if (!this.data.detail.onboardingAvailable) return;
-    const result = await ui.run(this, () =>
+    const result = await ui.act(this, () =>
       api.command('merchant-onboard', '/api/me/factory-wechat-account/onboarding', {
         expectedVersion: this.data.detail.version,
       }),
@@ -52,7 +55,7 @@ require('../../session/page')({
     if (url && /^https:\/\/pay\.weixin\.qq\.com\//.test(url)) wx.setClipboardData({ data: url });
   },
   recover() {
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       for (const slot of ['merchant-sync', 'merchant-onboard'])
         if (api.pending.has(slot)) {
           await api.recover(slot);

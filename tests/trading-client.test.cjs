@@ -167,6 +167,7 @@ test('checkout unknown submit keeps confirmation and does not refresh into a new
 test('cancellation changed rate is displayed for fresh confirmation; no silent resubmit', async () => {
   const f = fixture('orders/detail');
   f.page.setData({ id, quote: { confirmToken: 'old' }, reason: '改变安排' });
+  let notice; f.wx.showToast = options => { notice = options; };
   const work = f.page.confirmCancel();
   await tick();
   f.pending[0].reject({
@@ -175,7 +176,8 @@ test('cancellation changed rate is displayed for fresh confirmation; no silent r
     reason: 'CANCELLATION_QUOTE_CHANGED',
   });
   await work;
-  assert.match(f.page.data.message, /重新核对/);
+  assert.equal(f.page.data.message, "");
+  assert.match(notice.title, /重新核对/);
   assert.equal(f.pending.length, 1);
   assert.equal(f.page.data.quote.confirmToken, 'old');
 });

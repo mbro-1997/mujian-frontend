@@ -66,4 +66,9 @@ function clear() {
   pending.clear();
 }
 session.subscribe(clear);
-module.exports = { accept, ensure, valid, clear };
+/** 当前公开道具图片由业务后端读取，使用与列表相同的服务地址。 */
+function publicPropContentUrl(skuId, image) {
+  return require("../config/environment").baseUrl + "/api/public/props/" +
+    encodeURIComponent(skuId) + "/images/" + encodeURIComponent(image.cacheKey);
+}
+module.exports = { accept, ensure, valid, clear, publicPropContentUrl };

@@ -1,7 +1,5 @@
-<navigator wx:if="{{outstandingCompensation}}" class="notice" url="/pages/orders/disputes?kind=compensation-receivables">有订单差额待补缴，查看明细 ›</navigator>
 <view class="trade" wx:if="{{showCoupons}}">
   <view class="section hero"><view class="heading">选择优惠券</view><view>本次可节省 ¥{{draftSaving}}</view></view>
-  <view wx:if="{{message}}" class="feedback">{{message}}</view>
   <view class="section"><view class="heading">可用优惠券</view>
     <button wx:for="{{usableChoices}}" wx:key="id" class="coupon-option choice {{draftCouponId===item.id?'selected':''}}" data-id="{{item.id}}" bindtap="chooseCoupon" disabled="{{busy}}">
       <view>{{item.coupon.name}} · {{item.coupon.value}}</view><view>本单节省 ¥{{item.saving}}</view><view class="muted">{{item.coupon.validUntilText}} 到期 {{draftCouponId===item.id?'✓':''}}</view>
@@ -14,12 +12,45 @@
   <view class="footer"><button bindtap="cancelCoupons" disabled="{{busy}}">返回结算</button><button class="primary" bindtap="confirmCoupon" disabled="{{busy}}">确认选择</button></view>
 </view>
 <view wx:else class="trade">
-<view wx:if="{{message}}" class="feedback">{{message}}<button bindtap="load" disabled="{{busy}}">重新读取</button><button wx:if="{{pending}}" bindtap="recover">查询原提交</button></view>
-<view wx:if="{{pending}}" class="notice">上次提交正在核实，请保留原内容并查询原提交，勿重复创建付款。</view>
+<view wx:if="{{message}}" class="blank"><text>{{message}}</text><button bindtap="load" disabled="{{busy}}">重新加载</button></view>
+<view wx:if="{{pending}}" class="section"><view class="strong">付款提交待确认</view><button bindtap="recover" disabled="{{busy}}">查询原提交</button></view>
 <view wx:if="{{!detail && !message}}" class="blank"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取清单"/><text wx:else>暂无可结算清单</text></view>
-<block wx:if="{{detail}}"><view class="section hero"><view class="heading">{{step===1?'确认配送':'确认结算'}}</view><view>{{detail.startDate}} 至 {{detail.endDate}} · {{detail.rentalDays}} 天</view><view class="muted">{{groups.length}} 个工厂，全额付款后分别生成订单</view></view>
-<view class="section" bindtap="address"><view class="row"><text class="strong">收货地址</text><text class="link">选择 / 修改 ›</text></view><block wx:if="{{address}}"><view>{{address.receiverName}} · {{address.phone}}</view><view class="muted">{{address.regionText}} {{address.detailAddress}}</view></block><view wx:else class="muted">请选择收货地址</view></view>
-<block wx:if="{{step===1}}"><view class="row"><text class="heading">配送方式</text><text class="link" bindtap="priceSheet">车型与运价 ›</text></view><view wx:for="{{groups}}" wx:key="factoryId" class="section"><view class="heading">{{item.factoryName}}</view><list-filters quiet="{{returnRefresh}}" stacked filters="{{deliveryFilters}}" values="{{item}}" data-index="{{index}}" disabled="{{busy || pending}}" bindselectfilter="choice"/><textarea id="field-row-{{index}}-buyerRemark" adjust-position="{{false}}" value="{{item.buyerRemark}}" data-index="{{index}}" bindinput="remark" maxlength="255" placeholder="给这家工厂的备注（选填）" disabled="{{busy || pending}}"/></view></block>
-<block wx:if="{{step===2 && quote}}"><view wx:for="{{quote.groups}}" wx:key="factoryId" class="section"><view class="row"><text class="heading">{{item.factoryName}}</text><text class="strong">¥{{item.amounts.total}}</text></view><view wx:for="{{item.items}}" wx:for-item="prop" wx:key="snapshotItemId" class="item"><view class="picture"><public-prop-image image="{{prop.image}}" resource-type="checklist" resource-id="{{id}}" resource-version="{{detail.version}}"/></view><view class="item-body"><view class="item-title">{{prop.name}}</view><view class="muted">{{prop.quantity}} 件 · ¥{{prop.daily}} / 天</view><view wx:if="{{prop.transportRequirement}}" class="muted">运输要求：{{prop.transportRequirement}}</view></view></view><view class="row"><text>租金</text><text>¥{{item.amounts.rentOriginal}}</text></view><view class="row"><text>租金优惠</text><text>−¥{{item.amounts.couponDiscount}}</text></view><view class="row"><text>押金</text><text>¥{{item.amounts.deposit}}</text></view><view class="row"><text>{{item.outbound.serviceLabel}}</text><text>¥{{item.outbound.prepaid}}</text></view><view class="muted" wx:if="{{item.outbound.vehicleTierNameText}}">{{item.outbound.vehicleTierNameText}} · {{item.outbound.distance}} km</view><view class="row"><text>{{item.return.serviceLabel}}</text><text>¥{{item.return.prepaid}}</text></view><view class="muted" wx:if="{{item.return.vehicleTierNameText}}">{{item.return.vehicleTierNameText}} · {{item.return.distance}} km</view><view wx:if="{{item.buyerRemarkText}}" class="muted">{{item.buyerRemarkText}}</view></view><view class="section"><view class="row" bindtap="coupons"><text>优惠券</text><text class="link">已省 ¥{{quote.amounts.couponDiscount}} · 更换 ›</text></view><view class="row"><text>租金现金实付</text><text>¥{{quote.amounts.rentCash}}</text></view><view class="row"><text>押金合计</text><text>¥{{quote.amounts.deposit}}</text></view><view class="row"><text>运费预收</text><text>¥{{quote.amounts.freight}}</text></view></view><view class="notice">{{quote.transportNotice}} 优惠只抵租金；全部付款成功后按工厂生成订单。</view></block>
-<view wx:if="{{priceSheet}}" class="sheet"><view class="heading">车型与运价</view><view wx:for="{{priceSheet.rules}}" wx:key="id" class="section"><view>{{item.vehicleName}} · {{item.cityCode}}</view><view>指导价 ¥{{item.min}}—¥{{item.max}}</view><view class="muted">起步含 {{item.includedDistanceMeter}} 米；超程每公里 ¥{{item.extra}}</view></view><view wx:if="{{!priceSheet.rules.length}}">暂无已生效运价，配送报价暂不可用。</view><button bindtap="closeSheet">收起</button></view>
-<view class="footer"><button wx:if="{{step===1}}" class="primary" bindtap="quote" disabled="{{busy||pending}}">下一步 · 获取报价</button><block wx:else><button class="secondary" bindtap="edit" disabled="{{busy||pending}}">修改配送</button><view wx:if="{{quote}}">合计<view></view>¥{{quote.amounts.total}}</view><button class="primary" bindtap="submit" disabled="{{busy||!quote}}">提交并支付</button></block></view></block></view>
+<block wx:if="{{detail}}">
+  <block wx:if="{{step===1}}"><view class="section"><view class="section-top"><text class="heading">租期</text><text class="badge">{{detail.startDate}} 至 {{detail.endDate}}</text></view><view class="row"><text>租赁天数</text><text>{{detail.rentalDays}} 天</text></view></view>
+  <view class="section">
+    <view class="section-top"><text class="heading">收货地址</text><button wx:if="{{step===1}}" class="small-action" bindtap="address" disabled="{{busy || pending}}">{{address?'更换':'选择地址'}}</button></view>
+    <block wx:if="{{address}}"><view>{{address.receiverName}}　{{address.phone}}</view><view class="muted">{{address.regionText}} {{address.detailAddress}}</view></block>
+    <view wx:else class="muted">请选择收货地址</view>
+  </view>
+  <view class="section"><view class="heading">平台配送价格单</view>
+      <block wx:if="{{priceSheet.length}}">
+        <scroll-view wx:for="{{priceSheet}}" wx:for-item="city" wx:key="cityCode" scroll-x>
+          <view class="muted">{{city.cityCode}}</view>
+          <view class="freight-grid" style="grid-template-columns: 84px repeat({{city.ranges.length}}, minmax(94px, 1fr))">
+            <text class="price-head">车型</text><text class="price-head" wx:for="{{city.ranges}}" wx:key="key">{{item.label}}</text>
+            <block wx:for="{{city.rows}}" wx:for-item="vehicle" wx:key="id"><text class="price-vehicle">{{vehicle.name}}</text>
+              <view wx:for="{{vehicle.prices}}" wx:key="key"><text>{{item.price || '—'}}</text><view wx:if="{{item.price}}" class="muted">{{item.basis}}<view>{{item.extra}}</view></view></view>
+            </block>
+          </view>
+        </scroll-view>
+      </block>
+      <view wx:elif="{{busy && !priceSheet}}" class="muted">读取中…</view>
+      <view wx:elif="{{priceSheet !== null}}" class="muted">暂无已生效的运价</view>
+      <button wx:else class="small-action" bindtap="retryPrices">重新读取运价</button>
+    </view>
+    <view class="heading">按工厂选择去程与回程</view>
+    <view wx:for="{{groups}}" wx:for-item="group" wx:for-index="groupIndex" wx:key="factoryId" class="section">
+      <view class="section-top"><text class="strong">{{group.factoryName}}</text><text class="muted">{{group.itemCount}} 款道具</text></view>
+      <view wx:for="{{deliveryFilters}}" wx:for-item="leg" wx:key="key" class="leg">
+        <view class="leg-label">{{leg.title}}</view><view class="delivery-options">
+          <button wx:for="{{leg.options}}" wx:for-item="option" wx:key="code" class="delivery-option {{group[leg.key]===option.code?'active':''}}" data-field="{{leg.key}}" data-value="{{option.code}}" data-index="{{groupIndex}}" bindtap="choice" disabled="{{busy || pending}}">
+            <text>{{option.label}}</text><text class="option-note">{{option.note}}</text>
+          </button>
+        </view>
+      </view>
+      <view class="leg-label">工厂备注（选填）</view>
+      <textarea id="field-row-{{groupIndex}}-buyerRemark" adjust-position="{{false}}" value="{{group.buyerRemark}}" data-index="{{groupIndex}}" bindinput="remark" maxlength="255" placeholder="给这家工厂留言" disabled="{{busy || pending}}"/>
+    </view>
+  </block>
+<block wx:if="{{step===2 && quote}}"><view class="section"><view class="section-top"><text class="heading">结算信息</text><text class="badge">{{groups.length}} 家工厂</text></view><view class="row"><text>租期</text><text>{{detail.startDate}} 至 {{detail.endDate}} · {{detail.rentalDays}} 天</text></view><view class="row"><text>收货地址</text><text>{{address.regionText}} {{address.detailAddress}}</text></view><view class="section-top"><text class="strong">一次支付总额</text><text class="amount">¥{{quote.amounts.total}}</text></view><view class="muted">{{groups.length}} 家工厂，支付成功后分别生成订单</view></view><view class="heading">按工厂结算</view><view wx:for="{{quote.groups}}" wx:key="factoryId" class="section"><view class="row"><text class="heading">{{item.factoryName}}</text><text class="strong">¥{{item.amounts.total}}</text></view><view wx:for="{{item.items}}" wx:for-item="prop" wx:key="snapshotItemId" class="item"><view class="picture"><public-prop-image image="{{prop.image}}" resource-type="checklist" resource-id="{{id}}" resource-version="{{detail.version}}"/></view><view class="item-body"><view class="item-title">{{prop.name}}</view><view class="muted">{{prop.quantity}} 件 · ¥{{prop.daily}} / 天</view><view wx:if="{{prop.transportRequirement}}" class="muted">运输要求：{{prop.transportRequirement}}</view></view></view><view class="row"><text>租金</text><text>¥{{item.amounts.rentOriginal}}</text></view><view class="row"><text>租金优惠</text><text>−¥{{item.amounts.couponDiscount}}</text></view><view class="row"><text>押金</text><text>¥{{item.amounts.deposit}}</text></view><view class="row"><text>{{item.outbound.serviceLabel}}</text><text>¥{{item.outbound.prepaid}}</text></view><view class="muted" wx:if="{{item.outbound.vehicleTierNameText}}">{{item.outbound.vehicleTierNameText}} · {{item.outbound.distance}} km</view><view class="row"><text>{{item.return.serviceLabel}}</text><text>¥{{item.return.prepaid}}</text></view><view class="muted" wx:if="{{item.return.vehicleTierNameText}}">{{item.return.vehicleTierNameText}} · {{item.return.distance}} km</view><view wx:if="{{item.buyerRemarkText}}" class="muted">{{item.buyerRemarkText}}</view></view><view class="section"><view class="row" bindtap="coupons"><text>优惠券</text><text class="link">已省 ¥{{quote.amounts.couponDiscount}} · 更换 ›</text></view><view class="row"><text>租金现金实付</text><text>¥{{quote.amounts.rentCash}}</text></view><view class="row"><text>押金合计</text><text>¥{{quote.amounts.deposit}}</text></view><view class="row"><text>运费预收</text><text>¥{{quote.amounts.freight}}</text></view></view><view class="notice">{{quote.transportNotice}} 优惠只抵租金；全部付款成功后按工厂生成订单。</view></block>
+<view class="footer"><button wx:if="{{step===1}}" class="primary" bindtap="quote" disabled="{{busy||pending}}">下一步</button><block wx:else><button class="secondary" bindtap="edit" disabled="{{busy||pending}}">修改配送</button><view wx:if="{{quote}}">合计<view></view>¥{{quote.amounts.total}}</view><button class="primary" bindtap="submit" disabled="{{busy||pending||!quote}}">提交并支付</button></block></view></block></view>

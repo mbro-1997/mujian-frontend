@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "定制详情",
   "usingComponents": {
-    "private-material": "/components/private-material/index"
+    "private-material": "/components/private-material/index",
+    "mj-action-sheet": "/components/action-sheet/index"
   }
 }

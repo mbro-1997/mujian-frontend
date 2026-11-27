@@ -1,3 +1,4 @@
+const { hint } = require("./form-error");
 const successToast = require("./success-toast");
 const api = require('./trading');
 const ui = require('./trading-page');
@@ -20,11 +21,11 @@ module.exports = function extensionPage(factory) {
     onShow(){ui.show(this);return this.load();},onHide(){ui.hide(this);},onUnload(){ui.hide(this);},
     load(){return ui.run(this,current=>this.read(current));},
     async read(current) {
+      if (this.data.id) return this.readDetail(this.data.id, current);
       const query='?page='+this.data.page+'&pageSize=15'+(this.data.orderId?'&orderId='+encodeURIComponent(this.data.orderId):'');
       const page=await api.get(endpoint+query);
       if(!current())return;
       this.setData({items:page.items.map(present),total:Number(page.total)});
-      if (this.data.id) await this.readDetail(this.data.id, current);
     },
     async readDetail(id, current) {
       const row = await api.get(endpoint + '/' + id);
@@ -34,16 +35,16 @@ module.exports = function extensionPage(factory) {
     open(e) {
       if (this.data.busy) return;
       const id = e.currentTarget.dataset.id;
-      this.setData({id, detail: null, reason: '', pending: false});
-      return ui.run(this, current => this.readDetail(id, current));
+      wx.navigateTo({ url: '/pages/' + (factory ? 'factory' : 'orders') + '/extensions?id=' +
+        encodeURIComponent(id) + (this.data.orderId ? '&orderId=' + encodeURIComponent(this.data.orderId) : '') });
     },
     reason(e){this.setData({reason:e.detail.value});},
     async act(e){
       const name=e.currentTarget.dataset.action,row=this.data.detail;
       if(!row || this.data.busy || !(this.data.pending || row.actions[name]))return;
       const slot='extension-action:'+row.id, reason=this.data.reason.trim();
-      if(name==='reject' && !reason){this.setData({message:'请说明拒绝原因'});return;}
-      return ui.run(this,async current=>{
+      if(name==='reject' && !reason){hint('请说明拒绝原因');return;}
+      return ui.act(this,async current=>{
         if(!this.data.pending && name!=='pay'){
           const title={approve:'确认同意延期？',reject:'确认拒绝延期？',cancel:'确认取消延期？'}[name];
           const message=name==='approve'?'生效后按新的归还日期履约。':'本次延期租金将原路退回。';

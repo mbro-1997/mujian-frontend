@@ -3,3 +3,13 @@
 .trade .coupon-option{width:100%;text-align:left;white-space:normal;background:#fff}.trade .coupon-option.selected{background:#fff9db}
 .trade .footer button{text-align:center}
 @import "../../styles/surfaces.wxss";
+
+.trade .section-top,.trade .delivery-options{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.trade .section-top{margin-bottom:10px}.trade .section-top .heading{margin:0}
+.trade button.small-action{width:auto;min-height:32px;margin:0;padding:5px 12px;border-radius:16px;background:#f2f5f1;font-size:13px}
+.trade .leg-label{font-size:13px;font-weight:650;margin:14px 0 6px}
+.trade button.delivery-option{flex:1;min-width:0;width:0;margin:0;padding:9px 2px;border:1px solid #dce2da;border-radius:8px;background:#fff;color:#262b25;font-size:14px;line-height:1.45}
+.trade .delivery-option.active{border-color:#d9b900;background:#fff6c8}.trade .option-note{display:block;color:#586056;font-size:11px;font-weight:400}
+.trade .freight-grid{display:grid;font-size:13px;line-height:1.45}
+.trade .freight-grid>text,.trade .freight-grid>view{padding:8px 4px;border-bottom:1px solid var(--mj-line)}
+.trade .price-head{font-weight:600;background:var(--mj-canvas)}.trade .price-vehicle{font-weight:600}

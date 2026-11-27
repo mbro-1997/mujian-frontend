@@ -1429,7 +1429,7 @@ onMounted(async () => {
               :on-exceed="() => (message = '最多选择4张证据照片')">
               <el-button>选择照片</el-button>
               <template #tip>
-                <div class="el-upload__tip">最多 4 张，每张不超过 5 MiB，支持 JPG、PNG。</div>
+                <div class="el-upload__tip">最多 4 张，支持 JPG、PNG。达到 1 MiB 的图片自动压缩。</div>
               </template>
             </ElUpload>
           </el-form-item>

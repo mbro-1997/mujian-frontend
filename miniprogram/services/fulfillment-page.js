@@ -199,7 +199,7 @@ module.exports = function fulfillmentPage(factory) {
         liabilityPaid:amount(fee.liabilityPaidFen), remaining:amount(fee.availableDepositFen)};
     },
     recordPickup() {
-      return ui.run(this,async current=>{
+      return ui.act(this,async current=>{
         const {form,fee}=this.data;
         const at=handoverTime(form.actualDate,form.actualTime,form.actualSeconds);
         if(!this.data.canRecordPickup || !at || !blank(form.actualBasis))
@@ -302,7 +302,7 @@ module.exports = function fulfillmentPage(factory) {
         moreRecords: false,
       });
       wx.setNavigationBarTitle({
-        title: view === 'shipment' && model.pickup ? '工厂取回' : titles[view],
+        title: this.data.issueOpen && this.data.canReport ? (view === 'receipt' ? '上报收货问题' : '上报使用中异常') : view === 'shipment' && model.pickup ? '工厂取回' : titles[view],
       });
       clearInterval(this.countdownTimer);
       const clientStart = Date.now(),
@@ -348,7 +348,7 @@ module.exports = function fulfillmentPage(factory) {
     editStock(e) { this.setData({['stockForm.' + e.currentTarget.dataset.field]: e.detail.value}); },
     cancelStock() { this.setData({stockForm:null}); },
     submitStock() {
-      return ui.run(this, async current => {
+      return ui.act(this, async current => {
         const f=this.data.stockForm, quantity=Number(f.quantity);
         if (f.choice == null || !f.remark.trim() || !Number.isInteger(quantity) || quantity<1 || quantity>f.max)
           throw new ValidationError('请选择实际处置，填写数量和核验说明');
@@ -392,7 +392,7 @@ module.exports = function fulfillmentPage(factory) {
       )
         return;
       this.setData({ photoKind: kind, photos: [] });
-      return ui.run(this, (current) => this.readPhotos(current, 1));
+      return ui.act(this, (current) => this.readPhotos(current, 1));
     },
     async readPhotos(current, page) {
       const node =
@@ -412,7 +412,7 @@ module.exports = function fulfillmentPage(factory) {
         });
     },
     morePhotos() {
-      return ui.run(this, (current) =>
+      return ui.act(this, (current) =>
         this.readPhotos(current, this.data.photoPage + 1),
       );
     },
@@ -436,12 +436,12 @@ module.exports = function fulfillmentPage(factory) {
         });
     },
     moreRecords() {
-      return ui.run(this, (current) =>
+      return ui.act(this, (current) =>
         this.readRecords(current, this.data.recordPage + 1),
       );
     },
     preview(e) {
-      return ui.run(this, async (current) => {
+      return ui.act(this, async (current) => {
         const { url } = await api.post(
           this.rootPath + '/evidence/' + e.currentTarget.dataset.id + '/view',
         );
@@ -474,7 +474,7 @@ module.exports = function fulfillmentPage(factory) {
     },
     write(path, fields, message, clearForm) {
       const body = { expectedVersion: this.data.root.version, ...fields };
-      return ui.run(this, (current) =>
+      return ui.act(this, (current) =>
         this.mutate(path, body, message, current, clearForm),
       );
     },
@@ -501,11 +501,11 @@ module.exports = function fulfillmentPage(factory) {
         const value = await nativeCall(method, options);
         if (this.unloaded || !session.isCurrent(owner)) return;
         if (value)
-          await ui.run(this, (current) => consume(value, version, current));
+          await ui.act(this, (current) => consume(value, version, current));
         else if (!this.tradeHidden) await this.load();
       } catch (error) {
         if (!this.unloaded && session.isCurrent(owner))
-          this.setData({ message: error.message });
+          hint(error.message);
       } finally {
         this.nativeOpen = false;
       }
@@ -529,6 +529,12 @@ module.exports = function fulfillmentPage(factory) {
       const version = this.data.view === 'receipt' ? this.data.context.receipt.version : this.data.detail.version;
       this.setData({ issueOpen: true, issueVersion: version, issueSummary: '', issueRows: [], issuePhotos: [], issueEffect: '' });
       this.addIssueItem();
+      wx.setNavigationBarTitle({ title: this.data.view === 'receipt' ? '上报收货问题' : '上报使用中异常' });
+    },
+    closeIssue() {
+      if (this.data.busy || this.data.pending) return;
+      this.setData({ issueOpen: false });
+      wx.setNavigationBarTitle({ title: titles[this.data.view] });
     },
     addIssueItem() {
       this.setData({ issueRows: this.data.issueRows.concat({ itemIndex: 0, typeIndex: 0, quantity: '1' }) });
@@ -548,7 +554,7 @@ module.exports = function fulfillmentPage(factory) {
       this.setData({ issuePhotos: this.data.issuePhotos.filter(photo => photo.id !== e.currentTarget.dataset.id) });
     },
     attachIssuePhoto() {
-      return this.device('chooseMedia', { count: 9, mediaType: ['image'], sourceType: ['camera','album'] },
+      return this.device('chooseMedia', { count: 9, mediaType: ['image'], sizeType: ["original", "compressed"], sourceType: ['camera','album'] },
         async (selection, version, current) => {
           const node = this.data.view === 'receipt' ? 'receipt_check' : 'in_use_report';
           for (const file of selection.tempFiles) {
@@ -559,7 +565,7 @@ module.exports = function fulfillmentPage(factory) {
         });
     },
     submitIssue() {
-      return ui.run(this, async (current) => {
+      return ui.act(this, async (current) => {
         const scene = this.data.view === 'receipt' ? 'receipt' : 'in_use';
         const summary = this.data.issueSummary.trim(), effect = this.data.issueEffect;
         if (!summary || !effect || !this.data.issueRows.length) throw new ValidationError('请填写说明、涉及道具和处理方式');
@@ -594,7 +600,7 @@ module.exports = function fulfillmentPage(factory) {
     photo() {
       return this.device(
         'chooseMedia',
-        { count: 9, mediaType: ['image'], sourceType: ['camera', 'album'] },
+        { count: 9, mediaType: ['image'], sizeType: ["original", "compressed"], sourceType: ['camera', 'album'] },
         async (selection, expectedVersion, current) => {
           const node =
               this.data.view === 'outbound'
@@ -718,7 +724,7 @@ module.exports = function fulfillmentPage(factory) {
       return this.write(path, fields, success, true);
     },
     recover() {
-      return ui.run(this, async (current) => {
+      return ui.act(this, async (current) => {
         const intent = api.pending.get(this.slot);
         if (!intent) return this.read(current);
         try {

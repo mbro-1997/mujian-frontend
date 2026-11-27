@@ -13794,6 +13794,199 @@
         "x-reject-unknown-query": true
       }
     },
+    "/api/public/props/{id}/images/{digest}": {
+      "get": {
+        "operationId": "readPublicPropImage",
+        "summary": "读取当前公开道具的指定图片",
+        "security": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "in": "path",
+            "name": "digest",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "当前公开道具的图片内容",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_REQUEST_INVALID"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_RESOURCE_NOT_FOUND"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_METHOD_NOT_ALLOWED"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_PROP_DATA_INCONSISTENT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_UNEXPECTED_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "失败；500/网络异常不证明回滚",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-access": "public",
+        "x-permission": null,
+        "x-source-pages": [
+          "screen-prop-detail-scheme"
+        ],
+        "x-write-tables": [],
+        "x-idempotent": false,
+        "x-errors": [
+          {
+            "http": 503,
+            "code": "SERVICE_UNAVAILABLE",
+            "reasonCode": "DATABASE_UNAVAILABLE"
+          },
+          {
+            "http": 405,
+            "code": "METHOD_NOT_ALLOWED",
+            "reasonCode": "METHOD_NOT_ALLOWED"
+          },
+          {
+            "http": 500,
+            "code": "DATA_INTEGRITY_ERROR",
+            "reasonCode": "PROP_DATA_INCONSISTENT"
+          },
+          {
+            "http": 400,
+            "code": "INVALID_ARGUMENT",
+            "reasonCode": "REQUEST_INVALID"
+          },
+          {
+            "http": 404,
+            "code": "NOT_FOUND",
+            "reasonCode": "RESOURCE_NOT_FOUND"
+          },
+          {
+            "http": 429,
+            "code": "RATE_LIMITED",
+            "reasonCode": "TOO_MANY_REQUESTS"
+          },
+          {
+            "http": 500,
+            "code": "INTERNAL_ERROR",
+            "reasonCode": "UNEXPECTED_ERROR"
+          }
+        ],
+        "x-reject-unknown-query": true
+      }
+    },
     "/api/public/props/{id}": {
       "get": {
         "operationId": "publicPropDetail",

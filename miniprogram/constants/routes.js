@@ -51,7 +51,7 @@ const definitions = {
   "/pages/checkout/index": {params:{id},required:["id"]},
   "/pages/payment/index": {params:{id},required:["id"]},
   "/pages/orders/index": {params:{view:oneOf("all","pending_accept","accepted","cancelled","refund_exception","pending_outbound","pending_receipt","renting","overdue","return_in_transit","return_checking","return_closed","completed","factory_pending","exceptions")}},
-  "/pages/orders/issues": {params:{id},required:["id"]},
+  "/pages/orders/issues": {params:{id,issueId:id},required:["id"]},
   "/pages/orders/detail": {params:{id},required:["id"]},
   "/pages/factory/orders": {params:{view:oneOf("all","pending_accept","accepted","cancelled","refund_exception","pending_outbound","pending_receipt","renting","overdue","return_in_transit","return_checking","return_closed","completed","factory_pending","exceptions")}},
   "/pages/factory/order": {params:{id},required:["id"]},

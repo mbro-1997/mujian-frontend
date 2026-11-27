@@ -29,7 +29,10 @@ export const router = createRouter({
     { path: "/:pathMatch(.*)*", redirect: "/" },
   ],
 });
-router.beforeEach(async (to) => {
+router.beforeEach(async (to, from) => {
+  // 同一实名审核页切换申请时，详情 GET 会按当前会话重新核权。
+  if (to.path === "/realname/verifications" && from.path === to.path &&
+      typeof to.query.id === "string" && me.value?.permissions.includes("admin:realname:read")) return true;
   if (to.path === "/login") return true;
   const owner = capture();
   try {

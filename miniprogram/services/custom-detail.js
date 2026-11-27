@@ -1,4 +1,4 @@
-const { ValidationError } = require("./form-error");
+const { hint, ValidationError } = require("./form-error");
 const successToast = require("./success-toast");
 const yuanToFen = require("./yuan-input");
 const { displayTime } = require("./display-time");
@@ -171,10 +171,11 @@ module.exports = (factory) =>
         this.saleTimer = setTimeout(() => this.updateSaleWindow(), left);
         return;
       }
+      if (this.data.active === action) hint("本次交付的售后申请时间已截止");
       this.setData({
         buttons: this.data.buttons.filter((b) => b.k !== action),
         ...(this.data.active === action
-          ? { active: "", message: "本次交付的售后申请时间已截止" }
+          ? { active: "" }
           : {}),
       });
     },
@@ -238,7 +239,7 @@ module.exports = (factory) =>
       return ui.run(this, (cur) => this.load(cur));
     },
     facts(e) {
-      return ui.run(this, async (cur) => {
+      return ui.act(this, async (cur) => {
         const sale = this.data.detail.afterSales.find(
           (x) => x.id === e.currentTarget.dataset.id,
         );
@@ -263,14 +264,14 @@ module.exports = (factory) =>
       if (group === "editor") this.persist();
     },
     proof() {
-      return ui.run(this, async (cur) => {
+      return ui.act(this, async (cur) => {
         const ref = await c.attach(this.root(), "delivery");
         if (cur())
           this.setData({ reportFiles: [...this.data.reportFiles, ref] });
       });
     },
     addStatement() {
-      return ui.run(this, async (cur) => {
+      return ui.act(this, async (cur) => {
         const r = this.data.report;
         await c.apply(c.root(true, "after-sales", r.id) + "/statements", {
           expectedVersion: r.version,
@@ -307,7 +308,7 @@ module.exports = (factory) =>
       if (k === "saveCustomDraft")
         return wx.navigateTo({ url: "/pages/custom/form?id=" + d.id });
       if (k === "getCustomPayment")
-        return ui.run(this, async (cur) => {
+        return ui.act(this, async (cur) => {
           const p = await c.get(this.root() + "/payment");
           if (cur())
             this.setData({ payment: p, active: k, actionLabel: actions[k][0] });
@@ -342,6 +343,9 @@ module.exports = (factory) =>
         formVersion: d.version,
         message: "",
       });
+    },
+    closeEditor() {
+      if (!this.data.busy) this.setData({ active: "" });
     },
     persist() {
       const { id, active, editor } = this.data;
@@ -387,7 +391,7 @@ module.exports = (factory) =>
       });
     },
     attach() {
-      return ui.run(this, async (cur) => {
+      return ui.act(this, async (cur) => {
         const k = this.data.active,
           ref = await c.attach(
             this.root(),
@@ -404,12 +408,12 @@ module.exports = (factory) =>
       });
     },
     preview(e) {
-      return ui.run(this, () =>
+      return ui.act(this, () =>
         c.preview(this.root(), e.currentTarget.dataset.file),
       );
     },
     pay() {
-      return ui.run(this, async (cur) => {
+      return ui.act(this, async (cur) => {
         const p = await c.get(this.root() + "/payment");
         if (cur() && p?.parameters)
           await trade.nativePayment(p.parameters, cur);
@@ -417,7 +421,7 @@ module.exports = (factory) =>
       });
     },
     confirm() {
-      return ui.run(this, async (cur) => {
+      return ui.act(this, async (cur) => {
         const {
           detail: d,
           active: k,

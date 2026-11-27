@@ -2,7 +2,30 @@
   <view wx:if="{{message}}" class="alert" role="alert">{{message}}<button bindtap="load" disabled="{{busy}}">刷新进度</button><button wx:if="{{pending}}" bindtap="recover" disabled="{{busy}}">查询原操作</button></view>
   <view wx:if="{{!detail && !message}}" class="panel muted"><mj-loading wx:if="{{busy && !returnRefresh}}" label="正在读取履约进度"/><text wx:else>暂无可查看的履约记录</text></view>
   <block wx:if="{{detail}}">
-<navigator wx:if="{{(view==='returnCheck'||view==='complete') && root.id}}" url="/pages/service/index?type=return_verification&id={{root.id}}">咨询此归还核验 ›</navigator>
+    <block wx:if="{{canReport && issueOpen}}">
+      <view class="panel hero"><view class="heading">{{view==='receipt'?'上报收货问题':'上报使用中异常'}}</view><view class="muted">订单 {{detail.orderNo}} · {{detail.factoryName}}</view></view>
+      <view class="panel">
+        <view class="heading">涉及道具与问题</view>
+        <view wx:for="{{issueRows}}" wx:key="index" class="item">
+          <dict-select range="{{items}}" range-key="name" value="{{item.itemIndex}}" data-index="{{index}}" data-field="itemIndex" bindchange="editIssueItem" title="道具" display="{{items[item.itemIndex].name}}" quiet="{{returnRefresh}}"/>
+          <dict-select range="{{issueTypes}}" range-key="label" value="{{item.typeIndex}}" data-index="{{index}}" data-field="typeIndex" bindchange="editIssueItem" title="问题类型" display="{{issueTypes[item.typeIndex].label}}" quiet="{{returnRefresh}}"/>
+          <label>受影响数量<input id="field-row-{{index}}-quantity" adjust-position="{{false}}" always-embed type="number" value="{{item.quantity}}" data-index="{{index}}" data-field="quantity" bindinput="editIssueItem"/></label>
+          <button wx:if="{{issueRows.length>1}}" data-index="{{index}}" bindtap="removeIssueItem">移除此项</button>
+        </view>
+        <button bindtap="addIssueItem">添加一项</button>
+        <view class="heading">问题说明与照片</view>
+        <textarea id="field-issueSummary" adjust-position="{{false}}" maxlength="1000" placeholder="说明发生了什么，哪些道具受到影响" value="{{issueSummary}}" bindinput="editIssueSummary"/>
+        <view class="mj-photo-drafts" wx:if="{{issuePhotos.length}}"><view wx:for="{{issuePhotos}}" wx:key="id" class="mj-photo-frame"><image src="{{item.src}}" mode="aspectFill"/><photo-remove disabled="{{busy || pending}}" identity="{{item.id}}" data-id="{{item.id}}" bindremove="removeDraftPhoto"/></view></view>
+      <button bindtap="attachIssuePhoto" disabled="{{busy || pending}}">添加照片{{issuePhotos.length?'（已选 '+issuePhotos.length+' 张）':''}}</button>
+        <view class="heading">选择处理方式</view>
+        <radio-group bindchange="selectIssueEffect">
+          <label><radio value="continue" checked="{{issueEffect==='continue'}}"/>继续履约，请客服跟进</label>
+          <label><radio value="paused" checked="{{issueEffect==='paused'}}"/>暂停履约，申请客服介入</label>
+        </radio-group>
+      </view>
+      <view class="foot"><button bindtap="closeIssue" disabled="{{busy || pending}}">返回核验</button><button wx:if="{{pending}}" bindtap="recover" disabled="{{busy}}">查询原操作</button><button wx:else class="primary" bindtap="submitIssue" disabled="{{busy}}">提交问题</button></view>
+    </block>
+    <block wx:else>
     <list-filters quiet="{{returnRefresh}}" filters="{{stageFilters}}" values="{{ {view:view} }}" disabled="{{busy}}" bindselectfilter="changeStage"/>
     <view class="panel hero">
       <view class="heading"><text>{{view==='outbound'?detail.factoryName:view==='shipment'?(pickup?'工厂取回':'用户送回'):view==='receipt'?'收货核验':view==='returnCheck'?'归还核验':view==='complete'?'核验结果':'履约记录'}}</text><text wx:if="{{view!=='history'}}" class="tag">{{statusText}}</text></view>
@@ -49,27 +72,6 @@
       <label>数量<input id="field-stockForm-quantity" adjust-position="{{false}}" always-embed type="number" value="{{stockForm.quantity}}" disabled="{{stockForm.snId || stockForm.replacesId}}" data-field="quantity" bindinput="editStock"/></label>
       <textarea id="field-stockForm-remark" adjust-position="{{false}}" maxlength="500" value="{{stockForm.remark}}" data-field="remark" bindinput="editStock" placeholder="填写实际到厂核验或处置情况"/>
       <button bindtap="submitStock" disabled="{{busy || pending}}">确认登记</button><button bindtap="cancelStock">取消</button>
-    </view>
-    <view wx:if="{{canReport}}" class="panel">
-      <button wx:if="{{!issueOpen}}" bindtap="openIssue" disabled="{{busy || pending}}">{{view==='receipt'?'上报收货问题':'上报使用中异常'}}</button>
-      <block wx:else>
-        <view class="heading">涉及道具与问题</view>
-        <view wx:for="{{issueRows}}" wx:key="index" class="item">
-          <dict-select range="{{items}}" range-key="name" value="{{item.itemIndex}}" data-index="{{index}}" data-field="itemIndex" bindchange="editIssueItem" title="道具" display="{{items[item.itemIndex].name}}" quiet="{{returnRefresh}}"/>
-          <dict-select range="{{issueTypes}}" range-key="label" value="{{item.typeIndex}}" data-index="{{index}}" data-field="typeIndex" bindchange="editIssueItem" title="问题类型" display="{{issueTypes[item.typeIndex].label}}" quiet="{{returnRefresh}}"/>
-          <label>受影响数量<input id="field-row-{{index}}-quantity" adjust-position="{{false}}" always-embed type="number" value="{{item.quantity}}" data-index="{{index}}" data-field="quantity" bindinput="editIssueItem"/></label>
-          <button wx:if="{{issueRows.length>1}}" data-index="{{index}}" bindtap="removeIssueItem">移除此项</button>
-        </view>
-        <button bindtap="addIssueItem">添加一项</button>
-        <textarea id="field-issueSummary" adjust-position="{{false}}" maxlength="1000" placeholder="说明发生了什么，哪些道具受到影响" value="{{issueSummary}}" bindinput="editIssueSummary"/>
-        <view class="mj-photo-drafts" wx:if="{{issuePhotos.length}}"><view wx:for="{{issuePhotos}}" wx:key="id" class="mj-photo-frame"><image src="{{item.src}}" mode="aspectFill"/><photo-remove disabled="{{busy || pending}}" identity="{{item.id}}" data-id="{{item.id}}" bindremove="removeDraftPhoto"/></view></view>
-      <button bindtap="attachIssuePhoto" disabled="{{busy || pending}}">添加照片{{issuePhotos.length?'（已选 '+issuePhotos.length+' 张）':''}}</button>
-        <radio-group bindchange="selectIssueEffect">
-          <label><radio value="continue" checked="{{issueEffect==='continue'}}"/>继续履约，请客服跟进</label>
-          <label><radio value="paused" checked="{{issueEffect==='paused'}}"/>暂停履约，申请客服介入</label>
-        </radio-group>
-        <button class="dark" bindtap="submitIssue" disabled="{{busy || pending}}">提交问题</button>
-      </block>
     </view>
     <view wx:if="{{view==='receipt' || view==='shipment'}}" class="panel">
       <view class="heading">道具明细</view>
@@ -129,7 +131,10 @@
     <view wx:if="{{view==='returnCheck'}}" class="panel"><view class="heading">核验时间</view><view class="row"><text>实际开始</text><text>{{dates.startAt || '待开始'}}</text></view><view wx:if="{{dates.warningAt}}" class="row"><text>预警时间</text><text>{{dates.warningAt}}</text></view><view wx:if="{{dates.autoCloseAt && !detail.disputes.terminationActive}}" class="row"><text>预计自动关闭</text><text>{{dates.autoCloseAt}}</text></view><view class="notice">{{root.claimCreated?'本次归还已有索赔。':'请检查数量、外观、清洁及包装。无异常入库无需拍照。'}}</view></view>
     <view wx:if="{{view==='complete'}}" class="panel"><view class="heading">处理结果</view><view class="row"><text>核验状态</text><text>{{statusText}}</text></view><view wx:if="{{dates.closedAt}}" class="row"><text>关闭时间</text><text>{{dates.closedAt}}</text></view><view class="row"><text>押金状态</text><text>{{depositText}}</text></view><view class="row"><text>库存占用</text><text>{{root.inventoryReleased?'已释放':'尚未释放'}}</text></view><block wx:if="{{!factory}}"><button wx:for="{{root.refundIds}}" wx:key="*this" bindtap="refund" data-id="{{item}}">查看退款进度 {{index+1}} ›</button></block></view>
     <view wx:if="{{view==='history'}}" class="panel"><view class="heading">履约时间线</view><view wx:for="{{records}}" wx:key="id" class="event"><text class="bold">{{item.label}}</text><text class="muted">{{item.time}}</text></view><view wx:if="{{!records.length}}" class="muted">尚无履约事件</view><button wx:if="{{moreRecords}}" bindtap="moreRecords" disabled="{{busy}}">加载更多</button></view>
+<navigator wx:if="{{(view==='returnCheck'||view==='complete') && root.id}}" url="/pages/service/index?type=return_verification&id={{root.id}}">咨询此归还核验 ›</navigator>
+    <navigator class="service-entry" wx:elif="{{id}}" url="/pages/service/index?type=rental_order&id={{id}}">咨询平台客服 ›</navigator>
     <view class="foot">
+      <button wx:if="{{canReport}}" bindtap="openIssue" disabled="{{busy || pending}}">{{view==='receipt'?'上报问题':'上报异常'}}</button>
       <button wx:if="{{actions.save}}" bindtap="submit" data-action="save" disabled="{{busy || pending}}">暂存</button>
       <button wx:if="{{view==='outbound' && actions.confirm}}" class="primary" bindtap="submit" data-action="confirm" disabled="{{busy || pending}}">确认出库</button>
       <button wx:if="{{view==='receipt' && actions.confirm}}" class="primary" bindtap="submit" data-action="confirm" disabled="{{busy || pending}}">确认收货</button>
@@ -141,5 +146,6 @@
       <button wx:if="{{pending}}" bindtap="recover" disabled="{{busy}}">查原操作</button>
       <button wx:if="{{!actions.confirm && !actions.save && !actions.send && !actions.start_pickup && !actions.confirm_termination && !(view==='returnCheck' && actions.confirm_no_issue)}}" bindtap="navigationBack">返回</button>
     </view>
+    </block>
   </block>
 </view>

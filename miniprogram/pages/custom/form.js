@@ -197,7 +197,7 @@ require("../../session/page")({
         if (latest.version !== reply.resourceVersion)
           throw new Error("草稿已被更新，请重新读取最新版本");
       } catch (error) {
-        if (current()) this.setData({ ready: false });
+        if (current()) this.setData({ ready: false, message: error.message });
         throw error;
       }
       this.setData({ version: latest.version, form: { ...latest.form, items: latest.form.items.map(formRow) } });
@@ -206,7 +206,7 @@ require("../../session/page")({
   },
   onUnload() { ui.hide(this); },
   upload(e) {
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       const index = e.currentTarget.dataset.index;
       if (!this.data.id) await this.persist(current, true);
       if (!current()) return;
@@ -231,7 +231,7 @@ require("../../session/page")({
   },
   save(e) {
     const submit = !!e.currentTarget.dataset.submit;
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       const r = await this.persist(current);
       if (!current()) return;
       if (submit)

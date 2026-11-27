@@ -183,7 +183,7 @@ require("../../session/page")({
     if (this.data.busy || this.data.locked) return;
     wx.chooseMedia({
       count: 4 - this.data.fields.images.length,
-      mediaType: ["image"],
+      mediaType: ["image"], sizeType: ["original", "compressed"],
       success: (r) => {
         dirty(this);
         this.setData({

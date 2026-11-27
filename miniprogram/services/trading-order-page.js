@@ -1,9 +1,6 @@
 const { hint } = require("./form-error");
 const api = require('./trading'),
   ui = require('./trading-page');
-function revealConfirmation() {
-  wx.pageScrollTo({ selector: '.confirmation', duration: 180 });
-}
 module.exports = function (factory) {
   const endpoint = '/api/me/' + (factory ? 'factory-orders' : 'rental-orders');
   return {
@@ -33,6 +30,9 @@ module.exports = function (factory) {
     },
     onHide() {
       ui.hide(this);
+    },
+    hasPendingOperation() {
+      return ['accept:', 'reject:', 'cancel-order:', 'extend:'].some(key => api.pending.has(key + this.data.id));
     },
     onUnload() {
       ui.hide(this);
@@ -75,7 +75,7 @@ module.exports = function (factory) {
         return;
       }
       this.setData({ extensionQuote: null });
-      return ui.run(this, async (current) => {
+      return ui.act(this, async (current) => {
         const quote = await api.get(endpoint + '/' + this.data.id + '/extension-quote?extraDays=' + days);
         if (current() && String(this.data.extensionDays) === days)
           this.setData({ extensionQuote: {
@@ -91,7 +91,7 @@ module.exports = function (factory) {
     submitExtension() {
       const id=this.data.id,q=this.data.extensionQuote,slot='extend:'+id;
       if(!q && !api.pending.has(slot))return;
-      return ui.run(this,async current=>{
+      return ui.act(this,async current=>{
         let result,ext;
         if(api.pending.has(slot)){
           const intent=api.pending.get(slot);
@@ -114,7 +114,7 @@ module.exports = function (factory) {
         ))
       )
         return;
-      const result = await ui.run(this, () =>
+      const result = await ui.act(this, () =>
         api.command('accept:' + this.data.id, endpoint + '/' + this.data.id + '/accept', {
           expectedVersion: this.data.detail.version,
         }),
@@ -123,14 +123,14 @@ module.exports = function (factory) {
       if (result) return this.load();
     },
     reject() {
-      this.setData({ rejecting: true, reason: '', quote: null, message: '' }, revealConfirmation);
+      this.setData({ rejecting: true, reason: '', quote: null, message: '' });
     },
     async confirmReject() {
       if (!this.data.reason.trim()) {
         hint('请填写拒绝接单原因');
         return;
       }
-      const result = await ui.run(this, () =>
+      const result = await ui.act(this, () =>
         api.command('reject:' + this.data.id, endpoint + '/' + this.data.id + '/reject', {
           expectedVersion: this.data.detail.version,
           reason: this.data.reason.trim(),
@@ -140,7 +140,7 @@ module.exports = function (factory) {
       if (result) return this.load();
     },
     cancelQuote() {
-      return ui.run(this, async (current) => {
+      return ui.act(this, async (current) => {
         const quote = await api.post(endpoint + '/' + this.data.id + '/cancel-quote', {
           expectedVersion: this.data.detail.version,
         });
@@ -156,7 +156,7 @@ module.exports = function (factory) {
             },
             reason: '',
             rejecting: false,
-          }, revealConfirmation);
+          });
       });
     },
     async confirmCancel() {
@@ -165,7 +165,7 @@ module.exports = function (factory) {
         hint('请填写取消原因');
         return;
       }
-      const result = await ui.run(this, () =>
+      const result = await ui.act(this, () =>
         api.command('cancel-order:' + this.data.id, endpoint + '/' + this.data.id + '/cancel', {
           confirmToken: this.data.quote.confirmToken,
           reason: this.data.reason.trim(),
@@ -178,7 +178,12 @@ module.exports = function (factory) {
       this.setData({ quote: null, rejecting: false, message: '' });
     },
     recover() {
-      return ui.run(this, async (current) => {
+      return ui.act(this, async (current) => {
+        if (api.pending.has('extend:' + this.data.id)) {
+          const receipt = await api.recover('extend:' + this.data.id);
+          if (current() && receipt) wx.navigateTo({url:'/pages/orders/extensions?orderId='+this.data.id+'&id='+receipt.resourceId});
+          return;
+        }
         for (const prefix of ['accept:', 'reject:', 'cancel-order:'])
           if (api.pending.has(prefix + this.data.id)) {
             await api.recover(prefix + this.data.id);

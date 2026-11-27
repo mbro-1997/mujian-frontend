@@ -198,8 +198,8 @@ require("../../session/page")({
       const current = urls[index];
       if (current)
         wx.previewImage({
-          urls: urls.filter(Boolean).map((image) => image.url),
-          current: current.url,
+          urls: urls.filter(Boolean).map((image) => store.images.publicPropContentUrl(this.data.id, image)),
+          current: store.images.publicPropContentUrl(this.data.id, current),
         });
     } catch (error) {
       if (session.isCurrent(owner) && round === this.loadRound) {

@@ -56,7 +56,7 @@
 </view>
 <button disabled="{{busy}}" bindtap="add">添加定制件</button>
 <button disabled="{{busy}}" bindtap="template">预览舞台家具组合模板</button>
-<view class="notice" wx:if="{{message}}">{{message}}</view>
+
 <view class="form-actions"><button disabled="{{busy}}" bindtap="save">保存草稿</button>
 <button class="primary" disabled="{{busy}}" data-submit="{{true}}" bindtap="save">提交需求</button></view>
 </block></view>

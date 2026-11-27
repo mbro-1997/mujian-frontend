@@ -34,6 +34,7 @@ type Detail = {
   version: number;
   canReview: boolean;
   canViewSensitive: boolean;
+  identityDocuments?: { fullName: string; fullIdCard: string; frontUrl: string; backUrl: string } | null;
   realnameStatus?: string;
   realNameMasked?: string | null;
   idCardMasked?: string | null;
@@ -41,11 +42,7 @@ type Detail = {
   auditRemark: string | null;
 };
 type Sensitive = {
-  fullName?: string;
-  fullIdCard?: string;
   phone?: string;
-  frontUrl?: string;
-  backUrl?: string;
   expiresAt: string;
   auditId: string;
   images?: { position: number; url: string }[];
@@ -159,15 +156,15 @@ async function load() {
     if (current(owner, request)) busy.value = false;
   }
 }
-async function authorize() {
-  if (busy.value || !detail.value?.canViewSensitive) return;
+async function authorizeStudent() {
+  if (props.domain !== "student" || busy.value || !detail.value?.canViewSensitive) return;
   const owner = view.capture(),
     request = version;
   busy.value = true;
   clearSensitive();
   try {
     await refreshCsrf();
-    const result = await api<Sensitive>(root.value + "/" + id.value + "/sensitive-view", "POST", {});
+    const result = await api<Sensitive>("/api/admin/student-verifications/" + id.value + "/sensitive-view", "POST", {});
     if (!current(owner, request)) return;
     sensitive.value = result;
     timer = setTimeout(clearSensitive, Math.max(0, Date.parse(result.expiresAt) - Date.now()));
@@ -282,6 +279,11 @@ function filter() {
   page.value = 1;
   load();
 }
+function identityPhotoSource(signedUrl: string) {
+  if (!import.meta.env.DEV) return signedUrl;
+  const url = new URL(signedUrl);
+  return "/__realname-photo/" + url.host + url.pathname + url.search;
+}
 function open(row: Row) {
   router.push({ path: route.path, query: { id: row.id } });
 }
@@ -300,7 +302,18 @@ watch([() => props.domain, id], ([domain], [previousDomain]) => {
   }
   load();
 });
-watch(() => me.value?.permissions.join(","), clearSensitive);
+watch(() => me.value?.permissions.join(","), () => {
+  clearSensitive();
+  if (props.domain !== "realname" || !id.value) return;
+  if (!me.value?.permissions.includes("admin:realname:read")) {
+    version++;
+    reset();
+  } else if (!me.value.permissions.includes("admin:realname:sensitive")) {
+    // 丢弃权限变更前仍在返回途中的明文详情。
+    if (busy.value) void load();
+    else if (detail.value) detail.value = { ...detail.value, identityDocuments: null, canViewSensitive: false };
+  }
+});
 onMounted(() => {
   load();
   document.addEventListener("visibilitychange", hidden);
@@ -323,7 +336,7 @@ function resetFilters() {
   <div class="heading">
     <div>
       <h1>{{ title }}{{ id ? "详情" : "" }}</h1>
-      <p>人工核验原提交资料；敏感材料查看留审计，认证结果以原申请为准。</p>
+      <p v-if="props.domain === 'student'">人工核验原提交资料；敏感材料查看留审计，认证结果以原申请为准。</p>
     </div>
     <el-button v-if="id" @click="router.push(route.path)">返回列表</el-button>
   </div>
@@ -435,9 +448,9 @@ function resetFilters() {
         </template>
         <template v-else>
           <dt>姓名</dt>
-          <dd>{{ detail.application.realNameMasked }}</dd>
+          <dd>{{ detail.identityDocuments?.fullName ?? detail.application.realNameMasked }}</dd>
           <dt>身份证号码</dt>
-          <dd>{{ detail.application.idCardMasked }}</dd>
+          <dd>{{ detail.identityDocuments?.fullIdCard ?? detail.application.idCardMasked }}</dd>
         </template>
         <dt>提交时间</dt>
         <dd>{{ displayTime(detail.application.submittedAt) }}</dd>
@@ -452,9 +465,16 @@ function resetFilters() {
       </dl>
       <div class="materials">
         <h3>{{ props.domain === "realname" ? "证件正反面" : "学生证材料" }}</h3>
-        <div v-if="!sensitive" class="locked">
+        <template v-if="props.domain === 'realname'">
+          <div v-if="detail.identityDocuments" :key="detail.application.id" class="images">
+            <img :src="identityPhotoSource(detail.identityDocuments.frontUrl)" alt="身份证正面" referrerpolicy="no-referrer" />
+            <img :src="identityPhotoSource(detail.identityDocuments.backUrl)" alt="身份证反面" referrerpolicy="no-referrer" />
+          </div>
+          <p v-else>当前账号无证件照片查看权限。</p>
+        </template>
+        <div v-else-if="!sensitive" class="locked">
           <p>私有照片，授权后临时查看。完整资料不会随列表或详情加载。</p>
-          <el-button :disabled="!detail.canViewSensitive || busy" @click="authorize">
+          <el-button :disabled="!detail.canViewSensitive || busy" @click="authorizeStudent">
             {{ detail.canViewSensitive ? "授权查看敏感资料" : "无敏感资料查看权限" }}
           </el-button>
         </div>
@@ -463,7 +483,6 @@ function resetFilters() {
             本次查看已审计，授权截止
             {{ displayTime(sensitive.expiresAt) }}。离开页面后自动清除。
           </div>
-          <p v-if="sensitive.fullName">姓名：{{ sensitive.fullName }} · 证件：{{ sensitive.fullIdCard }}</p>
           <p v-if="sensitive.phone">联系电话：{{ sensitive.phone }}</p>
           <p v-if="sensitive.realnameView?.access === 'granted'">
             关联实名：{{ sensitive.realnameView.fullName }} ·
@@ -473,10 +492,6 @@ function resetFilters() {
             关联实名：{{ sensitive.realnameView.access === "not_authorized" ? "未获额外授权" : "暂无资料" }}
           </p>
           <div class="images">
-            <template v-if="props.domain === 'realname'">
-              <img :src="sensitive.frontUrl" alt="身份证正面" referrerpolicy="no-referrer" />
-              <img :src="sensitive.backUrl" alt="身份证反面" referrerpolicy="no-referrer" />
-            </template>
             <img
               v-for="image in sensitive.images"
               :key="image.position"

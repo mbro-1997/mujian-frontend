@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "订单详情",
   "usingComponents": {
-    "public-prop-image": "/components/public-prop-image/index"
+    "public-prop-image": "/components/public-prop-image/index",
+    "mj-action-sheet": "/components/action-sheet/index"
   }
 }

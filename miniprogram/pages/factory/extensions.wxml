@@ -1,3 +1,2 @@
-<import src="../../templates/extensions.wxml"/><template is="extensions" data="{{items,detail,reason,busy,returnRefresh,message,pending,total,page}}" />
-
-<navigator wx:if="{{id}}" url="/pages/service/index?type=extension_application&id={{id}}">咨询平台客服 ›</navigator>
+<import src="../../templates/extensions.wxml"/>
+<template is="extensions" data="{{id,items,detail,reason,busy,returnRefresh,message,pending,total,page}}"/>

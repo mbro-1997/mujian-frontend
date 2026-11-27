@@ -1,4 +1,4 @@
-const { ValidationError } = require("../../services/form-error");
+const { hint, ValidationError } = require("../../services/form-error");
 const successToast = require("../../services/success-toast");
 const api = require('../../services/trading');
 const ui = require('../../services/trading-page');
@@ -13,16 +13,16 @@ function present(issue) {
     canSupplement: issue.availableActions.includes('supplement') };
 }
 require('../../session/page')({
-  data: { orderId:'', items:[], detail:null, page:1, total:0, summary:'', photos:[], message:'', busy:false, pending:false },
-  onLoad(q) { this.setData({orderId:q.id}); },
+  data: { orderId:'', issueId:'', items:[], detail:null, page:1, total:0, summary:'', photos:[], message:'', busy:false, pending:false },
+  onLoad(q) { this.setData({orderId:q.id,issueId:q.issueId || ''}); },
   onShow() { ui.show(this); if (!this.picking) return this.load(); },
   onHide() { ui.hide(this); },
   onUnload() { this.gone=true; ui.hide(this); },
   async read(current) {
+    if (this.data.issueId) return this.readDetail(this.data.issueId, current);
     const result=await api.get('/api/me/issues?orderId='+this.data.orderId+'&page='+this.data.page+'&pageSize=15');
     if (!current()) return;
     this.setData({items:result.items.map(present),total:Number(result.total)});
-    if (this.data.detail) await this.readDetail(this.data.detail.id,current);
   },
   async readDetail(id,current) {
     const issue=await api.get('/api/me/issues/'+id);
@@ -30,8 +30,8 @@ require('../../session/page')({
   },
   load() { return ui.run(this,current=>this.read(current)); },
   open(e) {
-    this.setData({detail:null,summary:'',photos:[],pending:false});
-    return ui.run(this,current=>this.readDetail(e.currentTarget.dataset.id,current));
+    if (this.data.busy) return;
+    wx.navigateTo({url:'/pages/orders/issues?id='+encodeURIComponent(this.data.orderId)+'&issueId='+encodeURIComponent(e.currentTarget.dataset.id)});
   },
   changePage(e) {
     this.setData({page:this.data.page+Number(e.currentTarget.dataset.step),detail:null,summary:'',photos:[]});
@@ -47,10 +47,10 @@ require('../../session/page')({
     const owner=session.capture(), issue=this.data.detail;
     this.picking=true;
     try {
-      const selection=await new Promise((resolve,reject)=>wx.chooseMedia({count:9,mediaType:['image'],
+      const selection=await new Promise((resolve,reject)=>wx.chooseMedia({count:9,mediaType:['image'], sizeType: ["original", "compressed"],
         success:resolve,fail:e=>/cancel/i.test(e.errMsg || '') ? resolve(null) : reject(e)}));
       if (!selection || this.gone || !session.isCurrent(owner)) return;
-      await ui.run(this,async current=>{
+      await ui.act(this,async current=>{
         for (const file of selection.tempFiles) {
           if (!current()) return;
           const id=await materials.uploadOrder('/api/me/rental-orders/'+issue.orderId,
@@ -58,13 +58,13 @@ require('../../session/page')({
           if (current()) this.setData({photos:this.data.photos.concat({ id, src: file.tempFilePath })});
         }
       });
-    } catch (error) { if (!this.gone && session.isCurrent(owner)) this.setData({message:'无法添加照片，请重新选择'}); }
+    } catch (error) { if (!this.gone && session.isCurrent(owner)) hint('无法添加照片，请重新选择'); }
     finally { this.picking=false; }
   },
   submit() {
     const issue=this.data.detail;
     if (!issue) return;
-    return ui.run(this,async current=>{
+    return ui.act(this,async current=>{
       const slot='supplement:'+issue.id;
       try {
         if (api.pending.has(slot)) {

@@ -20,3 +20,5 @@
 .custom.has-form-actions{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
 
 .custom .material-preview{width:100%;padding:0;background:transparent;text-align:left;font-size:12px;font-weight:400;color:#6b7280;overflow-wrap:anywhere}
+
+.custom button.sheet-submit{display:block;width:100%;margin:16px 0 0;text-align:center}

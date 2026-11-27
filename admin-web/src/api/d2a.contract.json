@@ -984,7 +984,7 @@
     "/api/admin/realname-verifications/{id}": {
       "get": {
         "operationId": "getAdminRealnameDetail",
-        "summary": "管理员脱敏详情及当前版本",
+        "summary": "实名审核详情，具备敏感查看权限时同时返回原申请的姓名、证件号和双面照片",
         "security": [
           {
             "AdminCookie": []
@@ -1089,7 +1089,7 @@
             }
           },
           "503": {
-            "description": "CRYPTO_KEY_UNAVAILABLE / DATABASE_UNAVAILABLE / SESSION_STORE_UNAVAILABLE",
+            "description": "CRYPTO_KEY_UNAVAILABLE / DATABASE_UNAVAILABLE / OBJECT_STORAGE_UNAVAILABLE / SESSION_STORE_UNAVAILABLE",
             "content": {
               "application/json": {
                 "schema": {
@@ -1099,6 +1099,9 @@
                     },
                     {
                       "$ref": "#/components/schemas/Error_DATABASE_UNAVAILABLE"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Error_OBJECT_STORAGE_UNAVAILABLE"
                     },
                     {
                       "$ref": "#/components/schemas/Error_SESSION_STORE_UNAVAILABLE"
@@ -1131,6 +1134,7 @@
           "CRYPTO_KEY_UNAVAILABLE",
           "DATABASE_UNAVAILABLE",
           "LOGIN_REQUIRED",
+          "OBJECT_STORAGE_UNAVAILABLE",
           "PERMISSION_DENIED",
           "REALNAME_CASE_INCONSISTENT",
           "REQUEST_INVALID",
@@ -5278,6 +5282,44 @@
           },
           "canReview": {
             "type": "boolean"
+          },
+          "identityDocuments": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "fullName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
+                  "fullIdCard": {
+                    "type": "string",
+                    "pattern": "^[0-9]{17}[0-9X]$"
+                  },
+                  "frontUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https://"
+                  },
+                  "backUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https://"
+                  }
+                },
+                "required": [
+                  "fullName",
+                  "fullIdCard",
+                  "frontUrl",
+                  "backUrl"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -5291,7 +5333,8 @@
           "reviewedByAdminUserId",
           "auditRemark",
           "canViewSensitive",
-          "canReview"
+          "canReview",
+          "identityDocuments"
         ]
       },
       "SensitiveResult": {

@@ -13,6 +13,11 @@ function fixture(domain = "student", statusPage = false) {
     setStorageSync: (k, v) => storage.set(k, v),
     removeStorageSync: (k) => storage.delete(k),
     login: (o) => o.success({ code: "fictional-code" }),
+    getFileSystemManager: () => ({
+      stat: (o) => o.success({ stats: { size: 1200 } }),
+      readFile: (o) => o.success({ data: new Uint8Array([255,216,255,224,0]).buffer }),
+    }),
+    getImageInfo: (o) => o.success({ width: 120, height: 90, type: "jpeg" }),
     uploadFile: (o) => uploads.push(o),
     getRandomValues: (o) =>
       o.success({ randomValues: new Uint8Array(16).fill(5).buffer }),

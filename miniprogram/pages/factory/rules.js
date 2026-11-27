@@ -1,4 +1,4 @@
-const { hint, UploadError } = require("../../services/form-error");
+const { hint } = require("../../services/form-error");
 const successToast = require("../../services/success-toast");
 const api = require("../../services/factory");
 const checkboxSelection = require("../../services/checkbox-selection");
@@ -46,7 +46,7 @@ require("../../session/page")({
       );
       this.setData({ body: r });
     } catch (e) {
-      this.setData({ message: e.message });
+      hint(e.message);
     }
   },
   close() {
@@ -61,7 +61,7 @@ require("../../session/page")({
       return;
     const d = api.read();
     if (!d) {
-      this.setData({ message: "草稿已失效，请返回资料页重新填写。" });
+      hint("草稿已失效，请返回资料页重新填写。");
       return;
     }
     this.setData({ busy: true, message: "" });
@@ -74,8 +74,7 @@ require("../../session/page")({
       await api.submit(d, accepted);
       wx.redirectTo({ success: () => successToast("入驻申请已提交"), url: "/pages/factory/status" });
     } catch (e) {
-      if (e instanceof UploadError) return hint(e.message);
-      this.setData({ message: e.message });
+      hint(e.message);
       if (e.reason === "RULE_VERSION_CHANGED") {
         d.body = null;
         await this.load();

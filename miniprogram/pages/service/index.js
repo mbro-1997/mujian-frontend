@@ -1,3 +1,4 @@
+const { hint } = require("../../services/form-error");
 const { displayTime } = require("../../services/display-time");
 const sourceNames = {
   factory_onboarding: "工厂入驻", rental_order: "租赁订单", payment_order: "付款",
@@ -129,7 +130,7 @@ require("../../session/page")({
   },
   prepare() {
     if (!this.data.checked) return;
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       if (!this.requestKey) {
         const key = await uuid();
         if (!current()) return;
@@ -162,10 +163,8 @@ require("../../session/page")({
     if (!this.tradeHidden && this.data.source) return this.refresh();
   },
   failed() {
-    this.setData({
-      card: null,
-      message: "未能打开微信客服，可重新准备卡片或返回原业务页。",
-    });
+    this.setData({ card: null });
+    hint("未能打开微信客服，请重试");
   },
   back() {
     const path = this.data.record?.returnPagePath;

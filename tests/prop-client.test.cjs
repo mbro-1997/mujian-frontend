@@ -1366,8 +1366,9 @@ test("browse experience lazy image waits for viewport and permits one failure re
       lazy: true,
       active: false,
     },
-    setData(v) {
+    setData(v, done) {
       Object.assign(this.data, v);
+      done?.();
     },
     triggerEvent() {},
     createIntersectionObserver() {
@@ -1388,10 +1389,10 @@ test("browse experience lazy image waits for viewport and permits one failure re
   assert.equal(c.data.src, "");
   visible({ intersectionRatio: 1 });
   await tick();
-  assert.equal(c.data.src, "first");
+  assert.equal(c.data.src, "https://fixture.invalid/api/public/props/sku/images/" + image.cacheKey);
   assert.equal(renewals, 0);
   await c.failed();
-  assert.equal(c.data.src, "retry");
+  assert.equal(c.data.src, "https://fixture.invalid/api/public/props/sku/images/" + image.cacheKey);
   assert.equal(renewals, 1);
   await c.failed();
   assert.equal(renewals, 1);
@@ -1442,8 +1443,9 @@ test("browse experience carousel loads only activated slides and keeps displayed
       lazy: false,
       active: false,
     },
-    setData(v) {
+    setData(v, done) {
       Object.assign(this.data, v);
+      done?.();
     },
     triggerEvent() {},
   };
@@ -1453,11 +1455,11 @@ test("browse experience carousel loads only activated slides and keeps displayed
   assert.equal(c.data.src, "");
   c.data.active = true;
   await c.sync();
-  assert.equal(c.data.src, "first");
+  assert.equal(c.data.src, "https://fixture.invalid/api/public/props/sku/images/" + image.cacheKey);
   f.setNow(Date.parse("2026-11-05T12:31:00Z"));
   c.data.active = false;
   await c.sync();
-  assert.equal(c.data.src, "first");
+  assert.equal(c.data.src, "https://fixture.invalid/api/public/props/sku/images/" + image.cacheKey);
   f.session.replace("new-owner");
   assert.equal(c.data.src, "");
   definition.lifetimes.detached.call(c);
@@ -1594,6 +1596,23 @@ test("oversize prop JPEG is resized in its displayed orientation and only the re
   assert.equal(f.uploads[0].filePath, "compressed.jpg");
   f.uploads[0].success({ statusCode: 200, data: JSON.stringify({ code: "OK", data: { uploadId: id } }) });
   assert.equal((await work)[0].uploadId, id);
+});
+
+test("all image sizes use the chosen file: below one MiB unchanged, at and above it compressed", async () => {
+  for (const bytes of [1_048_575, 1_048_576, 1_048_577]) {
+    const f = fixture();
+    f.wx.getFileSystemManager = () => ({
+      stat: o => o.success({ stats: { size: o.path === "small.jpg" ? 65536 : bytes } }),
+    });
+    let calls = 0;
+    f.wx.compressImage = o => { calls++; o.success({ tempFilePath: "small.jpg" }); };
+    const work = f.api.materialize([{ localPath: "chosen.jpg" }]);
+    await tick();
+    assert.equal(calls, bytes < 1_048_576 ? 0 : 1);
+    assert.equal(f.uploads[0].filePath, calls ? "small.jpg" : "chosen.jpg");
+    f.uploads[0].success({ statusCode: 200, data: JSON.stringify({ code: "OK", data: { uploadId: id } }) });
+    await work;
+  }
 });
 
 test("a prop photo still over the limit after compression never reaches upload", async () => {

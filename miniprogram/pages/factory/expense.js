@@ -213,12 +213,12 @@ require('../../session/page')({
     });
   },
   morePhotos() {
-    return ui.run(this, (current) =>
+    return ui.act(this, (current) =>
       this.photos(current, this.data.evidencePage + 1),
     );
   },
   moreHistory() {
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       const page = this.data.page + 1;
       const h = await api.get(
         this.base + '/transport-expenses?page=' + page + '&pageSize=10',
@@ -351,7 +351,7 @@ require('../../session/page')({
     }
   },
   save() {
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       const row = this.data.detail.row,
         legs = this.data.legs;
       let reuse = this.data.selectedReuse;
@@ -403,7 +403,7 @@ require('../../session/page')({
       !this.tradeHidden &&
       session.isCurrent(owner)
     )
-      return ui.run(this, (current) =>
+      return ui.act(this, (current) =>
         this.send(
           '/transport-expense/' + row.id + '/submit',
           { expectedVersion: row.version },
@@ -424,7 +424,7 @@ require('../../session/page')({
       const file = await new Promise((resolve, reject) =>
         wx.chooseMedia({
           count: 1,
-          mediaType: ['image'],
+          mediaType: ['image'], sizeType: ["original", "compressed"],
           success: (r) => resolve(r.tempFiles[0]),
           fail: (e) =>
             /cancel/.test(e.errMsg || '')
@@ -433,7 +433,7 @@ require('../../session/page')({
         }),
       );
       if (!file || this.gone || !session.isCurrent(owner)) return;
-      return await ui.run(this, async (current) => {
+      return await ui.act(this, async (current) => {
         const receiptId = await materials.uploadOrder(
           this.base,
           'transport_expense',
@@ -461,13 +461,13 @@ require('../../session/page')({
           );
       });
     } catch (e) {
-      if (session.isCurrent(owner)) this.setData({ message: e.message });
+      if (session.isCurrent(owner)) hint(e.message);
     } finally {
       this.choosing = false;
     }
   },
   preview(e) {
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       const v = await api.post(
         this.base + '/evidence/' + e.currentTarget.dataset.id + '/view',
       );
@@ -478,7 +478,7 @@ require('../../session/page')({
     const id = e.currentTarget.dataset.id,
       row = this.data.detail.row;
     if (this.data.writable && !this.data.dirty && !this.data.pending)
-      return ui.run(this, (current) =>
+      return ui.act(this, (current) =>
         this.send(
           '/evidence/' + id + '/remove',
           { expectedVersion: row.version },
@@ -487,7 +487,7 @@ require('../../session/page')({
       );
   },
   recover() {
-    return ui.run(this, async (current) => {
+    return ui.act(this, async (current) => {
       await api.recover(this.slot);
       if (current()) await this.read(current, true);
     });
