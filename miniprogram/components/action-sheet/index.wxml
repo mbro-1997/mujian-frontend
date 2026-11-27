@@ -1,0 +1,7 @@
+<view class="overlay">
+  <view class="backdrop" catchtouchmove="blockScroll" catchtap="close"></view>
+  <view class="panel" aria-role="dialog" aria-label="{{title}}">
+    <view class="head"><text>{{title}}</text><view class="close" bindtap="close" aria-role="button" aria-disabled="{{busy}}" aria-label="关闭">×</view></view>
+    <scroll-view scroll-y class="contents"><view class="body"><slot/></view></scroll-view>
+  </view>
+</view>

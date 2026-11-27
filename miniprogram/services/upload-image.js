@@ -1,3 +1,4 @@
+const COMPRESS_FROM = 1024 * 1024;
 const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_PIXELS = 20_000_000;
 
@@ -35,16 +36,20 @@ function compress(src, info, target, quality) {
   });
 }
 
-/** 保留符合上传限制的原图，只压缩超限的本地道具照片。 */
-async function preparePropPhoto(path, position) {
-  const label = "第 " + position + " 张图片";
+/** 按选中后的实际文件大小判断，缩放后的结果仍须符合上传限制。 */
+async function prepareUploadImage(path, position) {
+  const label = position ? "第 " + position + " 张图片" : "图片";
   let bytes, info;
   try {
     [bytes, info] = await Promise.all([fileSize(path), imageInfo(path)]);
   } catch {
     throw Error(label + "无法读取，请重新选择");
   }
-  if (bytes <= MAX_BYTES && info.width * info.height <= MAX_PIXELS) return path;
+  if (!bytes || !info.width || !info.height) throw Error(label + "无法读取，请重新选择");
+  if (bytes < COMPRESS_FROM) {
+    if (info.width * info.height > MAX_PIXELS) throw Error(label + "超过 2000 万像素，请重新选择");
+    return path;
+  }
 
   for (const [target, quality] of [[2048, 75], [1280, 60]]) {
     try {
@@ -60,4 +65,15 @@ async function preparePropPhoto(path, position) {
   throw Error(label + "压缩后仍不符合限制，请选择不超过 5 MiB、2000 万像素的照片");
 }
 
-module.exports = { preparePropPhoto };
+/** 定制附件同时接受 PDF。按文件头识别，避免依赖临时文件名。 */
+function isPdfAttachment(path) {
+  return new Promise((resolve, reject) => {
+    wx.getFileSystemManager().readFile({
+      filePath: path, position: 0, length: 5,
+      success: ({data}) => resolve(String.fromCharCode(...new Uint8Array(data)) === "%PDF-"),
+      fail: () => reject(Error("无法读取附件，请重新选择")),
+    });
+  });
+}
+
+module.exports = { prepareUploadImage, isPdfAttachment };
